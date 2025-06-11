@@ -1,0 +1,14 @@
+Hello World! This is a test file.
+The quick brown fox jumps over the lazy dog.
+123-456-7890 is a phone number.
+Email: test@example.com
+Another email: user.name+tag@domain.co.uk
+Date: 2024-01-15
+Time: 14:30:25
+URL: https://www.example.com/path/to/resource?param=value
+IPv4: 192.168.1.1
+IPv6: 2001:0db8:85a3:0000:0000:8a2e:0370:7334
+Mixed content with numbers 42 and letters ABC.
+Special characters: !@#$%^&*()_+-=[]{}|;':\",./<>?
+Line with    multiple    spaces    between    words.
+End of test data file. 
