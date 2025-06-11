@@ -55,6 +55,11 @@ RUN apt-get update && apt-get install -y \
     libboost-regex-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Install .NET 7.0 SDK (from Ubuntu packages)
+RUN apt-get update && apt-get install -y \
+    dotnet-sdk-7.0 \
+    && rm -rf /var/lib/apt/lists/*
+
 # =============================================================================
 # USER AND SECURITY CONFIGURATION
 # =============================================================================
@@ -73,6 +78,7 @@ WORKDIR /app
 # Copy project files to the container
 COPY c/ /app/c/
 COPY cpp/ /app/cpp/
+COPY csharp/ /app/csharp/
 COPY Dockerfile /app/
 
 # Set proper ownership of files
@@ -93,6 +99,10 @@ RUN make all
 WORKDIR /app/cpp
 RUN make all
 
+# Build C# program
+WORKDIR /app/csharp
+RUN make all
+
 # =============================================================================
 # TESTING AND VALIDATION
 # =============================================================================
@@ -104,6 +114,10 @@ RUN make test || echo "C tests completed"
 # Test C++ implementation
 WORKDIR /app/cpp
 RUN make test || echo "C++ tests completed"
+
+# Test C# implementation
+WORKDIR /app/csharp
+RUN make test || echo "C# tests completed"
 
 # =============================================================================
 # CONTAINER RUNTIME CONFIGURATION
