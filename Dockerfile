@@ -53,6 +53,7 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     libpcre2-dev \
     libboost-regex-dev \
+    golang-go \
     && rm -rf /var/lib/apt/lists/*
 
 # Install .NET 7.0 SDK (from Ubuntu packages)
@@ -79,6 +80,8 @@ WORKDIR /app
 COPY c/ /app/c/
 COPY cpp/ /app/cpp/
 COPY csharp/ /app/csharp/
+COPY csharp_nonbacktracking/ /app/csharp_nonbacktracking/
+COPY go/ /app/go/
 COPY Dockerfile /app/
 
 # Set proper ownership of files
@@ -103,6 +106,14 @@ RUN make all
 WORKDIR /app/csharp
 RUN make all
 
+# Build C# Non-Backtracking program
+WORKDIR /app/csharp_nonbacktracking
+RUN make all
+
+# Build Go program
+WORKDIR /app/go
+RUN make all
+
 # =============================================================================
 # TESTING AND VALIDATION
 # =============================================================================
@@ -118,6 +129,14 @@ RUN make test || echo "C++ tests completed"
 # Test C# implementation
 WORKDIR /app/csharp
 RUN make test || echo "C# tests completed"
+
+# Test C# Non-Backtracking implementation
+WORKDIR /app/csharp_nonbacktracking
+RUN make test || echo "C# Non-Backtracking tests completed"
+
+# Test Go implementation
+WORKDIR /app/go
+RUN make test || echo "Go tests completed"
 
 # =============================================================================
 # CONTAINER RUNTIME CONFIGURATION

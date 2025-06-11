@@ -1,2 +1,13 @@
 RQ1_exclude_ExpResults_with_777_permission/*
 RQ1_exclude_ExpResults_with_777_permission.tar.gz
+
+# Binary directories for all language implementations
+*/bin/
+bin/
+
+# Language-specific build artifacts
+*.exe
+*.dll
+*.pdb
+*.obj
+*.o
