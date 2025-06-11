@@ -84,7 +84,7 @@ class Benchmark
             if (fullMatch == 1)
             {
                 // Full match: entire text must match the regex
-                if (Regex.IsMatch(data, "^(" + pattern + ")$"))
+                if (Regex.IsMatch(data, "^(?:" + pattern + ")$"))
                 {
                     count = 1;
                 }
