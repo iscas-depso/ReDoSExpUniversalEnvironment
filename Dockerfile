@@ -13,33 +13,45 @@ ENV TZ=UTC
 # SYSTEM PACKAGES AND DEPENDENCIES INSTALLATION
 # =============================================================================
 
-# Update package list and install essential system packages
-RUN apt-get update && apt-get install -y \
-    # Core development tools
+# Update package list (separate layer for better caching)
+RUN apt-get update
+
+# Install core development tools (rarely change)
+RUN apt-get install -y \
     build-essential \
     make \
     git \
-    # Network and download tools
+    && rm -rf /var/lib/apt/lists/*
+
+# Install network and download tools
+RUN apt-get update && apt-get install -y \
     curl \
     wget \
-    # Text editors
+    && rm -rf /var/lib/apt/lists/*
+
+# Install text editors and system utilities
+RUN apt-get update && apt-get install -y \
     vim \
     nano \
-    # System monitoring and utilities
     htop \
     tree \
     unzip \
     zip \
-    # Package management tools
+    && rm -rf /var/lib/apt/lists/*
+
+# Install package management tools
+RUN apt-get update && apt-get install -y \
     software-properties-common \
     apt-transport-https \
     ca-certificates \
     gnupg \
     lsb-release \
-    # Project-specific dependencies
+    && rm -rf /var/lib/apt/lists/*
+
+# Install project-specific dependencies (most likely to change)
+RUN apt-get update && apt-get install -y \
     libssl-dev \
     libpcre2-dev \
-    # C++ dependencies
     libboost-regex-dev \
     && rm -rf /var/lib/apt/lists/*
 

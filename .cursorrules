@@ -72,6 +72,25 @@ Each language's README.md must contain ONLY the following sections:
 
 ## 3. DOCKERFILE MODIFICATION REQUIREMENTS
 
+### Docker Layer Caching Optimization
+To maximize build efficiency and take advantage of Docker's layer caching:
+
+- **Split package installation into multiple RUN commands** grouped by change frequency:
+  1. Core development tools (rarely change)
+  2. Network and download tools
+  3. Text editors and system utilities  
+  4. Package management tools
+  5. Project-specific dependencies (most likely to change)
+
+- **Use `benchmark-test` tag for all test builds** to avoid creating numerous untagged images:
+  ```bash
+  docker build -t benchmark-test .
+  ```
+
+- **Each RUN command should clean up apt cache** with `&& rm -rf /var/lib/apt/lists/*`
+
+- **Place frequently changing dependencies last** to minimize cache invalidation
+
 ### Section 2: SYSTEM PACKAGES AND DEPENDENCIES INSTALLATION
 When adding a new language, update this section with language-specific packages:
 
@@ -80,24 +99,51 @@ When adding a new language, update this section with language-specific packages:
 # SYSTEM PACKAGES AND DEPENDENCIES INSTALLATION
 # =============================================================================
 
-# Update package list and install essential system packages
-RUN apt-get update && apt-get install -y \
-    # Core development tools
+# Update package list (separate layer for better caching)
+RUN apt-get update
+
+# Install core development tools (rarely change)
+RUN apt-get install -y \
     build-essential \
     make \
     git \
-    # ... existing packages ...
-    
-    # Language-specific dependencies (add new languages here)
-    # Python dependencies
-    python3 \
-    python3-pip \
-    # Go dependencies  
-    golang-go \
-    # Java dependencies
-    openjdk-11-jdk \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install network and download tools
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install text editors and system utilities
+RUN apt-get update && apt-get install -y \
+    vim \
+    nano \
+    htop \
+    tree \
+    unzip \
+    zip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install package management tools
+RUN apt-get update && apt-get install -y \
+    software-properties-common \
+    apt-transport-https \
+    ca-certificates \
+    gnupg \
+    lsb-release \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install project-specific dependencies (most likely to change)
+RUN apt-get update && apt-get install -y \
+    libssl-dev \
+    libpcre2-dev \
+    libboost-regex-dev \
     # Add new language dependencies here
-    
+    # python3 \
+    # python3-pip \
+    # golang-go \
+    # openjdk-11-jdk \
     && rm -rf /var/lib/apt/lists/*
 ```
 
