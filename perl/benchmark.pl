@@ -26,7 +26,7 @@ sub measure {
     
     if ($full_match) {
         # Full match: entire text must match the regex
-        if ($data =~ /^$pattern$/s) {
+        if ($data =~ /^(?:$pattern)$/s) {
             $count = 1;
         }
     } else {

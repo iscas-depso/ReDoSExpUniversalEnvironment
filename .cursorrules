@@ -97,6 +97,20 @@ To maximize build efficiency and take advantage of Docker's layer caching:
 
 - **Place frequently changing dependencies last** to minimize cache invalidation
 
+### Build Directory Management
+- **NEVER create `bin/` folders manually** in language directories during development
+- **Only create `bin/` directories during compilation** via Makefile or build scripts
+- **Remove any pre-existing `bin/` folders** when setting up new language implementations
+
+### Development and Testing Workflow
+- **Always rebuild and test after changes** using the following workflow:
+  1. Make code changes
+  2. Build Docker image: `docker build -t benchmark-test .`
+  3. Test with Docker: `docker run --rm benchmark-test`
+  4. Test specific language: `docker run --rm benchmark-test bash -c "cd /app/<language> && make test"`
+- **Use `--rm` flag consistently** to avoid container accumulation
+- **Validate all changes in Docker environment** before considering implementation complete
+
 ### Section 2: SYSTEM PACKAGES AND DEPENDENCIES INSTALLATION
 When adding a new language, update this section with language-specific packages:
 
@@ -216,6 +230,7 @@ When adding a new language implementation:
 - [ ] Language runtime/compiler added to Dockerfile Section 2
 - [ ] Test data files copied to `<language>/tests/` directory
 - [ ] Build system created (Makefile or equivalent)
+- [ ] NO `bin/` directory created manually (will be created by build process)
 
 ### Core Implementation
 - [ ] Program accepts 3 command-line arguments as specified
@@ -241,6 +256,7 @@ When adding a new language implementation:
 - [ ] Build process added to Section 5 of main Dockerfile
 - [ ] Test execution added to Section 6 of main Dockerfile
 - [ ] All sections maintain clean organization with comments
+- [ ] Docker image rebuilt and tested: `docker build -t benchmark-test . && docker run --rm benchmark-test`
 
 ## 5. CODING STANDARDS
 
