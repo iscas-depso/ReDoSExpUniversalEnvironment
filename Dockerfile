@@ -53,12 +53,18 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     libpcre2-dev \
     libboost-regex-dev \
-    golang-go \
     && rm -rf /var/lib/apt/lists/*
-
 # Install .NET 7.0 SDK (from Ubuntu packages)
 RUN apt-get update && apt-get install -y \
     dotnet-sdk-7.0 \
+    && rm -rf /var/lib/apt/lists/*
+# Install golang
+RUN apt-get update && apt-get install -y \
+    golang-go \
+    && rm -rf /var/lib/apt/lists/*
+# Install openjdk-8-jdk
+RUN apt-get update && apt-get install -y \
+    openjdk-8-jdk \
     && rm -rf /var/lib/apt/lists/*
 
 # =============================================================================
@@ -82,6 +88,7 @@ COPY cpp/ /app/cpp/
 COPY csharp/ /app/csharp/
 COPY csharp_nonbacktracking/ /app/csharp_nonbacktracking/
 COPY go/ /app/go/
+COPY java/ /app/java/
 COPY Dockerfile /app/
 
 # Set proper ownership of files
@@ -114,6 +121,10 @@ RUN make all
 WORKDIR /app/go
 RUN make all
 
+# Build Java program
+WORKDIR /app/java
+RUN make all
+
 # =============================================================================
 # TESTING AND VALIDATION
 # =============================================================================
@@ -137,6 +148,10 @@ RUN make test || echo "C# Non-Backtracking tests completed"
 # Test Go implementation
 WORKDIR /app/go
 RUN make test || echo "Go tests completed"
+
+# Test Java implementation
+WORKDIR /app/java
+RUN make test || echo "Java tests completed"
 
 # =============================================================================
 # CONTAINER RUNTIME CONFIGURATION
