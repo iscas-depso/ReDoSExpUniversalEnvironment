@@ -1,0 +1,24 @@
+{
+  "name": "regex-benchmark-nodejs21",
+  "version": "1.0.0",
+  "description": "Regex benchmark program with enhanced JavaScript features for newer Node.js versions",
+  "main": "benchmark.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=21.0.0"
+  },
+  "scripts": {
+    "benchmark": "node benchmark.js",
+    "test": "cd tests && ./run_tests.sh",
+    "simple-test": "cd tests && ./simple_test.sh"
+  },
+  "keywords": [
+    "regex",
+    "benchmark",
+    "nodejs21",
+    "performance",
+    "modern-javascript"
+  ],
+  "author": "Benchmark Project",
+  "license": "MIT"
+} 

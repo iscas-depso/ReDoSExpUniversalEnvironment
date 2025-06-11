@@ -1,0 +1,24 @@
+{
+  "name": "regex-benchmark-nodejs14",
+  "version": "1.0.0",
+  "description": "Regex benchmark program for Node.js 14 with traditional JavaScript features",
+  "main": "benchmark.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=14.0.0 <21.0.0"
+  },
+  "scripts": {
+    "benchmark": "node benchmark.js",
+    "test": "cd tests && ./run_tests.sh",
+    "simple-test": "cd tests && ./simple_test.sh"
+  },
+  "keywords": [
+    "regex",
+    "benchmark",
+    "nodejs14",
+    "performance",
+    "traditional-javascript"
+  ],
+  "author": "Benchmark Project",
+  "license": "MIT"
+} 

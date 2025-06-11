@@ -70,6 +70,15 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get update && apt-get install -y \
     openjdk-11-jdk \
     && rm -rf /var/lib/apt/lists/*
+# Install Node.js and npm
+RUN apt-get update && apt-get install -y \
+    nodejs \
+    npm \
+    && rm -rf /var/lib/apt/lists/*
+# Install curl for nvm installation
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
 # =============================================================================
 # USER AND SECURITY CONFIGURATION
@@ -94,6 +103,8 @@ COPY csharp_nonbacktracking/ /app/csharp_nonbacktracking/
 COPY go/ /app/go/
 COPY java8/ /app/java8/
 COPY java11/ /app/java11/
+COPY nodejs14/ /app/nodejs14/
+COPY nodejs21/ /app/nodejs21/
 COPY Dockerfile /app/
 
 # Set proper ownership of files
@@ -134,6 +145,14 @@ RUN make all
 WORKDIR /app/java11
 RUN make all
 
+# Build Node.js 14 program (using system Node.js for Docker build)
+WORKDIR /app/nodejs14
+RUN make all
+
+# Build Node.js 21 program (using system Node.js for Docker build)
+WORKDIR /app/nodejs21
+RUN make all
+
 # =============================================================================
 # TESTING AND VALIDATION
 # =============================================================================
@@ -165,6 +184,14 @@ RUN make test || echo "Java 8 tests completed"
 # Test Java 11 implementation
 WORKDIR /app/java11
 RUN make test || echo "Java 11 tests completed"
+
+# Test Node.js 14 implementation
+WORKDIR /app/nodejs14
+RUN make test || echo "Node.js 14 tests completed"
+
+# Test Node.js 21 implementation  
+WORKDIR /app/nodejs21
+RUN make test || echo "Node.js 21 tests completed"
 
 # =============================================================================
 # CONTAINER RUNTIME CONFIGURATION
