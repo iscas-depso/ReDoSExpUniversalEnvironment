@@ -87,6 +87,12 @@ To maximize build efficiency and take advantage of Docker's layer caching:
   docker build -t benchmark-test .
   ```
 
+- **Always use `--rm` option with `docker run`** to automatically remove containers after execution:
+  ```bash
+  docker run --rm benchmark-test
+  docker run --rm benchmark-test bash -c "cd /app/cpp && make test"
+  ```
+
 - **Each RUN command should clean up apt cache** with `&& rm -rf /var/lib/apt/lists/*`
 
 - **Place frequently changing dependencies last** to minimize cache invalidation
