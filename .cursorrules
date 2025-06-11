@@ -145,12 +145,21 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     libpcre2-dev \
     libboost-regex-dev \
-    # Add new language dependencies here
-    # python3 \
-    # python3-pip \
-    # golang-go \
-    # openjdk-11-jdk \
     && rm -rf /var/lib/apt/lists/*
+# Add new language dependencies here
+# RUN apt-get update && apt-get install -y \
+#     python3 \
+#     && rm -rf /var/lib/apt/lists/*
+# RUN apt-get update && apt-get install -y \
+#     python3-pip \
+#     && rm -rf /var/lib/apt/lists/*
+# RUN apt-get update && apt-get install -y \
+#     golang-go \
+#     && rm -rf /var/lib/apt/lists/*
+# RUN apt-get update && apt-get install -y \
+#     openjdk-11-jdk \
+#     && rm -rf /var/lib/apt/lists/*
+
 ```
 
 ### Section 5: PROGRAM BUILD AND SETUP
