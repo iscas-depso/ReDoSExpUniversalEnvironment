@@ -79,6 +79,11 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
+# Install Perl and required modules
+RUN apt-get update && apt-get install -y \
+    perl \
+    libmime-base64-perl \
+    && rm -rf /var/lib/apt/lists/*
 
 # =============================================================================
 # USER AND SECURITY CONFIGURATION
@@ -105,6 +110,7 @@ COPY java8/ /app/java8/
 COPY java11/ /app/java11/
 COPY nodejs14/ /app/nodejs14/
 COPY nodejs21/ /app/nodejs21/
+COPY perl/ /app/perl/
 COPY Dockerfile /app/
 
 # Set proper ownership of files
@@ -153,6 +159,10 @@ RUN make all
 WORKDIR /app/nodejs21
 RUN make all
 
+# Build Perl program
+WORKDIR /app/perl
+RUN make all
+
 # =============================================================================
 # TESTING AND VALIDATION
 # =============================================================================
@@ -192,6 +202,10 @@ RUN make test || echo "Node.js 14 tests completed"
 # Test Node.js 21 implementation  
 WORKDIR /app/nodejs21
 RUN make test || echo "Node.js 21 tests completed"
+
+# Test Perl implementation
+WORKDIR /app/perl
+RUN make test || echo "Perl tests completed"
 
 # =============================================================================
 # CONTAINER RUNTIME CONFIGURATION
