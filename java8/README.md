@@ -1,10 +1,10 @@
-# Benchmark Program - Java
+# Benchmark Program - Java 8
 
 ## Files
-- `Benchmark.java` - Main benchmark program with base64 regex support and dual matching modes
-- `Makefile` - Build configuration with targets for compilation, testing, and cleanup
-- `bin/benchmark` - Executable wrapper script (created after building)
-- `bin/Benchmark.class` - Compiled Java bytecode (created after building)
+- `Benchmark.java` - Main benchmark program using traditional Java 8 features
+- `Makefile` - Build configuration with Java 8 specific settings and environment isolation
+- `bin/benchmark` - Executable wrapper script enforcing Java 8 environment (created after building)
+- `bin/Benchmark.class` - Compiled Java bytecode targeting Java 8 (created after building)
 - `tests/run_tests.sh` - Comprehensive test runner covering all functionality
 - `tests/simple_test.sh` - Quick test script for basic validation
 - `tests/test_data.txt` - Comprehensive test dataset with various text patterns
@@ -15,12 +15,15 @@
 
 ### Build the program
 ```bash
-# Build the benchmark program
+# Build the Java 8 benchmark program (automatically checks Java 8 availability)
 make all
 
-# Alternative: build directly with javac
+# Check Java 8 version
+make java-version
+
+# Alternative: build directly with javac (requires Java 8)
 mkdir -p bin
-javac -d bin Benchmark.java
+/usr/lib/jvm/java-8-openjdk-amd64/bin/javac -d bin -source 8 -target 8 Benchmark.java
 ```
 
 ### Run tests
@@ -83,29 +86,41 @@ The program accepts exactly three command-line arguments:
 - `\d+` → `XGQr`
 - `[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}` → `W2EtekEtWjAtOS5fJSstXStAW2EtekEtWjAtOS4tXStcLlthLXpBLVpdezIsfQ==`
 
-## Program Features
+## Environment Isolation
 
-- **Base64 Decoding**: Uses Java's built-in `Base64` decoder for reliable base64 processing
-- **Dual Match Modes**: Supports both partial matching (`find()`) and full matching (`matches()`)
-- **High Precision Timing**: Uses `System.nanoTime()` for microsecond-level timing accuracy
-- **Robust Error Handling**: Comprehensive error checking for file I/O, regex compilation, and argument validation
-- **Cross-Platform Compatibility**: Works on any platform with Java 8+ installed
+This implementation is completely isolated from other Java versions:
+
+- **Dedicated JAVA_HOME**: Uses `/usr/lib/jvm/java-8-openjdk-amd64`
+- **Version-specific Compilation**: `-source 8 -target 8` flags ensure Java 8 compliance
+- **Isolated Execution**: Wrapper script enforces Java 8 runtime
+- **No Interference**: Completely separate from `java11` implementation
+
+## Java 8 Features Used
+
+This implementation uses traditional Java 8 features:
+
+- **Traditional Type Declarations**: Explicit type declarations for clarity
+- **Classic File I/O**: `Files.readAllBytes()` for file reading
+- **System Timing**: `System.nanoTime()` for high-precision timing
+- **Standard Exception Handling**: Traditional try-catch blocks
+- **Mature JVM Performance**: Stable and well-optimized runtime
 
 ## Requirements
 
-- **Java**: JDK 8 or higher
+- **Java**: JDK 8 (specifically targets Java 8)
 - **Make**: For build automation (optional)
+- **Environment**: Isolated from other Java versions
 
 ## Directory Structure
 
 ```
-java/
-├── Benchmark.java        # Main benchmark program
-├── Makefile             # Build configuration
+java8/
+├── Benchmark.java        # Main benchmark program (Java 8 features)
+├── Makefile             # Build configuration (Java 8 specific)
 ├── README.md            # This documentation
 ├── bin/                 # Compiled executables (created during build)
-│   ├── benchmark        # Executable wrapper script (created during build)
-│   └── Benchmark.class  # Compiled Java bytecode (created during build)
+│   ├── benchmark        # Executable wrapper script (Java 8 enforced)
+│   └── Benchmark.class  # Compiled Java 8 bytecode
 └── tests/               # Test suite
     ├── run_tests.sh     # Comprehensive test runner
     ├── simple_test.sh   # Simple test script

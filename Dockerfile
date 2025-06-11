@@ -66,6 +66,10 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get update && apt-get install -y \
     openjdk-8-jdk \
     && rm -rf /var/lib/apt/lists/*
+# Install openjdk-11-jdk for Java 11 implementation
+RUN apt-get update && apt-get install -y \
+    openjdk-11-jdk \
+    && rm -rf /var/lib/apt/lists/*
 
 # =============================================================================
 # USER AND SECURITY CONFIGURATION
@@ -88,7 +92,8 @@ COPY cpp/ /app/cpp/
 COPY csharp/ /app/csharp/
 COPY csharp_nonbacktracking/ /app/csharp_nonbacktracking/
 COPY go/ /app/go/
-COPY java/ /app/java/
+COPY java8/ /app/java8/
+COPY java11/ /app/java11/
 COPY Dockerfile /app/
 
 # Set proper ownership of files
@@ -121,8 +126,12 @@ RUN make all
 WORKDIR /app/go
 RUN make all
 
-# Build Java program
-WORKDIR /app/java
+# Build Java 8 program
+WORKDIR /app/java8
+RUN make all
+
+# Build Java 11 program
+WORKDIR /app/java11
 RUN make all
 
 # =============================================================================
@@ -149,9 +158,13 @@ RUN make test || echo "C# Non-Backtracking tests completed"
 WORKDIR /app/go
 RUN make test || echo "Go tests completed"
 
-# Test Java implementation
-WORKDIR /app/java
-RUN make test || echo "Java tests completed"
+# Test Java 8 implementation
+WORKDIR /app/java8
+RUN make test || echo "Java 8 tests completed"
+
+# Test Java 11 implementation
+WORKDIR /app/java11
+RUN make test || echo "Java 11 tests completed"
 
 # =============================================================================
 # CONTAINER RUNTIME CONFIGURATION
