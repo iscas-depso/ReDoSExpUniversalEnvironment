@@ -148,131 +148,97 @@ USER root
 USER developer
 
 # =============================================================================
-# PROGRAM BUILD AND SETUP
+# PROGRAM BUILD AND SETUP AND TESTING
 # =============================================================================
 
 # Build C program
 WORKDIR /app/c
 RUN make all
+# Test C implementation
+RUN make test || echo "C tests completed"
 
 # Build C++ program
 WORKDIR /app/cpp
 RUN make all
+# Test C++ implementation
+RUN make test || echo "C++ tests completed"
 
 # Build C# program
 WORKDIR /app/csharp
 RUN make all
+# Test C# implementation
+RUN make test || echo "C# tests completed"
 
 # Build C# Non-Backtracking program
 WORKDIR /app/csharp_nonbacktracking
 RUN make all
+# Test C# Non-Backtracking implementation
+RUN make test || echo "C# Non-Backtracking tests completed"
 
 # Build Go program
 WORKDIR /app/go
 RUN make all
+# Test Go implementation
+RUN make test || echo "Go tests completed"
 
 # Build Java 8 program
 WORKDIR /app/java8
 RUN make all
+# Test Java 8 implementation
+RUN make test || echo "Java 8 tests completed"
 
 # Build Java 11 program
 WORKDIR /app/java11
 RUN make all
+# Test Java 11 implementation
+RUN make test || echo "Java 11 tests completed"
 
 # Build Node.js 14 program (using system Node.js for Docker build)
 WORKDIR /app/nodejs14
 RUN make all
+# Test Node.js 14 implementation
+RUN make test || echo "Node.js 14 tests completed"
 
 # Build Node.js 21 program (using system Node.js for Docker build)
 WORKDIR /app/nodejs21
 RUN make all
+# Test Node.js 21 implementation  
+RUN make test || echo "Node.js 21 tests completed"
 
 # Build Perl program
 WORKDIR /app/perl
 RUN make all
+# Test Perl implementation
+RUN make test || echo "Perl tests completed"
 
 # Build PHP program
 WORKDIR /app/php
 RUN make all
+# Test PHP implementation
+RUN make test || echo "PHP tests completed"
 
 # Build Python program
 WORKDIR /app/python
 RUN make all
+# Test Python implementation
+RUN make test || echo "Python tests completed"
 
 # Build Ruby program
 WORKDIR /app/ruby
 RUN make all
+# Test Ruby implementation
+RUN make test || echo "Ruby tests completed"
 
 # Build Rust program
 WORKDIR /app/rust
 RUN make all
+# Test Rust implementation
+RUN make test || echo "Rust tests completed"
 
 # Build SRM C# program
 WORKDIR /app/srm
 RUN make all
-
-# =============================================================================
-# TESTING AND VALIDATION
-# =============================================================================
-
-# Test C implementation
-WORKDIR /app/c
-RUN make test || echo "C tests completed"
-
-# Test C++ implementation
-WORKDIR /app/cpp
-RUN make test || echo "C++ tests completed"
-
-# Test C# implementation
-WORKDIR /app/csharp
-RUN make test || echo "C# tests completed"
-
-# Test C# Non-Backtracking implementation
-WORKDIR /app/csharp_nonbacktracking
-RUN make test || echo "C# Non-Backtracking tests completed"
-
-# Test Go implementation
-WORKDIR /app/go
-RUN make test || echo "Go tests completed"
-
-# Test Java 8 implementation
-WORKDIR /app/java8
-RUN make test || echo "Java 8 tests completed"
-
-# Test Java 11 implementation
-WORKDIR /app/java11
-RUN make test || echo "Java 11 tests completed"
-
-# Test Node.js 14 implementation
-WORKDIR /app/nodejs14
-RUN make test || echo "Node.js 14 tests completed"
-
-# Test Node.js 21 implementation  
-WORKDIR /app/nodejs21
-RUN make test || echo "Node.js 21 tests completed"
-
-# Test Perl implementation
-WORKDIR /app/perl
-RUN make test || echo "Perl tests completed"
-
-# Test PHP implementation
-WORKDIR /app/php
-RUN make test || echo "PHP tests completed"
-
-# Test Python implementation
-WORKDIR /app/python
-RUN make test || echo "Python tests completed"
-
-# Test Ruby implementation
-WORKDIR /app/ruby
-RUN make test || echo "Ruby tests completed"
-
-# Test Rust implementation
-WORKDIR /app/rust
-RUN make test || echo "Rust tests completed"
-
 # Test SRM C# implementation
-WORKDIR /app/srm
 RUN make test || echo "SRM C# tests completed"
 
 # =============================================================================
@@ -280,5 +246,4 @@ RUN make test || echo "SRM C# tests completed"
 # =============================================================================
 
 # Set default command to run C tests when container starts
-WORKDIR /app/c
-CMD ["make", "test"] 
+WORKDIR /app

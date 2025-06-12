@@ -52,7 +52,7 @@
 
   1. core dev tools 2. network utils 3. editors & misc 4. pkg managers 5. language deps.
 * End each `RUN … apt-get install` with `&& rm -rf /var/lib/apt/lists/*`.
-* Build & test each language in **Sections 5–6** of the Dockerfile.
+* Build & test each language in **PROGRAM BUILD AND SETUP AND TESTING** of the Dockerfile.
 * Never pre-create `bin/`; builds must do that.
 
 ## 5  Implementation Checklist
