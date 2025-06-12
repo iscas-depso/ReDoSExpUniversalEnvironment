@@ -111,6 +111,22 @@ To maximize build efficiency and take advantage of Docker's layer caching:
 - **Use `--rm` flag consistently** to avoid container accumulation
 - **Validate all changes in Docker environment** before considering implementation complete
 
+### Project Structure Maintenance
+- **MAINTAIN ONLY MINIMAL REQUIRED STRUCTURE** - Remove all non-essential files and directories
+- **Each language directory should contain ONLY:**
+  - Main program source files
+  - Makefile or build script  
+  - README.md
+  - `tests/` directory with required test files
+  - `bin/` directory (created only during compilation, never manually)
+- **REMOVE any files not essential to the benchmark functionality:**
+  - Temporary files, backup files, IDE configuration files
+  - Unused source files or outdated implementations
+  - Any manually created `bin/` directories from development
+  - Example files, documentation drafts, or experimental code
+- **KEEP STRUCTURE CONSISTENT** across all language implementations
+- **CLEAN UP after implementation changes** - remove any artifacts from previous implementations
+
 ### Section 2: SYSTEM PACKAGES AND DEPENDENCIES INSTALLATION
 When adding a new language, update this section with language-specific packages:
 
