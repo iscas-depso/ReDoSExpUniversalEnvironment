@@ -93,6 +93,10 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     && rm -rf /var/lib/apt/lists/*
+# Install Ruby
+RUN apt-get update && apt-get install -y \
+    ruby \
+    && rm -rf /var/lib/apt/lists/*
 
 # =============================================================================
 # USER AND SECURITY CONFIGURATION
@@ -122,6 +126,7 @@ COPY nodejs21/ /app/nodejs21/
 COPY perl/ /app/perl/
 COPY php/ /app/php/
 COPY python/ /app/python/
+COPY ruby/ /app/ruby/
 COPY Dockerfile /app/
 
 # Set proper ownership of files
@@ -182,6 +187,10 @@ RUN make all
 WORKDIR /app/python
 RUN make all
 
+# Build Ruby program
+WORKDIR /app/ruby
+RUN make all
+
 # =============================================================================
 # TESTING AND VALIDATION
 # =============================================================================
@@ -233,6 +242,10 @@ RUN make test || echo "PHP tests completed"
 # Test Python implementation
 WORKDIR /app/python
 RUN make test || echo "Python tests completed"
+
+# Test Ruby implementation
+WORKDIR /app/ruby
+RUN make test || echo "Ruby tests completed"
 
 # =============================================================================
 # CONTAINER RUNTIME CONFIGURATION
