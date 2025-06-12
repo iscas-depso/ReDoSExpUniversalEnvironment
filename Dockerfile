@@ -88,6 +88,11 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get update && apt-get install -y \
     php-cli \
     && rm -rf /var/lib/apt/lists/*
+# Install Python 3
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
 
 # =============================================================================
 # USER AND SECURITY CONFIGURATION
@@ -116,6 +121,7 @@ COPY nodejs14/ /app/nodejs14/
 COPY nodejs21/ /app/nodejs21/
 COPY perl/ /app/perl/
 COPY php/ /app/php/
+COPY python/ /app/python/
 COPY Dockerfile /app/
 
 # Set proper ownership of files
@@ -172,6 +178,10 @@ RUN make all
 WORKDIR /app/php
 RUN make all
 
+# Build Python program
+WORKDIR /app/python
+RUN make all
+
 # =============================================================================
 # TESTING AND VALIDATION
 # =============================================================================
@@ -219,6 +229,10 @@ RUN make test || echo "Perl tests completed"
 # Test PHP implementation
 WORKDIR /app/php
 RUN make test || echo "PHP tests completed"
+
+# Test Python implementation
+WORKDIR /app/python
+RUN make test || echo "Python tests completed"
 
 # =============================================================================
 # CONTAINER RUNTIME CONFIGURATION
