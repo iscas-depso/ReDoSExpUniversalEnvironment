@@ -1,310 +1,81 @@
-# Cursor Rules for Multi-Language Benchmark Project
+# Multi-Language Regex Benchmark — Condensed Rules
 
-## Overview
+## 1  Project Layout
 
-This project is designed to support multiple language implementations of a regex benchmark program. All languages must follow consistent patterns for structure, documentation, and Docker integration.
+```
+<language>/
+├── src… / Makefile (or build script)
+├── README.md
+├── tests/
+│   ├── run_tests.sh   ├── simple_test.sh
+│   ├── test_data.txt  ├── simple_test.txt
+│   └── full_match_test.txt
+└── bin/ (created **only** by the build, never checked-in)
+```
 
-## 1. PROJECT STRUCTURE REQUIREMENTS
+## 2  Program Contract
 
-### Directory Organization
-- **Each new language must follow the established `c/` directory structure:**
-  ```
-  <language>/
-  ├── <main_program_files>        # Source code files
-  ├── Makefile or build_script    # Build configuration
-  ├── README.md                   # Language-specific documentation
-  ├── bin/                        # Compiled binaries/executables
-  │   └── benchmark              # Final executable
-  └── tests/                      # Test suite directory
-      ├── run_tests.sh           # Comprehensive test runner
-      ├── simple_test.sh         # Simple test script
-      ├── test_data.txt          # Comprehensive test data
-      ├── simple_test.txt        # Simple test data
-      └── full_match_test.txt    # Full match test data
-  ```
+* **Args:**
 
-### Source Code Standards
-- **Main program must accept exactly three command-line arguments:**
-  1. Base64-encoded regular expression
-  2. File path containing text to match
-  3. Match mode (0 = partial match, 1 = full match)
+  1. Base64 regex 2. text file path 3. mode (0 = partial, 1 = full).
+* **Output:**
+  `{elapsed_ms_with_6dp} - {match_count}`
+* Test data and Base64 patterns must be identical in every language.
 
-- **Output format must be consistent across all languages:**
-  ```
-  {elapsed_time} - {match_count}
-  ```
-  Where `elapsed_time` is in milliseconds with 6 decimal places.
-
-- **Test files must be identical across all language implementations**
-- **Base64 decoding must use standard libraries when available**
-
-## 2. README CONTENT REQUIREMENTS
-
-### Structure
-Each language's README.md must contain ONLY the following sections:
+## 3  README Template (nothing else)
 
 ```markdown
-# Benchmark Program - <Language Name>
+# Benchmark Program – <Language>
 
 ## Files
-[List of files and their purposes]
+<brief list>
 
 ## Building and Running
-### Build the program
-[Build commands specific to the language]
-
+### Build
+<commands>
 ### Run tests
-[Test execution commands]
+<commands>
 
 ## Program Usage
-[Usage examples with the standard interface]
+<example>
 
 ## Directory Structure
-[Visual representation of the directory structure]
+<tree>
 ```
 
-### Content Guidelines
-- **NO Docker instructions** - assume execution within main Docker container
-- **Focus on local development workflow**
-- **Include language-specific build requirements**
-- **Maintain consistent command interface across languages**
-- **Include examples using the same Base64 regex patterns**
+* No Docker instructions. Keep focus on local build/run.
 
-## 3. DOCKERFILE MODIFICATION REQUIREMENTS
+## 4  Dockerfile Rules
 
-### Docker Layer Caching Optimization
-To maximize build efficiency and take advantage of Docker's layer caching:
+* Tag images `benchmark-test`; always run with `--rm`.
+* Exploit layer caching: install packages in this order (rare → frequent):
 
-- **Split package installation into multiple RUN commands** grouped by change frequency:
-  1. Core development tools (rarely change)
-  2. Network and download tools
-  3. Text editors and system utilities  
-  4. Package management tools
-  5. Project-specific dependencies (most likely to change)
+  1. core dev tools 2. network utils 3. editors & misc 4. pkg managers 5. language deps.
+* End each `RUN … apt-get install` with `&& rm -rf /var/lib/apt/lists/*`.
+* Build & test each language in **Sections 5–6** of the Dockerfile.
+* Never pre-create `bin/`; builds must do that.
 
-- **Use `benchmark-test` tag for all test builds** to avoid creating numerous untagged images:
-  ```bash
-  docker build -t benchmark-test .
-  ```
+## 5  Implementation Checklist
 
-- **Always use `--rm` option with `docker run`** to automatically remove containers after execution:
-  ```bash
-  docker run --rm benchmark-test
-  docker run --rm benchmark-test bash -c "cd /app/cpp && make test"
-  ```
+* ☐  Runtime/compiler added to Dockerfile §2
+* ☐  3-arg interface upheld; Base64 decoded via std-lib
+* ☐  Modes 0/1 implemented; output exact
+* ☐  All tests pass; timing accurate
+* ☐  README uses template; no Docker notes
+* ☐  Build & test steps added to Dockerfile §§5–6
 
-- **Each RUN command should clean up apt cache** with `&& rm -rf /var/lib/apt/lists/*`
+## 6  Coding Guidelines
 
-- **Place frequently changing dependencies last** to minimize cache invalidation
+| Purpose | Name              |
+| ------- | ----------------- |
+| Timing  | `elapsed_time`    |
+| Matches | `match_count`     |
+| Regex   | `regex`/`pattern` |
 
-### Build Directory Management
-- **NEVER create `bin/` folders manually** in language directories during development
-- **Only create `bin/` directories during compilation** via Makefile or build scripts
-- **Remove any pre-existing `bin/` folders** when setting up new language implementations
+* Use high-res timers; exit cleanly on errors.
 
-### Development and Testing Workflow
-- **Always rebuild and test after changes** using the following workflow:
-  1. Make code changes
-  2. Build Docker image: `docker build -t benchmark-test .`
-  3. Test with Docker: `docker run --rm benchmark-test`
-  4. Test specific language: `docker run --rm benchmark-test bash -c "cd /app/<language> && make test"`
-- **Use `--rm` flag consistently** to avoid container accumulation
-- **Validate all changes in Docker environment** before considering implementation complete
+## 7  Maintenance
 
-### Project Structure Maintenance
-- **MAINTAIN ONLY MINIMAL REQUIRED STRUCTURE** - Remove all non-essential files and directories
-- **Each language directory should contain ONLY:**
-  - Main program source files
-  - Makefile or build script  
-  - README.md
-  - `tests/` directory with required test files
-  - `bin/` directory (created only during compilation, never manually)
-- **REMOVE any files not essential to the benchmark functionality:**
-  - Temporary files, backup files, IDE configuration files
-  - Unused source files or outdated implementations
-  - Any manually created `bin/` directories from development
-  - Example files, documentation drafts, or experimental code
-- **KEEP STRUCTURE CONSISTENT** across all language implementations
-- **CLEAN UP after implementation changes** - remove any artifacts from previous implementations
-
-### Section 2: SYSTEM PACKAGES AND DEPENDENCIES INSTALLATION
-When adding a new language, update this section with language-specific packages:
-
-```dockerfile
-# =============================================================================
-# SYSTEM PACKAGES AND DEPENDENCIES INSTALLATION
-# =============================================================================
-
-# Update package list (separate layer for better caching)
-RUN apt-get update
-
-# Install core development tools (rarely change)
-RUN apt-get install -y \
-    build-essential \
-    make \
-    git \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install network and download tools
-RUN apt-get update && apt-get install -y \
-    curl \
-    wget \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install text editors and system utilities
-RUN apt-get update && apt-get install -y \
-    vim \
-    nano \
-    htop \
-    tree \
-    unzip \
-    zip \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install package management tools
-RUN apt-get update && apt-get install -y \
-    software-properties-common \
-    apt-transport-https \
-    ca-certificates \
-    gnupg \
-    lsb-release \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install project-specific dependencies (most likely to change)
-RUN apt-get update && apt-get install -y \
-    libssl-dev \
-    libpcre2-dev \
-    libboost-regex-dev \
-    && rm -rf /var/lib/apt/lists/*
-# Add new language dependencies here
-# RUN apt-get update && apt-get install -y \
-#     python3 \
-#     && rm -rf /var/lib/apt/lists/*
-# RUN apt-get update && apt-get install -y \
-#     python3-pip \
-#     && rm -rf /var/lib/apt/lists/*
-# RUN apt-get update && apt-get install -y \
-#     golang-go \
-#     && rm -rf /var/lib/apt/lists/*
-# RUN apt-get update && apt-get install -y \
-#     openjdk-11-jdk \
-#     && rm -rf /var/lib/apt/lists/*
-
-```
-
-### Section 5: PROGRAM BUILD AND SETUP
-Add build steps for each language in this section:
-
-```dockerfile
-# =============================================================================
-# PROGRAM BUILD AND SETUP
-# =============================================================================
-
-# Build C program
-WORKDIR /app/c
-RUN make all
-
-# Build Python program (example)
-WORKDIR /app/python
-RUN pip3 install -r requirements.txt
-
-# Build Go program (example)
-WORKDIR /app/go
-RUN go build -o bin/benchmark .
-
-# Add build steps for new languages here
-```
-
-### Section 6: TESTING AND VALIDATION
-Add test execution for each language:
-
-```dockerfile
-# =============================================================================
-# TESTING AND VALIDATION
-# =============================================================================
-
-# Test C implementation
-WORKDIR /app/c
-RUN make test || echo "C tests completed"
-
-# Test Python implementation (example)
-WORKDIR /app/python
-RUN make test || echo "Python tests completed"
-
-# Test Go implementation (example)
-WORKDIR /app/go
-RUN make test || echo "Go tests completed"
-
-# Add test steps for new languages here
-```
-
-## 4. IMPLEMENTATION CHECKLIST
-
-When adding a new language implementation:
-
-### Prerequisites
-- [ ] Language runtime/compiler added to Dockerfile Section 2
-- [ ] Test data files copied to `<language>/tests/` directory
-- [ ] Build system created (Makefile or equivalent)
-- [ ] NO `bin/` directory created manually (will be created by build process)
-
-### Core Implementation
-- [ ] Program accepts 3 command-line arguments as specified
-- [ ] Base64 decoding implemented using standard libraries
-- [ ] Regex matching supports both partial (0) and full (1) modes
-- [ ] Output format matches specification exactly
-- [ ] Error handling for file I/O and regex compilation
-
-### Testing
-- [ ] `run_tests.sh` script adapted for the language
-- [ ] `simple_test.sh` script adapted for the language
-- [ ] All test cases pass with expected results
-- [ ] Performance timing works correctly
-
-### Documentation
-- [ ] README.md follows the specified structure
-- [ ] No Docker-related instructions included
-- [ ] Language-specific build instructions provided
-- [ ] Directory structure documented
-
-### Docker Integration
-- [ ] Dependencies added to Section 2 of main Dockerfile
-- [ ] Build process added to Section 5 of main Dockerfile
-- [ ] Test execution added to Section 6 of main Dockerfile
-- [ ] All sections maintain clean organization with comments
-- [ ] Docker image rebuilt and tested: `docker build -t benchmark-test . && docker run --rm benchmark-test`
-
-## 5. CODING STANDARDS
-
-### Variable Naming
-- Use consistent variable names across languages where possible
-- `elapsed_time` for timing measurements
-- `match_count` for number of matches found
-- `regex` or `pattern` for the decoded regular expression
-
-### Error Handling
-- Graceful handling of file not found errors
-- Clear error messages for invalid regex patterns
-- Appropriate exit codes for different error conditions
-
-### Performance
-- Use high-resolution timing (microsecond or better precision)
-- Minimize overhead outside the regex matching operation
-- Efficient memory management for large input files
-
-## 6. MAINTENANCE GUIDELINES
-
-### Adding New Test Cases
-- Add to all language implementations simultaneously
-- Maintain identical test data across languages
-- Update expected results for all implementations
-
-### Updating Dependencies
-- Test all language implementations after dependency updates
-- Update documentation if build process changes
-- Ensure Docker build remains efficient
-
-### Performance Benchmarking
-- Compare results across language implementations
-- Document any language-specific performance characteristics
-- Maintain consistent measurement methodology 
+* Add tests & deps to **all** languages together.
+* Rebuild/test Docker after any change.
+* Keep directory contents minimal—source, README, tests, and build artefacts only.
