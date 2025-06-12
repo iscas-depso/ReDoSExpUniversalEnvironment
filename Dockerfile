@@ -132,6 +132,7 @@ COPY php/ /app/php/
 COPY python/ /app/python/
 COPY ruby/ /app/ruby/
 COPY rust/ /app/rust/
+COPY srm/ /app/srm/
 COPY Dockerfile /app/
 
 # Set proper ownership of files
@@ -206,6 +207,10 @@ RUN make all
 WORKDIR /app/rust
 RUN make all
 
+# Build SRM C# program
+WORKDIR /app/srm
+RUN make all
+
 # =============================================================================
 # TESTING AND VALIDATION
 # =============================================================================
@@ -265,6 +270,10 @@ RUN make test || echo "Ruby tests completed"
 # Test Rust implementation
 WORKDIR /app/rust
 RUN make test || echo "Rust tests completed"
+
+# Test SRM C# implementation
+WORKDIR /app/srm
+RUN make test || echo "SRM C# tests completed"
 
 # =============================================================================
 # CONTAINER RUNTIME CONFIGURATION
