@@ -97,6 +97,10 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get update && apt-get install -y \
     ruby \
     && rm -rf /var/lib/apt/lists/*
+# Install Rust (will be installed for developer user later)
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
 # =============================================================================
 # USER AND SECURITY CONFIGURATION
@@ -127,10 +131,17 @@ COPY perl/ /app/perl/
 COPY php/ /app/php/
 COPY python/ /app/python/
 COPY ruby/ /app/ruby/
+COPY rust/ /app/rust/
 COPY Dockerfile /app/
 
 # Set proper ownership of files
 RUN chown -R developer:developer /app
+
+# Install Rust for developer user
+USER developer
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/home/developer/.cargo/bin:${PATH}"
+USER root
 
 # Switch to non-root user for security
 USER developer
@@ -191,6 +202,10 @@ RUN make all
 WORKDIR /app/ruby
 RUN make all
 
+# Build Rust program
+WORKDIR /app/rust
+RUN make all
+
 # =============================================================================
 # TESTING AND VALIDATION
 # =============================================================================
@@ -246,6 +261,10 @@ RUN make test || echo "Python tests completed"
 # Test Ruby implementation
 WORKDIR /app/ruby
 RUN make test || echo "Ruby tests completed"
+
+# Test Rust implementation
+WORKDIR /app/rust
+RUN make test || echo "Rust tests completed"
 
 # =============================================================================
 # CONTAINER RUNTIME CONFIGURATION

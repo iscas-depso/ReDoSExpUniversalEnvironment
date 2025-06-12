@@ -1,0 +1,9 @@
+[package]
+name = "benchmark"
+version = "1.0.0"
+authors = ["Mario Juarez <mario@mjp.one>"]
+edition = "2018"
+
+[dependencies]
+regex = "1.4.5"
+base64 = "0.13"
