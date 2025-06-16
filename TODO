@@ -1,0 +1,33 @@
+# Engines
+- [x] PCRE2(c)
+- [x] boost(cpp)
+- [x] C#
+- [x] C# Non-Backtracking
+- [x] Go
+- [x] Java 8
+- [x] Java 11
+- [x] Node.js 14
+- [x] Node.js 21
+  - [ ] enable non-backtracking
+- [x] Perl
+- [x] PHP
+- [x] Python
+- [x] Ruby
+- [x] Rust
+- [x] SRM C#
+- [ ] awk/sed
+- [ ] grep
+- [ ] hyperscan
+- [ ] re2
+
+# Tools
+- [ ] EvilStrGen
+- [ ] GREWIA_INC
+- [ ] GREWIA_DEC
+- [ ] GadgetCA
+- [ ] regexstatic
+- [ ] regexploit
+- [ ] rescue
+- [ ] regulator
+- [ ] redoshunter
+- [ ] rengar
