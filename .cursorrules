@@ -79,3 +79,4 @@
 * Add tests & deps to **all** languages together.
 * Rebuild/test Docker after any change.
 * Keep directory contents minimal—source, README, tests, and build artefacts only.
+* Whenever test the program or a script, run it in docker container environment.
