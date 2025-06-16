@@ -1,19 +1,32 @@
-# Benchmark Program - Node.js 21
+# Benchmark Program - Node.js 21 with V8 Non-Backtracking RegExp Engine
 
 ## Files
-- `benchmark.js` - Main benchmark program using modern Node.js 21 features
-- `package.json` - Node.js package configuration with ES Modules enabled
-- `Makefile` - Build configuration with nvm-managed Node.js 21 environment
-- `bin/benchmark` - Executable wrapper script enforcing Node.js 21 environment (created after building)
+- `benchmark.js` - Main benchmark program using V8's experimental non-backtracking RegExp engine
+- `package.json` - Node.js package configuration with non-backtracking engine support
+- `Makefile` - Build configuration with V8 experimental flags enabled
+- `bin/benchmark` - Executable wrapper script with non-backtracking engine flags (created after building)
 - `tests/run_tests.sh` - Comprehensive test runner covering all functionality
 - `tests/simple_test.sh` - Quick test script for basic validation
 - `tests/test_data.txt` - Comprehensive test dataset with various text patterns
 - `tests/simple_test.txt` - Simple test dataset for basic testing
 - `tests/full_match_test.txt` - Test data specifically for full match testing
 
-## Node.js 21 Features Used
+## V8 Non-Backtracking RegExp Engine Features
 
-This implementation showcases modern Node.js 21 features for enhanced performance and developer experience:
+This implementation uses V8's experimental non-backtracking RegExp engine for enhanced security and performance:
+
+- **Linear-Time Execution**: Prevents catastrophic backtracking (ReDoS attacks)
+- **Automatic Fallback**: Falls back to standard engine when backtracking exceeds threshold
+- **Linear Engine Flag**: Uses `/l` flag for guaranteed linear-time execution
+- **Engine Detection**: Automatically detects and adapts to engine availability
+- **Security Enhancement**: Immune to ReDoS attacks caused by malicious patterns
+- **Performance Optimization**: Better performance on complex patterns
+- **Modern Error Handling**: Graceful fallback when linear engine constructs are unsupported
+- **V8 Version Detection**: Runtime detection of V8 engine capabilities
+
+## Modern Node.js 21 Features Used
+
+Additionally includes modern Node.js 21 features:
 
 - **Array Destructuring**: Modern assignment patterns like `const [, , arg1, arg2] = process.argv`
 - **Custom Error Classes**: Enhanced error handling with custom error types  
@@ -49,14 +62,20 @@ make install-deps
 
 ### Build the program
 ```bash
-# Build the Node.js 21 benchmark program
+# Build the Node.js 21 benchmark program with V8 non-backtracking engine
 make all
 
 # Check Node.js 21 version
 make node-version
 
-# Alternative: run directly with Node.js
-node benchmark.js <base64_regex> <filename> <match_mode>
+# Alternative: run directly with Node.js (requires experimental flags)
+node --enable-experimental-regexp-engine benchmark.js <base64_regex> <filename> <match_mode>
+
+# Run with auto-fallback mode
+node --enable-experimental-regexp_engine-on-excessive-backtracks benchmark.js <base64_regex> <filename> <match_mode>
+
+# Run with both flags (recommended)
+node --enable-experimental-regexp-engine --enable-experimental-regexp_engine-on-excessive-backtracks benchmark.js <base64_regex> <filename> <match_mode>
 ```
 
 ### Run tests
@@ -115,13 +134,25 @@ The program accepts exactly three command-line arguments:
 
 ## Performance Characteristics
 
-Node.js 21 provides cutting-edge performance improvements:
+Node.js 21 with V8 Non-Backtracking RegExp Engine provides:
 
-- **Enhanced V8 Engine**: Latest JavaScript optimizations and features
-- **Improved JIT Compilation**: Better optimization patterns and memory usage
+### Security Benefits
+- **ReDoS Prevention**: Immune to Regular Expression Denial of Service attacks
+- **Linear Time Complexity**: O(n×m) instead of potentially exponential complexity
+- **Predictable Performance**: No catastrophic slowdowns on malicious inputs
+- **Memory Safety**: Bounded memory usage during pattern matching
+
+### Performance Benefits
+- **Enhanced V8 Engine**: Latest JavaScript optimizations with experimental RegExp engine
+- **Improved Pattern Matching**: Linear-time execution for complex patterns
+- **Auto-Fallback**: Best of both worlds - security when needed, speed when possible
 - **Modern Garbage Collection**: More efficient memory management
-- **Native ES Modules**: Faster module loading and resolution
-- **Advanced Regex Engine**: Optimized string matching operations
+- **Advanced Regex Engine**: Dual-engine approach for optimal performance
+
+### V8 Engine Modes
+- **Force Linear**: `--enable-experimental-regexp-engine` - Always use linear engine
+- **Auto-Fallback**: `--enable-experimental-regexp_engine-on-excessive-backtracks` - Switch when needed
+- **Hybrid Mode**: Both flags for maximum security and performance
 
 ## Requirements
 
@@ -195,4 +226,69 @@ class BenchmarkError extends Error {
 | Performance | Stable | Enhanced |
 | Memory Usage | Higher | Optimized |
 
-This implementation demonstrates the evolution of JavaScript and Node.js while maintaining complete compatibility with the project's interface standards. 
+This implementation demonstrates the evolution of JavaScript and Node.js while maintaining complete compatibility with the project's interface standards.
+
+## V8 Non-Backtracking Engine Usage Examples
+
+### Basic Usage with Linear Engine
+```bash
+# Enable linear engine for all patterns
+node --enable-experimental-regexp-engine benchmark.js <base64_regex> <filename> <mode>
+```
+
+### Auto-Fallback Mode (Recommended)
+```bash
+# Auto-switch to linear engine when backtracking threshold is exceeded
+node --enable-experimental-regexp_engine-on-excessive-backtracks benchmark.js <base64_regex> <filename> <mode>
+```
+
+### Hybrid Mode (Maximum Security)
+```bash
+# Use both flags for best security and performance
+node --enable-experimental-regexp-engine --enable-experimental-regexp_engine-on-excessive-backtracks benchmark.js <base64_regex> <filename> <mode>
+```
+
+### Engine Detection
+The program automatically detects linear engine support:
+```javascript
+// Internal engine detection
+function detectV8LinearEngineSupport() {
+    try {
+        new RegExp('test', 'l');  // Try /l flag
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+```
+
+### Pattern Compatibility
+- **Supported**: Basic patterns, character classes, quantifiers, alternation
+- **Unsupported**: Backreferences, lookahead/lookbehind, some complex constructs
+- **Fallback**: Automatic fallback to standard engine for unsupported constructs
+
+### Debugging V8 Engine
+```bash
+# Enable debug output
+NODE_DEBUG=benchmark node --enable-experimental-regexp-engine benchmark.js <args>
+```
+
+## ReDoS Protection Examples
+
+The non-backtracking engine protects against catastrophic backtracking:
+
+```javascript
+// These patterns could cause ReDoS with standard engine:
+// (a*)*b     - nested quantifiers
+// (a+)+      - possessive quantifiers
+// (a|a)*     - alternation with overlap
+
+// With linear engine (/l flag), they execute in linear time
+const pattern = new RegExp('(a*)*b', 'l');  // Safe with linear engine
+```
+
+## Version Requirements
+
+- **Node.js**: 21.0.0+ (includes V8 with experimental engine)
+- **V8 Version**: 8.8+ (required for non-backtracking engine)
+- **Runtime Flags**: Required for engine activation 

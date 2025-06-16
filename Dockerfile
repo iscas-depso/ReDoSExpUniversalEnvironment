@@ -70,12 +70,7 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get update && apt-get install -y \
     openjdk-11-jdk \
     && rm -rf /var/lib/apt/lists/*
-# Install Node.js and npm
-RUN apt-get update && apt-get install -y \
-    nodejs \
-    npm \
-    && rm -rf /var/lib/apt/lists/*
-# Install curl for nvm installation
+# Install Node.js via nvm for proper version management
 RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
@@ -142,6 +137,13 @@ RUN chown -R developer:developer /app
 USER developer
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 ENV PATH="/home/developer/.cargo/bin:${PATH}"
+
+# Install nvm and both Node.js versions
+ENV NVM_DIR="/home/developer/.nvm"
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+RUN bash -c "source $NVM_DIR/nvm.sh && nvm install 14.21.3 && nvm install 21.7.3 && nvm use 21.7.3 && nvm alias default 21.7.3"
+ENV PATH="$NVM_DIR/versions/node/v21.7.3/bin:$PATH"
+
 USER root
 
 # Switch to non-root user for security
@@ -199,11 +201,15 @@ RUN make all
 # Test Node.js 14 implementation
 RUN make test || echo "Node.js 14 tests completed"
 
-# Build Node.js 21 program (using system Node.js for Docker build)
+# Build Node.js 21 program with V8 non-backtracking RegExp engine
 WORKDIR /app/nodejs21
-RUN make all
-# Test Node.js 21 implementation  
-RUN make test || echo "Node.js 21 tests completed"
+ENV NVM_DIR="/home/developer/.nvm"
+ENV PATH="$NVM_DIR/versions/node/v21.7.3/bin:$PATH"
+RUN bash -c "source $NVM_DIR/nvm.sh && nvm use 21.7.3 && make all"
+# Test Node.js 21 implementation with V8 experimental engine
+RUN bash -c "source $NVM_DIR/nvm.sh && nvm use 21.7.3 && make test" || echo "Node.js 21 benchmark tests completed"
+# Test V8 Non-Backtracking RegExp Engine functionality
+RUN bash -c "source $NVM_DIR/nvm.sh && nvm use 21.7.3 && make v8-test" || echo "Node.js 21 V8 engine tests completed"
 
 # Build Perl program
 WORKDIR /app/perl

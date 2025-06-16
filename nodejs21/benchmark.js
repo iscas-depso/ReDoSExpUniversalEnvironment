@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * Node.js 21 Benchmark Program
- * Uses modern JavaScript features for enhanced performance and readability
+ * Node.js 21 Benchmark Program with V8 Non-Backtracking RegExp Engine
+ * Uses V8's experimental linear-time RegExp engine to prevent ReDoS attacks
+ * Requires Node.js with V8 8.8+ and appropriate CLI flags
  */
 
 const fs = require('fs');
@@ -15,6 +16,16 @@ class BenchmarkError extends Error {
     }
 }
 
+function detectV8LinearEngineSupport() {
+    try {
+        // Try to create a regex with the /l flag to detect linear engine support
+        new RegExp('test', 'l');
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
 function main() {
     // Check command line arguments
     if (process.argv.length !== 5) {
@@ -22,12 +33,18 @@ function main() {
         console.error('  base64_regex: Base64-encoded regular expression');
         console.error('  filename: Path to the file containing text to match');
         console.error('  match_mode: 1 for full match, 0 for partial match');
+        console.error('');
+        console.error('Note: This benchmark uses V8\'s experimental non-backtracking RegExp engine');
+        console.error('Run with: node --enable-experimental-regexp-engine benchmark.js ...');
         process.exit(1);
     }
 
     const [, , base64Regex, filename, matchModeStr] = process.argv;
 
     try {
+        // Check V8 version and linear engine support
+        const hasLinearSupport = detectV8LinearEngineSupport();
+        
         // Decode the base64 regex
         const regex = decodeBase64(base64Regex);
         
@@ -38,7 +55,7 @@ function main() {
         const data = readFileContent(filename);
         
         // Measure and output results
-        measurePerformance(data, regex, matchMode === 1);
+        measurePerformance(data, regex, matchMode === 1, hasLinearSupport);
         
     } catch (error) {
         console.error('Error:', error.message);
@@ -82,23 +99,41 @@ function parseMatchMode(matchModeStr) {
     return matchMode;
 }
 
-function measurePerformance(data, patternStr, fullMatch) {
+function measurePerformance(data, patternStr, fullMatch, hasLinearSupport) {
     const startTime = performance.now();
 
     try {
-        // Create regex with appropriate flags
-        const flags = fullMatch ? '' : 'g';
-        const pattern = new RegExp(patternStr, flags);
         let count = 0;
+        let pattern;
 
-        if (fullMatch) {
-            // Full match: entire text must match the regex (use ^ and $ anchors)
-            const fullPattern = new RegExp('^(?:' + patternStr + ')$');
-            count = fullPattern.test(data.trim()) ? 1 : 0;
+        if (hasLinearSupport) {
+            // Use linear engine with /l flag for better performance and security
+            const flags = fullMatch ? 'l' : 'gl';
+            pattern = new RegExp(patternStr, flags);
+            
+            if (fullMatch) {
+                // Full match: entire text must match the regex (use ^ and $ anchors)
+                const fullPattern = new RegExp('^(?:' + patternStr + ')$', 'l');
+                count = fullPattern.test(data.trim()) ? 1 : 0;
+            } else {
+                // Partial match: find all matches using the linear engine
+                const matches = data.match(pattern);
+                count = matches ? matches.length : 0;
+            }
         } else {
-            // Partial match: find all matches using compatible approach
-            const matches = data.match(new RegExp(patternStr, 'g'));
-            count = matches ? matches.length : 0;
+            // Fallback to standard engine when linear engine is not available
+            const flags = fullMatch ? '' : 'g';
+            pattern = new RegExp(patternStr, flags);
+
+            if (fullMatch) {
+                // Full match: entire text must match the regex (use ^ and $ anchors)
+                const fullPattern = new RegExp('^(?:' + patternStr + ')$');
+                count = fullPattern.test(data.trim()) ? 1 : 0;
+            } else {
+                // Partial match: find all matches using standard approach
+                const matches = data.match(new RegExp(patternStr, 'g'));
+                count = matches ? matches.length : 0;
+            }
         }
 
         const endTime = performance.now();
@@ -108,6 +143,12 @@ function measurePerformance(data, patternStr, fullMatch) {
         console.log(`${elapsedMs.toFixed(6)} - ${count}`);
 
     } catch (error) {
+        // If linear engine fails with unsupported constructs, fall back to standard
+        if (hasLinearSupport && (error.message.includes('not supported') || error.message.includes('Invalid regular expression'))) {
+            console.error('Warning: Pattern contains constructs not supported by linear engine, falling back to standard engine');
+            measurePerformance(data, patternStr, fullMatch, false);
+            return;
+        }
         throw new BenchmarkError(`Failed to compile regex: ${error.message}`);
     }
 }
@@ -122,6 +163,12 @@ process.on('unhandledRejection', (reason) => {
     console.error('Unhandled Promise Rejection:', reason);
     process.exit(1);
 });
+
+// Display V8 engine information on startup (for debugging)
+if (process.env.NODE_DEBUG && process.env.NODE_DEBUG.includes('benchmark')) {
+    console.error(`V8 Version: ${process.versions.v8}`);
+    console.error(`Linear Engine Support: ${detectV8LinearEngineSupport()}`);
+}
 
 // Run the main function if this module is executed directly
 if (require.main === module) {

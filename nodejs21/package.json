@@ -1,14 +1,16 @@
 {
-  "name": "regex-benchmark-nodejs21",
-  "version": "1.0.0",
-  "description": "Regex benchmark program with enhanced JavaScript features for newer Node.js versions",
+  "name": "regex-benchmark-nodejs21-nonbacktracking",
+  "version": "1.1.0",
+  "description": "Regex benchmark program using V8's experimental non-backtracking RegExp engine for security and performance",
   "main": "benchmark.js",
   "type": "commonjs",
   "engines": {
     "node": ">=21.0.0"
   },
   "scripts": {
-    "benchmark": "node benchmark.js",
+    "benchmark": "node --enable-experimental-regexp-engine --default-to-experimental-regexp-engine benchmark.js",
+    "benchmark-linear": "node --enable-experimental-regexp-engine benchmark.js",
+    "benchmark-fallback": "node --default-to-experimental-regexp-engine benchmark.js",
     "test": "cd tests && ./run_tests.sh",
     "simple-test": "cd tests && ./simple_test.sh"
   },
@@ -17,7 +19,10 @@
     "benchmark",
     "nodejs21",
     "performance",
-    "modern-javascript"
+    "v8-engine",
+    "non-backtracking",
+    "linear-regex",
+    "redos-prevention"
   ],
   "author": "Benchmark Project",
   "license": "MIT"
