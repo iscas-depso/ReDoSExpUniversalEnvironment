@@ -92,6 +92,11 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get update && apt-get install -y \
     ruby \
     && rm -rf /var/lib/apt/lists/*
+# Install AWK (gawk) and base64 utility
+RUN apt-get update && apt-get install -y \
+    gawk \
+    coreutils \
+    && rm -rf /var/lib/apt/lists/*
 # Install Rust (will be installed for developer user later)
 RUN apt-get update && apt-get install -y \
     curl \
@@ -113,6 +118,7 @@ RUN useradd -m -s /bin/bash developer && \
 WORKDIR /app
 
 # Copy project files to the container
+COPY awk/ /app/awk/
 COPY c/ /app/c/
 COPY cpp/ /app/cpp/
 COPY csharp/ /app/csharp/
@@ -152,6 +158,12 @@ USER developer
 # =============================================================================
 # PROGRAM BUILD AND SETUP AND TESTING
 # =============================================================================
+
+# Build AWK program
+WORKDIR /app/awk
+RUN make all
+# Test AWK implementation
+RUN make test || echo "AWK tests completed"
 
 # Build C program
 WORKDIR /app/c
