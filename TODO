@@ -16,7 +16,7 @@
 - [x] Rust
 - [x] SRM C#
 - [x] awk/sed
-- [ ] grep
+- [x] grep
 - [ ] hyperscan
 - [ ] re2
 
