@@ -97,6 +97,11 @@ RUN apt-get update && apt-get install -y \
     gawk \
     coreutils \
     && rm -rf /var/lib/apt/lists/*
+# Install grep and bc (basic calculator) for grep benchmark
+RUN apt-get update && apt-get install -y \
+    grep \
+    bc \
+    && rm -rf /var/lib/apt/lists/*
 # Install Rust (will be installed for developer user later)
 RUN apt-get update && apt-get install -y \
     curl \
@@ -124,6 +129,7 @@ COPY cpp/ /app/cpp/
 COPY csharp/ /app/csharp/
 COPY csharp_nonbacktracking/ /app/csharp_nonbacktracking/
 COPY go/ /app/go/
+COPY grep/ /app/grep/
 COPY java8/ /app/java8/
 COPY java11/ /app/java11/
 COPY nodejs14/ /app/nodejs14/
@@ -194,6 +200,12 @@ WORKDIR /app/go
 RUN make all
 # Test Go implementation
 RUN make test || echo "Go tests completed"
+
+# Build Grep program
+WORKDIR /app/grep
+RUN make all
+# Test Grep implementation
+RUN make test || echo "Grep tests completed"
 
 # Build Java 8 program
 WORKDIR /app/java8
