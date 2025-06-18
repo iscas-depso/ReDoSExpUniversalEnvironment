@@ -54,6 +54,13 @@ RUN apt-get update && apt-get install -y \
     libpcre2-dev \
     libboost-regex-dev \
     && rm -rf /var/lib/apt/lists/*
+# Install Hyperscan build dependencies
+RUN apt-get update && apt-get install -y \
+    cmake \
+    ragel \
+    pkg-config \
+    libbsd-dev \
+    && rm -rf /var/lib/apt/lists/*
 # Install .NET 7.0 SDK (from Ubuntu packages)
 RUN apt-get update && apt-get install -y \
     dotnet-sdk-7.0 \
@@ -130,6 +137,7 @@ COPY csharp/ /app/csharp/
 COPY csharp_nonbacktracking/ /app/csharp_nonbacktracking/
 COPY go/ /app/go/
 COPY grep/ /app/grep/
+COPY hyperscan/ /app/hyperscan/
 COPY java8/ /app/java8/
 COPY java11/ /app/java11/
 COPY nodejs14/ /app/nodejs14/
@@ -159,6 +167,23 @@ ENV PATH="$NVM_DIR/versions/node/v21.7.3/bin:$PATH"
 USER root
 
 # Switch to non-root user for security
+USER developer
+
+# =============================================================================
+# HYPERSCAN BUILD FROM SOURCE
+# =============================================================================
+
+# Build Hyperscan library from source
+WORKDIR /app/hyperscan
+USER root
+# Clean any existing build artifacts
+RUN rm -rf build cmake-build-debug CMakeCache.txt
+RUN mkdir -p /app/hyperscan/build
+WORKDIR /app/hyperscan/build
+RUN cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
+RUN make -j$(nproc)
+RUN make install
+RUN ldconfig
 USER developer
 
 # =============================================================================
@@ -206,6 +231,12 @@ WORKDIR /app/grep
 RUN make all
 # Test Grep implementation
 RUN make test || echo "Grep tests completed"
+
+# Build Hyperscan benchmark program
+WORKDIR /app/hyperscan
+RUN make all
+# Test Hyperscan implementation
+RUN make test || echo "Hyperscan tests completed"
 
 # Build Java 8 program
 WORKDIR /app/java8
