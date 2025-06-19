@@ -17,8 +17,9 @@
 - [x] SRM C#
 - [x] awk/sed
 - [x] grep
-- [x] hyperscan
-- [ ] re2
+- [x] hyperscan 
+- [ ] hyperscan stream mode
+- [x] re2
 
 # Tools
 - [ ] EvilStrGen
