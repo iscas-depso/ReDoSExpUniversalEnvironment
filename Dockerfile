@@ -20,99 +20,80 @@ RUN apt-get update
 RUN apt-get install -y \
     build-essential \
     make \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+    git 
 
 # Install network and download tools
-RUN apt-get update && apt-get install -y \
+RUN apt-get install -y \
     curl \
-    wget \
-    && rm -rf /var/lib/apt/lists/*
+    wget 
 
 # Install text editors and system utilities
-RUN apt-get update && apt-get install -y \
+RUN apt-get install -y \
     vim \
     nano \
     htop \
     tree \
     unzip \
-    zip \
-    && rm -rf /var/lib/apt/lists/*
+    zip 
 
 # Install package management tools
-RUN apt-get update && apt-get install -y \
+RUN apt-get install -y \
     software-properties-common \
     apt-transport-https \
     ca-certificates \
     gnupg \
-    lsb-release \
-    && rm -rf /var/lib/apt/lists/*
+    lsb-release 
 
 # Install project-specific dependencies (most likely to change)
-RUN apt-get update && apt-get install -y \
+RUN apt-get install -y \
     libssl-dev \
     libpcre2-dev \
     libboost-regex-dev \
-    && rm -rf /var/lib/apt/lists/*
+    libre2-dev 
 # Install Hyperscan build dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get install -y \
     cmake \
     ragel \
     pkg-config \
-    libbsd-dev \
-    && rm -rf /var/lib/apt/lists/*
+    libbsd-dev 
 # Install .NET 7.0 SDK (from Ubuntu packages)
-RUN apt-get update && apt-get install -y \
-    dotnet-sdk-7.0 \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get install -y \
+    dotnet-sdk-7.0 
 # Install golang
-RUN apt-get update && apt-get install -y \
-    golang-go \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get install -y \
+    golang-go 
 # Install openjdk-8-jdk
-RUN apt-get update && apt-get install -y \
-    openjdk-8-jdk \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get install -y \
+    openjdk-8-jdk 
 # Install openjdk-11-jdk for Java 11 implementation
-RUN apt-get update && apt-get install -y \
-    openjdk-11-jdk \
-    && rm -rf /var/lib/apt/lists/*
-# Install Node.js via nvm for proper version management
-RUN apt-get update && apt-get install -y \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get install -y \
+    openjdk-11-jdk 
+
 # Install Perl and required modules
-RUN apt-get update && apt-get install -y \
+RUN apt-get install -y \
     perl \
-    libmime-base64-perl \
-    && rm -rf /var/lib/apt/lists/*
+    libmime-base64-perl 
 # Install PHP CLI
-RUN apt-get update && apt-get install -y \
-    php-cli \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get install -y \
+    php-cli 
 # Install Python 3
-RUN apt-get update && apt-get install -y \
+RUN apt-get install -y \
     python3 \
-    python3-pip \
-    && rm -rf /var/lib/apt/lists/*
+    python3-pip 
 # Install Ruby
-RUN apt-get update && apt-get install -y \
-    ruby \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get install -y \
+    ruby 
 # Install AWK (gawk) and base64 utility
-RUN apt-get update && apt-get install -y \
+RUN apt-get install -y \
     gawk \
-    coreutils \
-    && rm -rf /var/lib/apt/lists/*
+    coreutils 
 # Install grep and bc (basic calculator) for grep benchmark
-RUN apt-get update && apt-get install -y \
+RUN apt-get install -y \
     grep \
-    bc \
-    && rm -rf /var/lib/apt/lists/*
-# Install Rust (will be installed for developer user later)
-RUN apt-get update && apt-get install -y \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+    bc 
+
+
+
 
 # =============================================================================
 # USER AND SECURITY CONFIGURATION
@@ -122,11 +103,24 @@ RUN apt-get update && apt-get install -y \
 RUN useradd -m -s /bin/bash developer && \
     usermod -aG sudo developer
 
+
+# Install Rust for developer user
+USER developer
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/home/developer/.cargo/bin:${PATH}"
+
+# Install nvm and both Node.js versions
+ENV NVM_DIR="/home/developer/.nvm"
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+RUN bash -c "source $NVM_DIR/nvm.sh && nvm install 14.21.3 && nvm install 21.7.3 && nvm use 21.7.3 && nvm alias default 21.7.3"
+ENV PATH="$NVM_DIR/versions/node/v21.7.3/bin:$PATH"
+
 # =============================================================================
 # WORKSPACE SETUP
 # =============================================================================
 
 # Set up the main working directory
+USER root
 WORKDIR /app
 
 # Copy project files to the container
@@ -148,26 +142,12 @@ COPY python/ /app/python/
 COPY ruby/ /app/ruby/
 COPY rust/ /app/rust/
 COPY srm/ /app/srm/
+COPY re2/ /app/re2/
 COPY Dockerfile /app/
 
 # Set proper ownership of files
 RUN chown -R developer:developer /app
 
-# Install Rust for developer user
-USER developer
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-ENV PATH="/home/developer/.cargo/bin:${PATH}"
-
-# Install nvm and both Node.js versions
-ENV NVM_DIR="/home/developer/.nvm"
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-RUN bash -c "source $NVM_DIR/nvm.sh && nvm install 14.21.3 && nvm install 21.7.3 && nvm use 21.7.3 && nvm alias default 21.7.3"
-ENV PATH="$NVM_DIR/versions/node/v21.7.3/bin:$PATH"
-
-USER root
-
-# Switch to non-root user for security
-USER developer
 
 # =============================================================================
 # HYPERSCAN BUILD FROM SOURCE
@@ -301,6 +281,12 @@ WORKDIR /app/srm
 RUN make all
 # Test SRM C# implementation
 RUN make test || echo "SRM C# tests completed"
+
+# Build RE2 program
+WORKDIR /app/re2
+RUN make all
+# Test RE2 implementation
+RUN make test || echo "RE2 tests completed"
 
 # =============================================================================
 # CONTAINER RUNTIME CONFIGURATION

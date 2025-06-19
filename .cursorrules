@@ -3,6 +3,8 @@
 
 **Create/Modify files and folder on host machine. But when test the program or a script, run it in docker container environment.**
 
+**Reuse the cached docker layer as much as possible.**
+
 ## 1  Project Layout
 
 ```
