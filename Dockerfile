@@ -50,8 +50,10 @@ RUN apt-get install -y \
     libpcre2-dev \
     libboost-regex-dev \
     libre2-dev 
-# Install Hyperscan build dependencies
+# Install Hyperscan library and build dependencies
 RUN apt-get install -y \
+    libhyperscan-dev \
+    libhyperscan5 \
     cmake \
     ragel \
     pkg-config \
@@ -150,19 +152,12 @@ RUN chown -R developer:developer /app
 
 
 # =============================================================================
-# HYPERSCAN BUILD FROM SOURCE
+# HYPERSCAN LIBRARY SETUP
 # =============================================================================
 
-# Build Hyperscan library from source
-WORKDIR /app/hyperscan
+# Hyperscan library is now installed from system packages above
+# No source build needed - just ensure ldconfig is run
 USER root
-# Clean any existing build artifacts
-RUN rm -rf build cmake-build-debug CMakeCache.txt
-RUN mkdir -p /app/hyperscan/build
-WORKDIR /app/hyperscan/build
-RUN cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
-RUN make -j$(nproc)
-RUN make install
 RUN ldconfig
 USER developer
 
