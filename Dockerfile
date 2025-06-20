@@ -126,25 +126,26 @@ USER root
 WORKDIR /app
 
 # Copy project files to the container
-COPY awk/ /app/awk/
-COPY c/ /app/c/
-COPY cpp/ /app/cpp/
-COPY csharp/ /app/csharp/
-COPY csharp_nonbacktracking/ /app/csharp_nonbacktracking/
-COPY go/ /app/go/
-COPY grep/ /app/grep/
-COPY hyperscan/ /app/hyperscan/
-COPY java8/ /app/java8/
-COPY java11/ /app/java11/
-COPY nodejs14/ /app/nodejs14/
-COPY nodejs21/ /app/nodejs21/
-COPY perl/ /app/perl/
-COPY php/ /app/php/
-COPY python/ /app/python/
-COPY ruby/ /app/ruby/
-COPY rust/ /app/rust/
-COPY srm/ /app/srm/
-COPY re2/ /app/re2/
+COPY engines/awk/ /app/engines/awk/
+COPY engines/c/ /app/engines/c/
+COPY engines/cpp/ /app/engines/cpp/
+COPY engines/csharp/ /app/engines/csharp/
+COPY engines/csharp_nonbacktracking/ /app/engines/csharp_nonbacktracking/
+COPY engines/go/ /app/engines/go/
+COPY engines/grep/ /app/engines/grep/
+COPY engines/hyperscan/ /app/engines/hyperscan/
+COPY engines/java8/ /app/engines/java8/
+COPY engines/java11/ /app/engines/java11/
+COPY engines/nodejs14/ /app/engines/nodejs14/
+COPY engines/nodejs21/ /app/engines/nodejs21/
+COPY engines/perl/ /app/engines/perl/
+COPY engines/php/ /app/engines/php/
+COPY engines/python/ /app/engines/python/
+COPY engines/ruby/ /app/engines/ruby/
+COPY engines/rust/ /app/engines/rust/
+COPY engines/srm/ /app/engines/srm/
+COPY engines/re2/ /app/engines/re2/
+COPY engines/run_all_tests.sh /app/engines/
 COPY Dockerfile /app/
 
 # Set proper ownership of files
@@ -166,73 +167,73 @@ USER developer
 # =============================================================================
 
 # Build AWK program
-WORKDIR /app/awk
+WORKDIR /app/engines/awk
 RUN make all
 # Test AWK implementation
 RUN make test || echo "AWK tests completed"
 
 # Build C program
-WORKDIR /app/c
+WORKDIR /app/engines/c
 RUN make all
 # Test C implementation
 RUN make test || echo "C tests completed"
 
 # Build C++ program
-WORKDIR /app/cpp
+WORKDIR /app/engines/cpp
 RUN make all
 # Test C++ implementation
 RUN make test || echo "C++ tests completed"
 
 # Build C# program
-WORKDIR /app/csharp
+WORKDIR /app/engines/csharp
 RUN make all
 # Test C# implementation
 RUN make test || echo "C# tests completed"
 
 # Build C# Non-Backtracking program
-WORKDIR /app/csharp_nonbacktracking
+WORKDIR /app/engines/csharp_nonbacktracking
 RUN make all
 # Test C# Non-Backtracking implementation
 RUN make test || echo "C# Non-Backtracking tests completed"
 
 # Build Go program
-WORKDIR /app/go
+WORKDIR /app/engines/go
 RUN make all
 # Test Go implementation
 RUN make test || echo "Go tests completed"
 
 # Build Grep program
-WORKDIR /app/grep
+WORKDIR /app/engines/grep
 RUN make all
 # Test Grep implementation
 RUN make test || echo "Grep tests completed"
 
 # Build Hyperscan benchmark program
-WORKDIR /app/hyperscan
+WORKDIR /app/engines/hyperscan
 RUN make all
 # Test Hyperscan implementation
 RUN make test || echo "Hyperscan tests completed"
 
 # Build Java 8 program
-WORKDIR /app/java8
+WORKDIR /app/engines/java8
 RUN make all
 # Test Java 8 implementation
 RUN make test || echo "Java 8 tests completed"
 
 # Build Java 11 program
-WORKDIR /app/java11
+WORKDIR /app/engines/java11
 RUN make all
 # Test Java 11 implementation
 RUN make test || echo "Java 11 tests completed"
 
 # Build Node.js 14 program (using system Node.js for Docker build)
-WORKDIR /app/nodejs14
+WORKDIR /app/engines/nodejs14
 RUN make all
 # Test Node.js 14 implementation
 RUN make test || echo "Node.js 14 tests completed"
 
 # Build Node.js 21 program with V8 non-backtracking RegExp engine
-WORKDIR /app/nodejs21
+WORKDIR /app/engines/nodejs21
 ENV NVM_DIR="/home/developer/.nvm"
 ENV PATH="$NVM_DIR/versions/node/v21.7.3/bin:$PATH"
 RUN bash -c "source $NVM_DIR/nvm.sh && nvm use 21.7.3 && make all"
@@ -242,43 +243,43 @@ RUN bash -c "source $NVM_DIR/nvm.sh && nvm use 21.7.3 && make test" || echo "Nod
 RUN bash -c "source $NVM_DIR/nvm.sh && nvm use 21.7.3 && make v8-test" || echo "Node.js 21 V8 engine tests completed"
 
 # Build Perl program
-WORKDIR /app/perl
+WORKDIR /app/engines/perl
 RUN make all
 # Test Perl implementation
 RUN make test || echo "Perl tests completed"
 
 # Build PHP program
-WORKDIR /app/php
+WORKDIR /app/engines/php
 RUN make all
 # Test PHP implementation
 RUN make test || echo "PHP tests completed"
 
 # Build Python program
-WORKDIR /app/python
+WORKDIR /app/engines/python
 RUN make all
 # Test Python implementation
 RUN make test || echo "Python tests completed"
 
 # Build Ruby program
-WORKDIR /app/ruby
+WORKDIR /app/engines/ruby
 RUN make all
 # Test Ruby implementation
 RUN make test || echo "Ruby tests completed"
 
 # Build Rust program
-WORKDIR /app/rust
+WORKDIR /app/engines/rust
 RUN make all
 # Test Rust implementation
 RUN make test || echo "Rust tests completed"
 
 # Build SRM C# program
-WORKDIR /app/srm
+WORKDIR /app/engines/srm
 RUN make all
 # Test SRM C# implementation
 RUN make test || echo "SRM C# tests completed"
 
 # Build RE2 program
-WORKDIR /app/re2
+WORKDIR /app/engines/re2
 RUN make all
 # Test RE2 implementation
 RUN make test || echo "RE2 tests completed"
@@ -287,5 +288,8 @@ RUN make test || echo "RE2 tests completed"
 # CONTAINER RUNTIME CONFIGURATION
 # =============================================================================
 
+# Set proper permissions for the test script
+RUN chmod +x /app/engines/run_all_tests.sh
+
 # Set default command to run C tests when container starts
-WORKDIR /app
+WORKDIR /app/engines
