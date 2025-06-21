@@ -146,6 +146,7 @@ COPY engines/rust/ /app/engines/rust/
 COPY engines/srm/ /app/engines/srm/
 COPY engines/re2/ /app/engines/re2/
 COPY engines/run_all_tests.sh /app/engines/
+COPY engines/single_regex_all_engines.py /app/engines/
 COPY Dockerfile /app/
 
 # Set proper ownership of files
