@@ -61,7 +61,8 @@ public class Main {
                         attackBean.getInfix(), 
                         attackBean.getSuffix(),
                         attackBean.getType(),
-                        attackBean.getPatternType()
+                        attackBean.getPatternType(),
+                        attackBean.getRepeatTimes()  // Add repeat times
                     );
                     attackList.add(attack);
                 }

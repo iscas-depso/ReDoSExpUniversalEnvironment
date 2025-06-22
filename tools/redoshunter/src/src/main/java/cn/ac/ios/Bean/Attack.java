@@ -13,6 +13,7 @@ public class Attack {
     public AttackType type;
     public PatternType patternType;
     public String redos = "";
+    public int repeatTimes;
 
     public Attack(String prefix, String infix, String suffix, AttackType type, PatternType patternType) {
         this.prefix = prefix;
@@ -20,5 +21,15 @@ public class Attack {
         this.suffix = suffix;
         this.type = type;
         this.patternType = patternType;
+        this.repeatTimes = -1; // Default value
+    }
+
+    public Attack(String prefix, String infix, String suffix, AttackType type, PatternType patternType, int repeatTimes) {
+        this.prefix = prefix;
+        this.infix = infix;
+        this.suffix = suffix;
+        this.type = type;
+        this.patternType = patternType;
+        this.repeatTimes = repeatTimes;
     }
 }

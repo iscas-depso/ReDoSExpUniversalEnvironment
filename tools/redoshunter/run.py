@@ -142,14 +142,9 @@ def parse_redoshunter_output(redoshunter_data, elapsed_ms):
                     result["infix"] = encode_to_base64(attack.get('infix', ''))
                     result["suffix"] = encode_to_base64(attack.get('suffix', ''))
                     
-                    # Determine repeat times based on attack type
-                    attack_type = attack.get('type', '')
-                    if attack_type == 'EXPONENT':
-                        result["repeat_times"] = "1000"
-                    elif attack_type == 'POLYNOMIAL':
-                        result["repeat_times"] = "100000"
-                    else:
-                        result["repeat_times"] = "1000"  # default
+                    # Get actual repeat times from ReDoSHunter
+                    repeat_times = attack.get('repeatTimes', -1)
+                    result["repeat_times"] = str(repeat_times)
                     
                     break
     except Exception as e:
