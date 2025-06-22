@@ -164,6 +164,18 @@ RUN make all
 RUN make test || echo "Rengar tool tests completed"
 
 # =============================================================================
+# Build and Test ReDoSHunter tool
+# =============================================================================
+
+USER developer
+
+# Build ReDoSHunter tool
+WORKDIR /app/tools/redoshunter
+RUN make all
+# Test ReDoSHunter tool
+RUN make test || echo "ReDoSHunter tool tests completed"
+
+# =============================================================================
 # CONTAINER RUNTIME CONFIGURATION
 # =============================================================================
 
