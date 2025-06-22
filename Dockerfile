@@ -10,287 +10,161 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
 
 # =============================================================================
-# SYSTEM PACKAGES AND DEPENDENCIES INSTALLATION
+# Engines build process
 # =============================================================================
 
-# Update package list (separate layer for better caching)
-RUN apt-get update
-
-# Install core development tools (rarely change)
-RUN apt-get install -y \
-    build-essential \
-    make \
-    git 
-
-# Install network and download tools
-RUN apt-get install -y \
-    curl \
-    wget 
-
-# Install text editors and system utilities
-RUN apt-get install -y \
-    vim \
-    nano \
-    htop \
-    tree \
-    unzip \
-    zip 
-
-# Install package management tools
-RUN apt-get install -y \
-    software-properties-common \
-    apt-transport-https \
-    ca-certificates \
-    gnupg \
-    lsb-release 
-
-# Install project-specific dependencies (most likely to change)
-RUN apt-get install -y \
-    libssl-dev \
-    libpcre2-dev \
-    libboost-regex-dev \
-    libre2-dev 
-# Install Hyperscan library and build dependencies
-RUN apt-get install -y \
-    libhyperscan-dev \
-    libhyperscan5 \
-    cmake \
-    ragel \
-    pkg-config \
-    libbsd-dev 
-# Install .NET 7.0 SDK (from Ubuntu packages)
-RUN apt-get install -y \
-    dotnet-sdk-7.0 
-# Install golang
-RUN apt-get install -y \
-    golang-go 
-# Install openjdk-8-jdk
-RUN apt-get install -y \
-    openjdk-8-jdk 
-# Install openjdk-11-jdk for Java 11 implementation
-RUN apt-get install -y \
-    openjdk-11-jdk 
-
-# Install Perl and required modules
-RUN apt-get install -y \
-    perl \
-    libmime-base64-perl 
-# Install PHP CLI
-RUN apt-get install -y \
-    php-cli 
-# Install Python 3
-RUN apt-get install -y \
-    python3 \
-    python3-pip 
-# Install Ruby
-RUN apt-get install -y \
-    ruby 
-# Install AWK (gawk) and base64 utility
-RUN apt-get install -y \
-    gawk \
-    coreutils 
-# Install grep and bc (basic calculator) for grep benchmark
-RUN apt-get install -y \
-    grep \
-    bc 
-
-
-
-
-# =============================================================================
-# USER AND SECURITY CONFIGURATION
-# =============================================================================
+# Install all system packages in a single layer
+RUN apt-get update && apt-get install -y \
+    # Core development tools
+    build-essential make git \
+    # Network and download tools
+    curl wget \
+    # Text editors and system utilities
+    vim nano htop tree unzip zip \
+    # Package management tools
+    software-properties-common apt-transport-https ca-certificates gnupg lsb-release \
+    # Project-specific dependencies
+    libssl-dev libpcre2-dev libboost-regex-dev libre2-dev \
+    # Hyperscan library and build dependencies
+    libhyperscan-dev libhyperscan5 cmake ragel pkg-config libbsd-dev \
+    # .NET 7.0 SDK
+    dotnet-sdk-7.0 \
+    # Golang
+    golang-go \
+    # Java SDKs
+    openjdk-8-jdk openjdk-11-jdk\
+    # Perl and modules
+    perl libmime-base64-perl \
+    # PHP CLI
+    php-cli \
+    # Python 3
+    python3 python3-pip \
+    # Ruby
+    ruby \
+    # AWK and utilities
+    gawk coreutils \
+    # Grep and calculator
+    grep bc \
+    && rm -rf /var/lib/apt/lists/* \
+    && ldconfig
 
 # Create a non-root user for security
 RUN useradd -m -s /bin/bash developer && \
     usermod -aG sudo developer
 
-
-# Install Rust for developer user
+# Install Rust, nvm and Node.js for developer user
 USER developer
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 ENV PATH="/home/developer/.cargo/bin:${PATH}"
 
-# Install nvm and both Node.js versions
 ENV NVM_DIR="/home/developer/.nvm"
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-RUN bash -c "source $NVM_DIR/nvm.sh && nvm install 14.21.3 && nvm install 21.7.3 && nvm use 21.7.3 && nvm alias default 21.7.3"
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash && \
+    bash -c "source $NVM_DIR/nvm.sh && nvm install 14.21.3 && nvm install 21.7.3 && nvm use 21.7.3 && nvm alias default 21.7.3"
 ENV PATH="$NVM_DIR/versions/node/v21.7.3/bin:$PATH"
 
-# =============================================================================
-# WORKSPACE SETUP
-# =============================================================================
-
-# Set up the main working directory
 USER root
 WORKDIR /app
 
-# Copy project files to the container
-COPY engines/awk/ /app/engines/awk/
-COPY engines/c/ /app/engines/c/
-COPY engines/cpp/ /app/engines/cpp/
-COPY engines/csharp/ /app/engines/csharp/
-COPY engines/csharp_nonbacktracking/ /app/engines/csharp_nonbacktracking/
-COPY engines/go/ /app/engines/go/
-COPY engines/grep/ /app/engines/grep/
-COPY engines/hyperscan/ /app/engines/hyperscan/
-COPY engines/java8/ /app/engines/java8/
-COPY engines/java11/ /app/engines/java11/
-COPY engines/nodejs14/ /app/engines/nodejs14/
-COPY engines/nodejs21/ /app/engines/nodejs21/
-COPY engines/perl/ /app/engines/perl/
-COPY engines/php/ /app/engines/php/
-COPY engines/python/ /app/engines/python/
-COPY engines/ruby/ /app/engines/ruby/
-COPY engines/rust/ /app/engines/rust/
-COPY engines/srm/ /app/engines/srm/
-COPY engines/re2/ /app/engines/re2/
-COPY engines/run_all_tests.sh /app/engines/
-COPY engines/single_regex_all_engines.py /app/engines/
+# Copy all project files
+COPY engines/ /app/engines/
 COPY Dockerfile /app/
 
-# Set proper ownership of files
-RUN chown -R developer:developer /app
+# Set proper ownership
+RUN chown -R developer:developer /app && \
+    chmod +x /app/engines/run_all_tests.sh
 
-
-# =============================================================================
-# HYPERSCAN LIBRARY SETUP
-# =============================================================================
-
-# Hyperscan library is now installed from system packages above
-# No source build needed - just ensure ldconfig is run
-USER root
-RUN ldconfig
 USER developer
 
+# Build all engines in consolidated layers
+RUN cd /app/engines && \
+    # Build compiled engines
+    (cd awk && make all) && \
+    (cd c && make all) && \
+    (cd cpp && make all) && \
+    (cd csharp && make all) && \
+    (cd csharp_nonbacktracking && make all) && \
+    (cd go && make all) && \
+    (cd grep && make all) && \
+    (cd hyperscan && make all) && \
+    (cd java8 && make all) && \
+    (cd java11 && make all) && \
+    (cd perl && make all) && \
+    (cd php && make all) && \
+    (cd python && make all) && \
+    (cd ruby && make all) && \
+    (cd rust && make all) && \
+    (cd srm && make all) && \
+    (cd re2 && make all) && \
+    # Build Node.js engines with proper environment
+    (cd nodejs14 && make all) && \
+    (cd nodejs21 && bash -c "source $NVM_DIR/nvm.sh && nvm use 21.7.3 && make all")
+
+# Test all engines in consolidated layer
+RUN cd /app/engines && \
+    # Test all engines (allow failures to continue)
+    (cd awk && make test || echo "AWK tests completed") && \
+    (cd c && make test || echo "C tests completed") && \
+    (cd cpp && make test || echo "C++ tests completed") && \
+    (cd csharp && make test || echo "C# tests completed") && \
+    (cd csharp_nonbacktracking && make test || echo "C# Non-Backtracking tests completed") && \
+    (cd go && make test || echo "Go tests completed") && \
+    (cd grep && make test || echo "Grep tests completed") && \
+    (cd hyperscan && make test || echo "Hyperscan tests completed") && \
+    (cd java8 && make test || echo "Java 8 tests completed") && \
+    (cd java11 && make test || echo "Java 11 tests completed") && \
+    (cd nodejs14 && make test || echo "Node.js 14 tests completed") && \
+    (cd nodejs21 && bash -c "source $NVM_DIR/nvm.sh && nvm use 21.7.3 && make test && make v8-test" || echo "Node.js 21 tests completed") && \
+    (cd perl && make test || echo "Perl tests completed") && \
+    (cd php && make test || echo "PHP tests completed") && \
+    (cd python && make test || echo "Python tests completed") && \
+    (cd ruby && make test || echo "Ruby tests completed") && \
+    (cd rust && make test || echo "Rust tests completed") && \
+    (cd srm && make test || echo "SRM C# tests completed") && \
+    (cd re2 && make test || echo "RE2 tests completed")
+
 # =============================================================================
-# PROGRAM BUILD AND SETUP AND TESTING
+# TOOLS BUILD AND SETUP
+# =============================================================================
+# CURSOR RULE: ALL FUTURE TOOL MODIFICATIONS MUST BE ADDED BELOW THIS LINE
+# This ensures engines remain unchanged and new tools are built after engines
 # =============================================================================
 
-# Build AWK program
-WORKDIR /app/engines/awk
-RUN make all
-# Test AWK implementation
-RUN make test || echo "AWK tests completed"
+USER root
 
-# Build C program
-WORKDIR /app/engines/c
-RUN make all
-# Test C implementation
-RUN make test || echo "C tests completed"
+# =============================================================================
+# Install Dependencies
+# =============================================================================
 
-# Build C++ program
-WORKDIR /app/engines/cpp
-RUN make all
-# Test C++ implementation
-RUN make test || echo "C++ tests completed"
+RUN apt-get update && apt-get install -y \
+    # Java 17 SDK
+    openjdk-17-jdk \
+    # Maven
+    maven
 
-# Build C# program
-WORKDIR /app/engines/csharp
-RUN make all
-# Test C# implementation
-RUN make test || echo "C# tests completed"
+# =============================================================================
+# Copy Source Code
+# =============================================================================
 
-# Build C# Non-Backtracking program
-WORKDIR /app/engines/csharp_nonbacktracking
-RUN make all
-# Test C# Non-Backtracking implementation
-RUN make test || echo "C# Non-Backtracking tests completed"
+COPY tools/ /app/tools/
 
-# Build Go program
-WORKDIR /app/engines/go
-RUN make all
-# Test Go implementation
-RUN make test || echo "Go tests completed"
 
-# Build Grep program
-WORKDIR /app/engines/grep
-RUN make all
-# Test Grep implementation
-RUN make test || echo "Grep tests completed"
+# Set proper ownership
+RUN chown -R developer:developer /app
 
-# Build Hyperscan benchmark program
-WORKDIR /app/engines/hyperscan
-RUN make all
-# Test Hyperscan implementation
-RUN make test || echo "Hyperscan tests completed"
+# =============================================================================
+# Build and Test Rengar tool
+# =============================================================================
 
-# Build Java 8 program
-WORKDIR /app/engines/java8
-RUN make all
-# Test Java 8 implementation
-RUN make test || echo "Java 8 tests completed"
+USER developer
 
-# Build Java 11 program
-WORKDIR /app/engines/java11
+# Build Rengar tool
+WORKDIR /app/tools/rengar
 RUN make all
-# Test Java 11 implementation
-RUN make test || echo "Java 11 tests completed"
-
-# Build Node.js 14 program (using system Node.js for Docker build)
-WORKDIR /app/engines/nodejs14
-RUN make all
-# Test Node.js 14 implementation
-RUN make test || echo "Node.js 14 tests completed"
-
-# Build Node.js 21 program with V8 non-backtracking RegExp engine
-WORKDIR /app/engines/nodejs21
-ENV NVM_DIR="/home/developer/.nvm"
-ENV PATH="$NVM_DIR/versions/node/v21.7.3/bin:$PATH"
-RUN bash -c "source $NVM_DIR/nvm.sh && nvm use 21.7.3 && make all"
-# Test Node.js 21 implementation with V8 experimental engine
-RUN bash -c "source $NVM_DIR/nvm.sh && nvm use 21.7.3 && make test" || echo "Node.js 21 benchmark tests completed"
-# Test V8 Non-Backtracking RegExp Engine functionality
-RUN bash -c "source $NVM_DIR/nvm.sh && nvm use 21.7.3 && make v8-test" || echo "Node.js 21 V8 engine tests completed"
-
-# Build Perl program
-WORKDIR /app/engines/perl
-RUN make all
-# Test Perl implementation
-RUN make test || echo "Perl tests completed"
-
-# Build PHP program
-WORKDIR /app/engines/php
-RUN make all
-# Test PHP implementation
-RUN make test || echo "PHP tests completed"
-
-# Build Python program
-WORKDIR /app/engines/python
-RUN make all
-# Test Python implementation
-RUN make test || echo "Python tests completed"
-
-# Build Ruby program
-WORKDIR /app/engines/ruby
-RUN make all
-# Test Ruby implementation
-RUN make test || echo "Ruby tests completed"
-
-# Build Rust program
-WORKDIR /app/engines/rust
-RUN make all
-# Test Rust implementation
-RUN make test || echo "Rust tests completed"
-
-# Build SRM C# program
-WORKDIR /app/engines/srm
-RUN make all
-# Test SRM C# implementation
-RUN make test || echo "SRM C# tests completed"
-
-# Build RE2 program
-WORKDIR /app/engines/re2
-RUN make all
-# Test RE2 implementation
-RUN make test || echo "RE2 tests completed"
+# Test Rengar tool
+RUN make test || echo "Rengar tool tests completed"
 
 # =============================================================================
 # CONTAINER RUNTIME CONFIGURATION
 # =============================================================================
 
-# Set proper permissions for the test script
-RUN chmod +x /app/engines/run_all_tests.sh
-
-# Set default command to run C tests when container starts
-WORKDIR /app/engines
+WORKDIR /app/tools

@@ -1,33 +1,104 @@
-# Multi-Language Regex Benchmark — Condensed Rules
+# ReDoS test and attack experiment environment
 
 
-**Create/Modify files and folder on host machine. But when test the program or a script, run it in docker container environment.**
+## ReDoS regex attack string generate tools
 
-**Reuse the cached docker layer as much as possible.**
+The `tools/` folder contains the tools for generating regex attack strings.
 
-## 1  Project Layout
+### 0  Guidelines
+
+**Rebuild/test Docker image `redosenv`after any change. Always run programs in docker container, do not run programs in local environment.**
+
+**Keep directory contents minimal—source, README, tests, and build artefacts only.**
+
+**DOCKERFILE MODIFICATION RULE: When adding new tools, ALL Dockerfile modifications must be added AFTER the engines build section. Look for the comment "CURSOR RULE: ALL FUTURE TOOL MODIFICATIONS MUST BE ADDED BELOW THIS LINE" in the Dockerfile and add any new tool dependencies, builds, or tests after this line. This ensures engines remain unchanged and new tools are properly isolated.**
+
+### 1  Project Layout
 
 ```
-<language>/
-├── src… / Makefile (or build script)
-├── README.md
-├── tests/
+tools/
+├── <tool>/
+│   ├── src… / Makefile (or build script)
+│   ├── README.md
+│   ├── tests/
+│   ├── run.py
+```
+
+The tool could be written in any language, but always use a python script `run.py` to use it.
+
+** The tool may used to generate attack string for ReDoS regex as a fixed length (100KB/1MB). Modify it to output the attack string in the format of `{prefix}{infix}{suffix}` and get the repeat times of the infix in the attack string which recommended by the tool. **
+
+Build the tool from source code when build docker image.
+
+### 2  Program Contract
+
+* **Args:**
+  1. Base64 regex 2. output file path
+* **Output:**
+  1. a output json file with the following format:
+    ```json
+    {
+      "elapsed_ms": "elapsed_ms",
+      "is_redos": true or false, // following results are only valid if is_redos is true
+      "prefix": "a base64 encoded prefix of attack string",
+      "infix": "a base64 encoded infix of attack string",
+      "suffix": "a base64 encoded suffix of attack string",
+      "repeat_times": "the repeat times of the infix in the attack string which recommended by the tool, if the tool does not recommend, set it to -1"
+    }
+    ```
+
+### 3  README Template
+
+```markdown
+# ReDoS regex attack string generate tools
+
+## Files
+<brief list>
+
+## Building and Running
+### Build
+<commands>
+### Run tests
+<commands>
+
+## Program Usage
+<example>
+
+## Directory Structure
+<tree>
+
+```
+
+* No Docker instructions. Keep focus on local build/run.
+
+## Multi-Language Regex Engines
+
+Multi-language regex engines are implemented in the `engines/` folder.
+
+### 1  Project Layout
+
+```
+engines/
+├── <language>/
+│   ├── src… / Makefile (or build script)
+│   ├── README.md
+│   ├── tests/
 │   ├── run_tests.sh   ├── simple_test.sh
 │   ├── test_data.txt  ├── simple_test.txt
 │   └── full_match_test.txt
 └── bin/ (created **only** by the build, never checked-in)
 ```
 
-## 2  Program Contract
+### 2  Program Contract
 
 * **Args:**
 
-  1. Base64 regex 2. text file path 3. mode (0 = partial, 1 = full).
+  1. Base64 regex 2. text file path 3. mode (0 = partial, 1 = full).
 * **Output:**
   `{elapsed_ms_with_6dp} - {match_count}`
 * Test data and Base64 patterns must be identical in every language.
 
-## 3  README Template (nothing else)
+### 3  README Template
 
 ```markdown
 # Benchmark Program – <Language>
@@ -48,39 +119,4 @@
 <tree>
 ```
 
-* No Docker instructions. Keep focus on local build/run.
 
-## 4  Dockerfile Rules
-
-* Tag images `benchmark-test`; always run with `--rm`.
-* Exploit layer caching: install packages in this order (rare → frequent):
-
-  1. core dev tools 2. network utils 3. editors & misc 4. pkg managers 5. language deps.
-* End each `RUN … apt-get install` with `&& rm -rf /var/lib/apt/lists/*`.
-* Build & test each language in **PROGRAM BUILD AND SETUP AND TESTING** of the Dockerfile.
-* Never pre-create `bin/`; builds must do that.
-
-## 5  Implementation Checklist
-
-* ☐  Runtime/compiler added to Dockerfile §2
-* ☐  3-arg interface upheld; Base64 decoded via std-lib
-* ☐  Modes 0/1 implemented; output exact
-* ☐  All tests pass; timing accurate
-* ☐  README uses template; no Docker notes
-* ☐  Build & test steps added to Dockerfile §§5–6
-
-## 6  Coding Guidelines
-
-| Purpose | Name              |
-| ------- | ----------------- |
-| Timing  | `elapsed_time`    |
-| Matches | `match_count`     |
-| Regex   | `regex`/`pattern` |
-
-* Use high-res timers; exit cleanly on errors.
-
-## 7  Maintenance
-
-* Add tests & deps to **all** languages together.
-* Rebuild/test Docker after any change.
-* Keep directory contents minimal—source, README, tests, and build artefacts only.
