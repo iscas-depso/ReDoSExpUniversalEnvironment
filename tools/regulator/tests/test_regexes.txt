@@ -1,0 +1,11 @@
+# Test regexes for Regulator tool (base64 encoded)
+# Format: one base64 encoded regex per line
+
+# (a+)+b - classic ReDoS pattern
+KGErKSti
+
+# (a|a)*b - another ReDoS pattern  
+KGF8YSkqYg==
+
+# ^abc$ - simple non-ReDoS pattern
+XmFiYyQ= 

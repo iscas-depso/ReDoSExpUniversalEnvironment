@@ -29,6 +29,6 @@
 - [ ] regexstatic
 - [ ] regexploit
 - [ ] rescue
-- [ ] regulator
+- [x] regulator (ftime=5000, ptime=5000, binary_search=False)
 - [x] redoshunter
 - [x] rengar

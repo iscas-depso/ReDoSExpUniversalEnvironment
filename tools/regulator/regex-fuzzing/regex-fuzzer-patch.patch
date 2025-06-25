@@ -1,0 +1,11 @@
+--- a.txt	2024-11-28 22:59:25.831210100 -0600
++++ b.txt	2024-11-29 00:28:58.987650400 -0600
+@@ -117,7 +117,7 @@
+ 
+ deps/from_node/: $(BUILDDIR)node/out/Debug/node
+ 	if [ -d deps/from_node.tmp ]; then rm -rv deps/from_node.tmp; fi;
+-	./copy_headers.py -o deps/from_node.tmp $(BUILDDIR)node
++	python3 copy_headers.py -o deps/from_node.tmp $(BUILDDIR)node
+ 	mv deps/from_node.tmp deps/from_node
+ 
+ 

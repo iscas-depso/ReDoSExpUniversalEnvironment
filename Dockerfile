@@ -3,11 +3,31 @@
 # =============================================================================
 
 # Use Ubuntu 22.04 as base image
-FROM ubuntu:22.04
+FROM docker.m.daocloud.io/ubuntu:22.04
 
 # Set environment variables to avoid interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
+
+#################### 代理设置 ####################
+# ① 如果你想在 docker build 时临时改地址，只需要
+#    docker build --build-arg PROXY=http://其他地址:端口 .
+ARG PROXY=http://192.168.1.34:7890
+
+# ② 一次性写全大小写两套环境变量，兼容所有程序
+ENV \
+    http_proxy=${PROXY} \
+    https_proxy=${PROXY} \
+    ftp_proxy=${PROXY} \
+    HTTP_PROXY=${PROXY} \
+    HTTPS_PROXY=${PROXY} \
+    FTP_PROXY=${PROXY} \
+    # 如果你的 7890 端口同时提供 SOCKS5，可以顺带写上：
+    all_proxy=socks5h://192.168.1.34:7890 \
+    ALL_PROXY=socks5h://192.168.1.34:7890 \
+    # 避免本机回环走代理
+    no_proxy=localhost,127.0.0.1,::1 \
+    NO_PROXY=localhost,127.0.0.1,::1
 
 # =============================================================================
 # Engines build process
@@ -137,7 +157,7 @@ USER root
 
 RUN apt-get update && apt-get install -y \
     # Java 17 SDK
-    openjdk-17-jdk \
+    --no-install-recommends openjdk-17-jdk-headless  \
     # Maven
     maven
 
@@ -174,6 +194,38 @@ WORKDIR /app/tools/redoshunter
 RUN make all
 # Test ReDoSHunter tool
 RUN make test || echo "ReDoSHunter tool tests completed"
+
+# =============================================================================
+# Build and Test Regulator tool
+# =============================================================================
+
+USER root
+
+# Install additional Python packages needed for Regulator
+RUN apt-get update && apt-get install -y \
+    # Additional packages needed for regulator-dynamic
+    libicu-dev \
+    # Install Python 3.8 for Node.js compatibility
+    software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update \
+    && apt-get install -y python3.8 python3.8-dev python3.8-distutils \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python packages for regulator
+RUN python3 -m pip install --no-cache-dir \
+    colored \
+    numpy \
+    scipy \
+    scikit-learn
+
+USER developer
+
+# Build Regulator tool
+WORKDIR /app/tools/regulator
+RUN make all -j
+# Test Regulator tool  
+RUN make test || echo "Regulator tool tests completed"
 
 # =============================================================================
 # CONTAINER RUNTIME CONFIGURATION

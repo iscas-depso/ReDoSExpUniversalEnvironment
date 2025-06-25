@@ -1,0 +1,13 @@
+diff --git a/driver/pump.py b/driver/pump.py
+index 1d3115d..dcdb717 100644
+--- a/driver/pump.py
++++ b/driver/pump.py
+@@ -296,7 +296,7 @@ def get_pump_report(
+             _, slowest_pump_pos, slowest_pump_len, pts = pump_timeout
+             klass = ('EXPONENTIAL(pump_timeout)',)
+         else:
+-            for newklass, _, pump_pos, pump_len, pts in profiles:
++            for newklass, _, pump_pos, pump_len, *rest in profiles:
+                 assert newklass[0] != 'EXPONENTIAL', 'should have done fastbreak'
+                 if newklass[0] == 'POLYNOMIAL':
+                     should_replace = (
