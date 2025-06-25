@@ -40,8 +40,8 @@ test:
 	# Clean up test files
 	rm -f test_regex.txt test_output.json
 	# Create a simple test
-	python3 -c "import base64; print(base64.b64encode(b'^a*.a*c$').decode())" > test_regex.txt
-	@echo "Running test with regex ^a*.a*c$..."
+	python3 -c "import base64; print(base64.b64encode(b'^a*.a*c$$').decode())" > test_regex.txt
+	@echo "Running test with regex ^a*.a*c$$..."
 	python3 run.py `cat test_regex.txt` test_output.json || echo "Test completed"
 	@if [ -f test_output.json ]; then \
 		echo "Test output:"; \

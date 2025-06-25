@@ -253,28 +253,28 @@ def main():
                 elif report_class == "POLYNOMIAL":
                     is_redos_vulnerable = True
                     if binary_search:
-                    # For polynomial, try to get a reasonable repeat count
-                    # Use binary search to find limit if available
-                    if 'pump_pos' in report and 'pump_len' in report:
-                        try:
-                            # Try binary search for more precise repeat count
-                            limit = binsearch_pump.find_limit(
-                                regex_bytes,
-                                b"",  # Empty flags
-                                bwitness,
-                                1,    # width=1
-                                report['pump_pos'],
-                                report['pump_len'],
-                            )
-                            if limit and limit > 0:
-                                repeat_times = limit
+                        # For polynomial, try to get a reasonable repeat count
+                        # Use binary search to find limit if available
+                        if 'pump_pos' in report and 'pump_len' in report:
+                            try:
+                                # Try binary search for more precise repeat count
+                                limit = binsearch_pump.find_limit(
+                                    regex_bytes,
+                                    b"",  # Empty flags
+                                    bwitness,
+                                    1,    # width=1
+                                    report['pump_pos'],
+                                    report['pump_len'],
+                                )
+                                if limit and limit > 0:
+                                    repeat_times = limit
+                                else:
+                                    repeat_times = 100000  # Default for polynomial
+                            except Exception as e:
+                                print(f"Binary search failed: {e}", file=sys.stderr)
+                                repeat_times = 100000  # Default fallback
                             else:
-                                repeat_times = 100000  # Default for polynomial
-                        except Exception as e:
-                            print(f"Binary search failed: {e}", file=sys.stderr)
-                            repeat_times = 100000  # Default fallback
-                        else:
-                            repeat_times = 100000
+                                repeat_times = 100000
                     else:
                         repeat_times = 100000
                 
