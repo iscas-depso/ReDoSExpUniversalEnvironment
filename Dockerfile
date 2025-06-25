@@ -223,6 +223,7 @@ USER developer
 
 # Build Regulator tool
 WORKDIR /app/tools/regulator
+# Take very long time to build and about 130GB memory
 RUN make all -j
 # Test Regulator tool  
 RUN make test || echo "Regulator tool tests completed"
