@@ -230,29 +230,43 @@ RUN chown -R developer:developer /app
 # RUN make test || echo "Regulator tool tests completed"
 
 
+# # =============================================================================
+# # Build and Test Regexploit tool
+# # =============================================================================
+
+# USER developer
+
+# # Build Regexploit tool
+# WORKDIR /app/tools/regexploit
+# RUN make all
+# # Test Regexploit tool
+# RUN make test || echo "Regexploit tool tests completed"
+
+# # =============================================================================
+# # Build and Test RegexStatic tool
+# # =============================================================================
+
+# USER developer
+
+# # Build RegexStatic tool
+# WORKDIR /app/tools/regexstatic
+# RUN make all
+# # Test RegexStatic tool
+# RUN make test || echo "RegexStatic tool tests completed"
+
 # =============================================================================
-# Build and Test Regexploit tool
+# Build and Test ReScue tool
 # =============================================================================
 
 USER developer
 
-# Build Regexploit tool
-WORKDIR /app/tools/regexploit
+# Build ReScue tool
+WORKDIR /app/tools/rescue
 RUN make all
-# Test Regexploit tool
-RUN make test || echo "Regexploit tool tests completed"
+# Test ReScue tool
+RUN make test || echo "ReScue tool tests completed"
 
-# =============================================================================
-# Build and Test RegexStatic tool
-# =============================================================================
 
-USER developer
-
-# Build RegexStatic tool
-WORKDIR /app/tools/regexstatic
-RUN make all
-# Test RegexStatic tool
-RUN make test || echo "RegexStatic tool tests completed"
 
 # =============================================================================
 # CONTAINER RUNTIME CONFIGURATION
