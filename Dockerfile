@@ -96,51 +96,51 @@ RUN chown -R developer:developer /app && \
 USER developer
 
 # Build all engines in consolidated layers
-RUN cd /app/engines && \
-    # Build compiled engines
-    (cd awk && make all) && \
-    (cd c && make all) && \
-    (cd cpp && make all) && \
-    (cd csharp && make all) && \
-    (cd csharp_nonbacktracking && make all) && \
-    (cd go && make all) && \
-    (cd grep && make all) && \
-    (cd hyperscan && make all) && \
-    (cd java8 && make all) && \
-    (cd java11 && make all) && \
-    (cd perl && make all) && \
-    (cd php && make all) && \
-    (cd python && make all) && \
-    (cd ruby && make all) && \
-    (cd rust && make all) && \
-    (cd srm && make all) && \
-    (cd re2 && make all) && \
-    # Build Node.js engines with proper environment
-    (cd nodejs14 && make all) && \
-    (cd nodejs21 && bash -c "source $NVM_DIR/nvm.sh && nvm use 21.7.3 && make all")
+# RUN cd /app/engines && \
+#     # Build compiled engines
+#     (cd awk && make all) && \
+#     (cd c && make all) && \
+#     (cd cpp && make all) && \
+#     (cd csharp && make all) && \
+#     (cd csharp_nonbacktracking && make all) && \
+#     (cd go && make all) && \
+#     (cd grep && make all) && \
+#     (cd hyperscan && make all) && \
+#     (cd java8 && make all) && \
+#     (cd java11 && make all) && \
+#     (cd perl && make all) && \
+#     (cd php && make all) && \
+#     (cd python && make all) && \
+#     (cd ruby && make all) && \
+#     (cd rust && make all) && \
+#     (cd srm && make all) && \
+#     (cd re2 && make all) && \
+#     # Build Node.js engines with proper environment
+#     (cd nodejs14 && make all) && \
+#     (cd nodejs21 && bash -c "source $NVM_DIR/nvm.sh && nvm use 21.7.3 && make all")
 
-# Test all engines in consolidated layer
-RUN cd /app/engines && \
-    # Test all engines (allow failures to continue)
-    (cd awk && make test || echo "AWK tests completed") && \
-    (cd c && make test || echo "C tests completed") && \
-    (cd cpp && make test || echo "C++ tests completed") && \
-    (cd csharp && make test || echo "C# tests completed") && \
-    (cd csharp_nonbacktracking && make test || echo "C# Non-Backtracking tests completed") && \
-    (cd go && make test || echo "Go tests completed") && \
-    (cd grep && make test || echo "Grep tests completed") && \
-    (cd hyperscan && make test || echo "Hyperscan tests completed") && \
-    (cd java8 && make test || echo "Java 8 tests completed") && \
-    (cd java11 && make test || echo "Java 11 tests completed") && \
-    (cd nodejs14 && make test || echo "Node.js 14 tests completed") && \
-    (cd nodejs21 && bash -c "source $NVM_DIR/nvm.sh && nvm use 21.7.3 && make test && make v8-test" || echo "Node.js 21 tests completed") && \
-    (cd perl && make test || echo "Perl tests completed") && \
-    (cd php && make test || echo "PHP tests completed") && \
-    (cd python && make test || echo "Python tests completed") && \
-    (cd ruby && make test || echo "Ruby tests completed") && \
-    (cd rust && make test || echo "Rust tests completed") && \
-    (cd srm && make test || echo "SRM C# tests completed") && \
-    (cd re2 && make test || echo "RE2 tests completed")
+# # Test all engines in consolidated layer
+# RUN cd /app/engines && \
+#     # Test all engines (allow failures to continue)
+#     (cd awk && make test || echo "AWK tests completed") && \
+#     (cd c && make test || echo "C tests completed") && \
+#     (cd cpp && make test || echo "C++ tests completed") && \
+#     (cd csharp && make test || echo "C# tests completed") && \
+#     (cd csharp_nonbacktracking && make test || echo "C# Non-Backtracking tests completed") && \
+#     (cd go && make test || echo "Go tests completed") && \
+#     (cd grep && make test || echo "Grep tests completed") && \
+#     (cd hyperscan && make test || echo "Hyperscan tests completed") && \
+#     (cd java8 && make test || echo "Java 8 tests completed") && \
+#     (cd java11 && make test || echo "Java 11 tests completed") && \
+#     (cd nodejs14 && make test || echo "Node.js 14 tests completed") && \
+#     (cd nodejs21 && bash -c "source $NVM_DIR/nvm.sh && nvm use 21.7.3 && make test && make v8-test" || echo "Node.js 21 tests completed") && \
+#     (cd perl && make test || echo "Perl tests completed") && \
+#     (cd php && make test || echo "PHP tests completed") && \
+#     (cd python && make test || echo "Python tests completed") && \
+#     (cd ruby && make test || echo "Ruby tests completed") && \
+#     (cd rust && make test || echo "Rust tests completed") && \
+#     (cd srm && make test || echo "SRM C# tests completed") && \
+#     (cd re2 && make test || echo "RE2 tests completed")
 
 # =============================================================================
 # TOOLS BUILD AND SETUP
@@ -171,62 +171,76 @@ COPY tools/ /app/tools/
 # Set proper ownership
 RUN chown -R developer:developer /app
 
+
+# # =============================================================================
+# # Build and Test Rengar tool
+# # =============================================================================
+
+# USER developer
+
+# # Build Rengar tool
+# WORKDIR /app/tools/rengar
+# RUN make all
+# # Test Rengar tool
+# RUN make test || echo "Rengar tool tests completed"
+
+# # =============================================================================
+# # Build and Test ReDoSHunter tool
+# # =============================================================================
+
+# USER developer
+
+# # Build ReDoSHunter tool
+# WORKDIR /app/tools/redoshunter
+# RUN make all
+# # Test ReDoSHunter tool
+# RUN make test || echo "ReDoSHunter tool tests completed"
+
+# # =============================================================================
+# # Build and Test Regulator tool
+# # =============================================================================
+
+# USER root
+
+# # Install additional Python packages needed for Regulator
+# RUN apt-get update && apt-get install -y \
+#     # Additional packages needed for regulator-dynamic
+#     libicu-dev \
+#     # Install Python 3.8 for Node.js compatibility
+#     software-properties-common \
+#     && add-apt-repository ppa:deadsnakes/ppa \
+#     && apt-get update \
+#     && apt-get install -y python3.8 python3.8-dev python3.8-distutils \
+#     && rm -rf /var/lib/apt/lists/*
+
+# # Install Python packages for regulator
+# RUN python3 -m pip install --no-cache-dir \
+#     colored \
+#     numpy \
+#     scipy \
+#     scikit-learn
+
+# USER developer
+
+# # Build Regulator tool
+# WORKDIR /app/tools/regulator
+# # Take very long time to build and about 130GB memory
+# RUN make all -j
+# # Test Regulator tool  
+# RUN make test || echo "Regulator tool tests completed"
+
+
 # =============================================================================
-# Build and Test Rengar tool
+# Build and Test Regexploit tool
 # =============================================================================
 
 USER developer
 
-# Build Rengar tool
-WORKDIR /app/tools/rengar
+# Build Regexploit tool
+WORKDIR /app/tools/regexploit
 RUN make all
-# Test Rengar tool
-RUN make test || echo "Rengar tool tests completed"
-
-# =============================================================================
-# Build and Test ReDoSHunter tool
-# =============================================================================
-
-USER developer
-
-# Build ReDoSHunter tool
-WORKDIR /app/tools/redoshunter
-RUN make all
-# Test ReDoSHunter tool
-RUN make test || echo "ReDoSHunter tool tests completed"
-
-# =============================================================================
-# Build and Test Regulator tool
-# =============================================================================
-
-USER root
-
-# Install additional Python packages needed for Regulator
-RUN apt-get update && apt-get install -y \
-    # Additional packages needed for regulator-dynamic
-    libicu-dev \
-    # Install Python 3.8 for Node.js compatibility
-    software-properties-common \
-    && add-apt-repository ppa:deadsnakes/ppa \
-    && apt-get update \
-    && apt-get install -y python3.8 python3.8-dev python3.8-distutils \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install Python packages for regulator
-RUN python3 -m pip install --no-cache-dir \
-    colored \
-    numpy \
-    scipy \
-    scikit-learn
-
-USER developer
-
-# Build Regulator tool
-WORKDIR /app/tools/regulator
-# Take very long time to build and about 130GB memory
-RUN make all -j
-# Test Regulator tool  
-RUN make test || echo "Regulator tool tests completed"
+# Test Regexploit tool
+RUN make test || echo "Regexploit tool tests completed"
 
 # =============================================================================
 # CONTAINER RUNTIME CONFIGURATION
