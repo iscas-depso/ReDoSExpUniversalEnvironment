@@ -243,6 +243,18 @@ RUN make all
 RUN make test || echo "Regexploit tool tests completed"
 
 # =============================================================================
+# Build and Test RegexStatic tool
+# =============================================================================
+
+USER developer
+
+# Build RegexStatic tool
+WORKDIR /app/tools/regexstatic
+RUN make all
+# Test RegexStatic tool
+RUN make test || echo "RegexStatic tool tests completed"
+
+# =============================================================================
 # CONTAINER RUNTIME CONFIGURATION
 # =============================================================================
 
