@@ -159,7 +159,9 @@ RUN apt-get update && apt-get install -y \
     # Java 17 SDK
     --no-install-recommends openjdk-17-jdk-headless  \
     # Maven
-    maven
+    maven \
+    # JSON library for C++ tools
+    nlohmann-json3-dev
 
 # =============================================================================
 # Copy Source Code

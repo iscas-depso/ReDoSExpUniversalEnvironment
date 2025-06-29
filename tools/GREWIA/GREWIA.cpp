@@ -7,10 +7,12 @@
 #include <openssl/evp.h>
 #include <openssl/buffer.h>
 #include <chrono>
-#include <sstream>
+#include <nlohmann/json.hpp>
 #include "Solver/solver_kind.h"
 #include "Parser/parser.h"
 #include "Solver/DetectAmbiguity_WithLookAround/DetectAmbiguity.h"
+
+using json = nlohmann::json;
 
 // Base64 decode function
 std::string base64_decode(const std::string& encoded_string) {
@@ -48,40 +50,6 @@ std::string base64_encode(const std::string& input) {
     std::string result(bufferPtr->data, bufferPtr->length);
     BIO_free_all(bio);
     return result;
-}
-
-// Simple JSON escape function
-std::string escape_json_string(const std::string& input) {
-    std::string output;
-    for (char c : input) {
-        switch (c) {
-            case '"':  output += "\\\""; break;
-            case '\\': output += "\\\\"; break;
-            case '\b': output += "\\b"; break;
-            case '\f': output += "\\f"; break;
-            case '\n': output += "\\n"; break;
-            case '\r': output += "\\r"; break;
-            case '\t': output += "\\t"; break;
-            default:   output += c; break;
-        }
-    }
-    return output;
-}
-
-// Simple JSON output function
-void write_json_output(const std::string& filepath, const std::string& elapsed_ms, 
-                       bool is_redos, const std::string& prefix, const std::string& infix, 
-                       const std::string& suffix, int repeat_times) {
-    std::ofstream outfile(filepath);
-    outfile << "{\n";
-    outfile << "  \"elapsed_ms\": \"" << escape_json_string(elapsed_ms) << "\",\n";
-    outfile << "  \"is_redos\": " << (is_redos ? "true" : "false") << ",\n";
-    outfile << "  \"prefix\": \"" << escape_json_string(prefix) << "\",\n";
-    outfile << "  \"infix\": \"" << escape_json_string(infix) << "\",\n";
-    outfile << "  \"suffix\": \"" << escape_json_string(suffix) << "\",\n";
-    outfile << "  \"repeat_times\": " << repeat_times << "\n";
-    outfile << "}\n";
-    outfile.close();
 }
 
 int main(int argc, char* argv[]){
@@ -178,14 +146,27 @@ int main(int argc, char* argv[]){
   auto end_time = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
   
-  // Prepare output values
-  std::string elapsed_ms = std::to_string(duration.count());
-  std::string encoded_prefix = is_redos ? base64_encode(prefix) : "";
-  std::string encoded_infix = is_redos ? base64_encode(infix) : "";
-  std::string encoded_suffix = is_redos ? base64_encode(suffix) : "";
+  // Create JSON output using nlohmann/json
+  json result;
+  result["elapsed_ms"] = std::to_string(duration.count());
+  result["is_redos"] = is_redos;
   
-  // Write JSON output
-  write_json_output(argv[2], elapsed_ms, is_redos, encoded_prefix, encoded_infix, encoded_suffix, repeat_times);
+  if (is_redos) {
+    result["prefix"] = base64_encode(prefix);
+    result["infix"] = base64_encode(infix);
+    result["suffix"] = base64_encode(suffix);
+    result["repeat_times"] = repeat_times;
+  } else {
+    result["prefix"] = "";
+    result["infix"] = "";
+    result["suffix"] = "";
+    result["repeat_times"] = -1;
+  }
+  
+  // Write JSON to output file
+  std::ofstream outfile(argv[2]);
+  outfile << result.dump(2);  // Pretty print with 2-space indentation
+  outfile.close();
   
   return 0;
 } 
