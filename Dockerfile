@@ -96,51 +96,51 @@ RUN chown -R developer:developer /app && \
 USER developer
 
 # Build all engines in consolidated layers
-# RUN cd /app/engines && \
-#     # Build compiled engines
-#     (cd awk && make all) && \
-#     (cd c && make all) && \
-#     (cd cpp && make all) && \
-#     (cd csharp && make all) && \
-#     (cd csharp_nonbacktracking && make all) && \
-#     (cd go && make all) && \
-#     (cd grep && make all) && \
-#     (cd hyperscan && make all) && \
-#     (cd java8 && make all) && \
-#     (cd java11 && make all) && \
-#     (cd perl && make all) && \
-#     (cd php && make all) && \
-#     (cd python && make all) && \
-#     (cd ruby && make all) && \
-#     (cd rust && make all) && \
-#     (cd srm && make all) && \
-#     (cd re2 && make all) && \
-#     # Build Node.js engines with proper environment
-#     (cd nodejs14 && make all) && \
-#     (cd nodejs21 && bash -c "source $NVM_DIR/nvm.sh && nvm use 21.7.3 && make all")
+RUN cd /app/engines && \
+    # Build compiled engines
+    (cd awk && make all) && \
+    (cd c && make all) && \
+    (cd cpp && make all) && \
+    (cd csharp && make all) && \
+    (cd csharp_nonbacktracking && make all) && \
+    (cd go && make all) && \
+    (cd grep && make all) && \
+    (cd hyperscan && make all) && \
+    (cd java8 && make all) && \
+    (cd java11 && make all) && \
+    (cd perl && make all) && \
+    (cd php && make all) && \
+    (cd python && make all) && \
+    (cd ruby && make all) && \
+    (cd rust && make all) && \
+    (cd srm && make all) && \
+    (cd re2 && make all) && \
+    # Build Node.js engines with proper environment
+    (cd nodejs14 && make all) && \
+    (cd nodejs21 && bash -c "source $NVM_DIR/nvm.sh && nvm use 21.7.3 && make all")
 
-# # Test all engines in consolidated layer
-# RUN cd /app/engines && \
-#     # Test all engines (allow failures to continue)
-#     (cd awk && make test || echo "AWK tests completed") && \
-#     (cd c && make test || echo "C tests completed") && \
-#     (cd cpp && make test || echo "C++ tests completed") && \
-#     (cd csharp && make test || echo "C# tests completed") && \
-#     (cd csharp_nonbacktracking && make test || echo "C# Non-Backtracking tests completed") && \
-#     (cd go && make test || echo "Go tests completed") && \
-#     (cd grep && make test || echo "Grep tests completed") && \
-#     (cd hyperscan && make test || echo "Hyperscan tests completed") && \
-#     (cd java8 && make test || echo "Java 8 tests completed") && \
-#     (cd java11 && make test || echo "Java 11 tests completed") && \
-#     (cd nodejs14 && make test || echo "Node.js 14 tests completed") && \
-#     (cd nodejs21 && bash -c "source $NVM_DIR/nvm.sh && nvm use 21.7.3 && make test && make v8-test" || echo "Node.js 21 tests completed") && \
-#     (cd perl && make test || echo "Perl tests completed") && \
-#     (cd php && make test || echo "PHP tests completed") && \
-#     (cd python && make test || echo "Python tests completed") && \
-#     (cd ruby && make test || echo "Ruby tests completed") && \
-#     (cd rust && make test || echo "Rust tests completed") && \
-#     (cd srm && make test || echo "SRM C# tests completed") && \
-#     (cd re2 && make test || echo "RE2 tests completed")
+# Test all engines in consolidated layer
+RUN cd /app/engines && \
+    # Test all engines (allow failures to continue)
+    (cd awk && make test || echo "AWK tests completed") && \
+    (cd c && make test || echo "C tests completed") && \
+    (cd cpp && make test || echo "C++ tests completed") && \
+    (cd csharp && make test || echo "C# tests completed") && \
+    (cd csharp_nonbacktracking && make test || echo "C# Non-Backtracking tests completed") && \
+    (cd go && make test || echo "Go tests completed") && \
+    (cd grep && make test || echo "Grep tests completed") && \
+    (cd hyperscan && make test || echo "Hyperscan tests completed") && \
+    (cd java8 && make test || echo "Java 8 tests completed") && \
+    (cd java11 && make test || echo "Java 11 tests completed") && \
+    (cd nodejs14 && make test || echo "Node.js 14 tests completed") && \
+    (cd nodejs21 && bash -c "source $NVM_DIR/nvm.sh && nvm use 21.7.3 && make test && make v8-test" || echo "Node.js 21 tests completed") && \
+    (cd perl && make test || echo "Perl tests completed") && \
+    (cd php && make test || echo "PHP tests completed") && \
+    (cd python && make test || echo "Python tests completed") && \
+    (cd ruby && make test || echo "Ruby tests completed") && \
+    (cd rust && make test || echo "Rust tests completed") && \
+    (cd srm && make test || echo "SRM C# tests completed") && \
+    (cd re2 && make test || echo "RE2 tests completed")
 
 # =============================================================================
 # TOOLS BUILD AND SETUP
@@ -254,19 +254,30 @@ RUN chown -R developer:developer /app
 # # Test RegexStatic tool
 # RUN make test || echo "RegexStatic tool tests completed"
 
+# # =============================================================================
+# # Build and Test ReScue tool
+# # =============================================================================
+
+# USER developer
+
+# # Build ReScue tool
+# WORKDIR /app/tools/rescue
+# RUN make all
+# # Test ReScue tool
+# RUN make test || echo "ReScue tool tests completed"
+
 # =============================================================================
-# Build and Test ReScue tool
+# Build and Test GREWIA tool
 # =============================================================================
 
 USER developer
 
-# Build ReScue tool
-WORKDIR /app/tools/rescue
-RUN make all
-# Test ReScue tool
-RUN make test || echo "ReScue tool tests completed"
-
-
+# Build GREWIA tool
+WORKDIR /app/tools/GREWIA
+# Create build directory
+RUN mkdir -p build
+# Build GREWIA tool
+RUN cd build && cmake .. && make -j
 
 # =============================================================================
 # CONTAINER RUNTIME CONFIGURATION

@@ -52,6 +52,6 @@ hos\w*name:2024
 ```
 #### And running the command:
 ```bash
-./GREWIA PathTo/test.txt PathTo/Output/1 100000 0 1 1
+./GREWIA PathTo/test.txt PathTo/Output/1 100000 1 0 1
 ```
 #### Its outputs will be written to PathTo/Output/1:

@@ -80,6 +80,7 @@ namespace solverbin{
     else{
       matching_function = "0";
     }    
+    
     if (RegexEngine == "Java"){
       std::string cmd = "timeout " +  time_str + "s /app/engines/java8/bin/benchmark " + base64_encode(Regex) + " " + attack_string_file + " " + matching_function;
       return RunningCmd(cmd);
