@@ -1,0 +1,17 @@
+/build
+/.vscode
+log.txt
+regexes
+LOG.txt
+Test/errors
+Test/error.json
+Test/wash_inter_with_results
+regexlib.txt
+Snort.txt
+Datasets/DataBase/corpus.db
+Datasets/DataBase/snort.db
+Output/1
+Output
+Test/venv
+Datasets/php_hunter_better.txt
+test.txt
