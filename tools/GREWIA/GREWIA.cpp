@@ -133,7 +133,7 @@ int main(int argc, char* argv[]){
       is_redos = true;
       prefix = kk.InterStr;
       infix = kk.WitnessStr;
-      suffix = "";  // GREWIA doesn't seem to provide suffix in the original code
+      suffix = kk.Suffix;  // GREWIA doesn't seem to provide suffix in the original code
       std::cout <<  "prefix: " << kk.InterStr << std::endl;
       std::cout << "infix: " << kk.WitnessStr << std::endl;
     }

@@ -187,7 +187,7 @@ namespace solverbin{
     Outfile << attack_string;
     std::cout << "file is closed" << std::endl;
     if (Verify(attack_string_file)){
-      Suffix.clear();
+      Suffix.append("\n");
       Outfile.close();
       return true;
     }else{
