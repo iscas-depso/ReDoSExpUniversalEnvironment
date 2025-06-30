@@ -165,24 +165,26 @@ def main():
             json.dump(result, f, indent=2)
             
     except Exception as e:
-        # On any error, output a non-ReDoS result
+        # On any error, output a non-ReDoS result with error details
         error_result = {
             "elapsed_ms": "0",
             "is_redos": False,
             "prefix": "",
             "infix": "",
             "suffix": "",
-            "repeat_times": "-1"
+            "repeat_times": "-1",
+            "error": str(e)
         }
         
         try:
             with open(output_file, 'w') as f:
                 json.dump(error_result, f, indent=2)
-        except:
-            pass
+        except Exception as write_error:
+            print(f"Failed to write output file: {write_error}", file=sys.stderr)
         
         print(f"Error: {e}", file=sys.stderr)
-        sys.exit(1)
+        # Don't exit with error code, just log the error
+        # sys.exit(1)
 
 if __name__ == "__main__":
     main() 

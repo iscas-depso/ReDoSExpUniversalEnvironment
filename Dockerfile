@@ -100,6 +100,7 @@ USER root
 WORKDIR /app
 COPY engines/ /app/engines/
 COPY tools/ /app/tools/
+COPY Gen.py /app/
 COPY Dockerfile /app/
 RUN chown -R developer:developer /app && \
     chmod +x /app/engines/run_all_tests.sh
@@ -160,6 +161,15 @@ RUN cd /app/engines && \
 # This ensures engines remain unchanged and new tools are built after engines
 # =============================================================================
 
+# Install hyperfine and additional dependencies for Gen.py
+USER root
+RUN wget https://github.com/sharkdp/hyperfine/releases/download/v1.19.0/hyperfine_1.19.0_amd64.deb -O /tmp/hyperfine.deb && \
+    dpkg -i /tmp/hyperfine.deb || apt-get install -y -f && \
+    rm /tmp/hyperfine.deb && \
+    # Install additional Python dependencies for Gen.py
+    python3 -m pip install --no-cache-dir psutil
+
+USER developer
 
 # RUN cd /app/tools/regulator && make test || echo "Regulator tool tests completed"
 
