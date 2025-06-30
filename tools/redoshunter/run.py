@@ -38,7 +38,7 @@ def encode_to_base64(text):
         return ""
     return base64.b64encode(text.encode('utf-8')).decode('utf-8')
 
-def run_redoshunter(regex, timeout=60):
+def run_redoshunter(regex, timeout=1200):
     """Run ReDoSHunter Java tool on the given regex"""
     jar_path = Path(__file__).parent / "ReDoSHunter.jar"
     
@@ -85,29 +85,21 @@ def run_redoshunter(regex, timeout=60):
             return {
                 "elapsed_ms": str(elapsed_ms),
                 "is_redos": False,
-                "prefix": "",
-                "infix": "",
-                "suffix": "",
-                "repeat_times": "-1"
+                "error": result.stderr,
+                "stdout": result.stdout
             }
             
     except subprocess.TimeoutExpired:
         return {
             "elapsed_ms": str(timeout * 1000),
             "is_redos": False,
-            "prefix": "",
-            "infix": "",
-            "suffix": "",
-            "repeat_times": "-1"
+            "error": "Timeout"
         }
     except Exception as e:
         return {
             "elapsed_ms": "0",
             "is_redos": False,
-            "prefix": "",
-            "infix": "",
-            "suffix": "",
-            "repeat_times": "-1"
+            "error": str(e)
         }
     finally:
         # Clean up temporary files

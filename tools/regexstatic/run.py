@@ -86,7 +86,7 @@ def analyze_regex(pattern):
             "--verbose=true",
             "--construct-eda-exploit-string=true",
             "--construct-ida-exploit-string=true",
-            "--timeout=30000"  # 30 second timeout
+            "--timeout=1200000"  # 20 minutes timeout
         ]
         
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
@@ -171,10 +171,11 @@ def analyze_regex(pattern):
     except subprocess.TimeoutExpired:
         print("RegexStatic analysis timed out", file=sys.stderr)
         output["is_redos"] = False
+        output["error"] = "Timeout"
     except Exception as e:
         print(f"Analysis error: {e}", file=sys.stderr)
         output["is_redos"] = False
-    
+        output["error"] = str(e)
     return output
 
 def parse_attack_string(attack_string):

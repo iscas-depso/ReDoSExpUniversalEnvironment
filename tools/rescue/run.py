@@ -88,7 +88,7 @@ def analyze_regex(pattern):
                               input=pattern, 
                               text=True,
                               capture_output=True, 
-                              timeout=120)  # 2 minute timeout
+                              timeout=1200)  # 20 minute timeout
         
         if result.returncode != 0:
             print(f"ReScue analysis failed: {result.stderr}", file=sys.stderr)
@@ -126,14 +126,18 @@ def analyze_regex(pattern):
         else:
             # Check if it failed due to timeout or other reasons
             output["is_redos"] = False
+            output["error"] = result.stderr
+            output["stdout"] = result.stdout
     
     except subprocess.TimeoutExpired:
         print("ReScue analysis timed out", file=sys.stderr)
         output["is_redos"] = False
+        output["error"] = "Timeout"
     except Exception as e:
         print(f"Analysis error: {e}", file=sys.stderr)
         output["is_redos"] = False
-    
+        output["error"] = str(e)
+        output["stdout"] = result.stdout
     return output
 
 if __name__ == "__main__":

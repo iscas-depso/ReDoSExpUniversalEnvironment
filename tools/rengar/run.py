@@ -38,7 +38,7 @@ def main():
             "-s", base64_regex,
             "-id", "1",  # Provide required ID parameter
             "-q"  # quiet mode to reduce output
-        ], capture_output=True, text=True, timeout=600)
+        ], capture_output=True, text=True, timeout=1200)
         
         # Record end time
         end_time = time.time()
@@ -48,7 +48,8 @@ def main():
         if result.returncode != 0:
             output_json = {
                 "elapsed_ms": elapsed_ms,
-                "is_redos": False
+                "is_redos": False,
+                "error": result.stderr
             }
         else:
             try:
@@ -59,7 +60,9 @@ def main():
                 # If JSON parsing fails, treat as not ReDoS
                 output_json = {
                     "elapsed_ms": elapsed_ms,
-                    "is_redos": False
+                    "is_redos": False,
+                    "error": result.stderr,
+                    "stdout": result.stdout
                 }
         
         # Write output to file
@@ -69,7 +72,9 @@ def main():
     except subprocess.TimeoutExpired:
         output_json = {
             "elapsed_ms": 600000,  # 10 minutes timeout
-            "is_redos": False
+            "is_redos": False,
+            "error": "Timeout",
+            "stdout": result.stdout
         }
         with open(output_file_path, 'w') as f:
             json.dump(output_json, f, indent=2)
@@ -77,7 +82,9 @@ def main():
         print(f"Error: {e}", file=sys.stderr)
         output_json = {
             "elapsed_ms": 0,
-            "is_redos": False
+            "is_redos": False,
+            "error": str(e),
+            "stdout": result.stdout
         }
         with open(output_file_path, 'w') as f:
             json.dump(output_json, f, indent=2)

@@ -176,7 +176,7 @@ def main():
         # Return not ReDoS if fuzzer is not available
         output_json = {
             "elapsed_ms": 0,
-            "is_redos": False
+            "is_redos": False,
         }
         with open(output_file_path, 'w') as f:
             json.dump(output_json, f, indent=2)
@@ -194,7 +194,8 @@ def main():
             print(f"Error decoding base64 regex: {e}", file=sys.stderr)
             output_json = {
                 "elapsed_ms": 0,
-                "is_redos": False
+                "is_redos": False,
+                "error": str(e)
             }
             with open(output_file_path, 'w') as f:
                 json.dump(output_json, f, indent=2)
@@ -313,10 +314,8 @@ def main():
                 print(f"Error during pump analysis: {e}", file=sys.stderr)
                 # Still mark as ReDoS if we found a witness, but without detailed attack structure
                 output_json.update({
-                    "prefix": base64.b64encode(b"").decode('utf-8'),
-                    "infix": base64.b64encode(b"").decode('utf-8'),
-                    "suffix": base64.b64encode(b"").decode('utf-8'),
-                    "repeat_times": -1
+                    "error": str(e),
+                    "stdout": result.stdout
                 })
         
         # Write output to file
@@ -327,7 +326,9 @@ def main():
         print(f"Error: {e}", file=sys.stderr)
         output_json = {
             "elapsed_ms": 0,
-            "is_redos": False
+            "is_redos": False,
+            "error": str(e),
+            "stdout": result.stdout
         }
         with open(output_file_path, 'w') as f:
             json.dump(output_json, f, indent=2)
