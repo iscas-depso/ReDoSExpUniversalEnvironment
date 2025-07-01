@@ -26,9 +26,8 @@ import argparse
 
 # Available engines in the benchmark suite
 ENGINES = [
-    "awk", "c", "cpp", "csharp", "csharp_nonbacktracking", "go", "grep", 
-    "hyperscan", "java8", "java11", "nodejs14", "nodejs21", "perl", 
-    "php", "python", "re2", "ruby", "rust", "srm"
+    "java8", "nodejs14", "perl", "awk", "php", "python", "cpp", "csharp", "c", 
+    # "csharp_nonbacktracking", "go", "grep", "hyperscan", "java11", "nodejs21", "re2", "ruby", "rust", "srm"
 ]
 
 # Global locks for thread safety
