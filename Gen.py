@@ -135,7 +135,7 @@ def run_hyperfine_tool(tool, base64_regex, temp_dir, timeout=600):
     
     # Build the command to run with timeout
     cmd = [
-        "timeout", str(timeout),
+        "timeout", "-k", "1s", str(timeout),
         "python3", str(tool_path.absolute()),
         base64_regex,
         str(output_file.absolute())
@@ -144,7 +144,8 @@ def run_hyperfine_tool(tool, base64_regex, temp_dir, timeout=600):
     # Use hyperfine to benchmark the command (minimum 2 runs)
     hyperfine_cmd = [
         "hyperfine",
-        "--runs", "2",
+        "--min-runs", "2",
+        "--max-runs", "5",
         "--export-json", f"{temp_dir}/hyperfine_{tool}.json",
         "--shell=bash",
         " ".join(f"'{arg}'" for arg in cmd)
@@ -156,7 +157,6 @@ def run_hyperfine_tool(tool, base64_regex, temp_dir, timeout=600):
             hyperfine_cmd, 
             capture_output=True, 
             text=True, 
-            timeout=timeout + 60,
             cwd=Path.cwd()
         )
         
@@ -172,7 +172,6 @@ def run_hyperfine_tool(tool, base64_regex, temp_dir, timeout=600):
             cmd,
             capture_output=True,
             text=True,
-            timeout=timeout,
             cwd=Path.cwd()
         )
         
@@ -207,14 +206,14 @@ def run_hyperfine_tool(tool, base64_regex, temp_dir, timeout=600):
 
 def process_regex_tool_pair(args):
     """Process a single regex-tool pair"""
-    regex_id, regex, base64_regex, tool, db_path = args
+    regex_id, regex, base64_regex, tool, db_path, timeout = args
     
     # Wait if system resources are high
     wait_for_resources()
     
     with tempfile.TemporaryDirectory() as temp_dir:
         try:
-            tool_output, hyperfine_out = run_hyperfine_tool(tool, base64_regex, temp_dir)
+            tool_output, hyperfine_out = run_hyperfine_tool(tool, base64_regex, temp_dir, timeout)
             
             if tool_output is None:
                 return None
@@ -290,7 +289,7 @@ def main():
     tasks = []
     for regex_id, regex, base64_regex in regexes:
         for tool in TOOLS:
-            tasks.append((regex_id, regex, base64_regex, tool, output_db))
+            tasks.append((regex_id, regex, base64_regex, tool, output_db, timeout))
     
     # Process tasks with ThreadPoolExecutor
     completed_tasks = 0

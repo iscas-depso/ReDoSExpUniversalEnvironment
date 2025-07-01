@@ -6,7 +6,7 @@ echo "Testing ReDoSHunter tool..."
 
 # Test regex: (a+)+b (classic ReDoS pattern)
 # Base64 encoded: KGErKStiFg==
-TEST_REGEX_B64="KGErKSti"
+TEST_REGEX_B64="XihhKykrLmEqYiQ="
 OUTPUT_FILE="/tmp/redoshunter_test_output.json"
 
 # Run the tool
@@ -41,6 +41,22 @@ else:
         echo "✓ Test completed successfully"
     else
         echo "✗ Missing required fields"
+        exit 1
+    fi
+
+    # Check if is_redos is true
+    if python3 -c "
+import json
+data = json.load(open('$OUTPUT_FILE'))
+if data['is_redos']:
+    print('✓ is_redos is true')
+else:
+    print('✗ is_redos is false')
+    exit(1)
+" 2>/dev/null; then
+        echo "✓ is_redos is true"
+    else
+        echo "✗ is_redos is false"
         exit 1
     fi
     

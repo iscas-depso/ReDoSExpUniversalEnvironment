@@ -24,7 +24,7 @@ clean:
 	@echo "Clean complete!"
 
 # Run tests
-test: build
+test:
 	@echo "Running ReDoSHunter tests..."
 	chmod +x $(TEST_DIR)/simple_test.sh
 	./$(TEST_DIR)/simple_test.sh

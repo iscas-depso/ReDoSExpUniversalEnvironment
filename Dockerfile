@@ -100,8 +100,6 @@ USER root
 WORKDIR /app
 COPY engines/ /app/engines/
 COPY tools/ /app/tools/
-COPY Gen.py /app/
-COPY Dockerfile /app/
 RUN chown -R developer:developer /app && \
     chmod +x /app/engines/run_all_tests.sh
 
@@ -171,25 +169,26 @@ RUN wget https://github.com/sharkdp/hyperfine/releases/download/v1.19.0/hyperfin
 
 USER developer
 
-# RUN cd /app/tools/regulator && make test || echo "Regulator tool tests completed"
 
-# Build and test all tools in a single consolidated layer
-RUN cd /app/tools && \
-    # Build and test Rengar tool
-    (cd rengar && make all && (make test || echo "Rengar tool tests completed")) && \
-    # Build and test ReDoSHunter tool
-    (cd redoshunter && make all && (make test || echo "ReDoSHunter tool tests completed")) && \
-    # Build and test Regulator tool (takes very long time and about 130GB memory)
-    (cd regulator && chmod -R 777 . && make all -j && (make test || echo "Regulator tool tests completed")) && \
-    # Build and test Regexploit tool
-    (cd regexploit && make all && (make test || echo "Regexploit tool tests completed")) && \
-    # Build and test RegexStatic tool
-    (cd regexstatic && make all && (make test || echo "RegexStatic tool tests completed")) && \
-    # Build and test ReScue tool
-    (cd rescue && make all && (make test || echo "ReScue tool tests completed"))
+# Build and test Regexploit tool
+RUN (cd /app/tools/regexploit && make all && make test && echo "Regexploit tool tests completed")
+# Build and test RegexStatic tool
+RUN (cd /app/tools/regexstatic && make all && make test && echo "RegexStatic tool tests completed")
+# Build and test ReDoSHunter tool
+RUN (cd /app/tools/redoshunter && make all && make test && echo "ReDoSHunter tool tests completed")
+# Build and test ReScue tool
+RUN (cd /app/tools/rescue && make all && make test && echo "ReScue tool tests completed")
+# Build and test Rengar tool
+RUN (cd /app/tools/rengar && make all && make test && echo "Rengar tool tests completed")
+# Build and test Regulator tool (takes very long time and about 130GB memory)
+RUN (cd /app/tools/regulator && chmod -R 777 . && make all -j && make test && echo "Regulator tool tests completed")
 
 # =============================================================================
 # CONTAINER RUNTIME CONFIGURATION
 # =============================================================================
 
-WORKDIR /app/tools
+COPY Gen.py /app/
+COPY Verify.py /app/
+COPY Dockerfile /app/
+
+WORKDIR /app
