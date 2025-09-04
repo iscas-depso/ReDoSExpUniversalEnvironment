@@ -34,7 +34,7 @@ def main():
         
         # Call the modified Java program with ID parameter and enable-preview flag
         result = subprocess.run([
-            "java", "--enable-preview", "-jar", str(jar_path),
+            "/usr/lib/jvm/java-17-openjdk-amd64/bin/java", "--enable-preview", "-jar", str(jar_path),
             "-s", base64_regex,
             "-id", "1",  # Provide required ID parameter
             "-q"  # quiet mode to reduce output

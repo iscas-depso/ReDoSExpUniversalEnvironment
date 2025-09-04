@@ -54,15 +54,25 @@ def run_redoshunter(regex, timeout=1200):
     output_dir = tempfile.mkdtemp()
     
     try:
-        # Run ReDoSHunter with Java 8
-        java8_path = '/usr/lib/jvm/java-8-openjdk-amd64/bin/java'
+        # # Run ReDoSHunter with Java 8
+        # java8_path = '/usr/lib/jvm/java-8-openjdk-amd64/bin/java'
+        # cmd = [
+        #     java8_path, '-jar', str(jar_path),
+        #     os.path.dirname(input_file),
+        #     os.path.basename(input_file),
+        #     output_dir
+        # ]
+
+        # Run ReDoSHunter with native image
         cmd = [
-            java8_path, '-jar', str(jar_path),
+            '/app/tools/redoshunter/ReDoSHunter',
             os.path.dirname(input_file),
             os.path.basename(input_file),
             output_dir
         ]
-        
+
+        print(" ".join(cmd))
+
         start_time = time.time()
         result = subprocess.run(
             cmd, 
