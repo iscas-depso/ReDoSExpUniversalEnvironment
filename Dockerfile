@@ -175,7 +175,13 @@ RUN (cd /app/tools/regexploit && make all && make test && echo "Regexploit tool 
 # Build and test RegexStatic tool
 RUN (cd /app/tools/regexstatic && make all && make test && echo "RegexStatic tool tests completed")
 # Build and test ReDoSHunter tool
-RUN (cd /app/tools/redoshunter && make all && make test && echo "ReDoSHunter tool tests completed")
+RUN curl -s "https://get.sdkman.io" | bash
+SHELL ["/bin/bash", "-c"] 
+RUN chmod a+x "$HOME/.sdkman/bin/sdkman-init.sh"
+RUN source "$HOME/.sdkman/bin/sdkman-init.sh"   \
+                && sdk install java 24.0.2-graal
+RUN (cd /app/tools/redoshunter && make all && native-image -jar ReDoSHunter.jar  && make test && echo "ReDoSHunter tool tests completed")
+# RUN (cd /app/tools/redoshunter && make all && make test && echo "ReDoSHunter tool tests completed")
 # Build and test ReScue tool
 RUN (cd /app/tools/rescue && make all && make test && echo "ReScue tool tests completed")
 # Build and test Rengar tool
