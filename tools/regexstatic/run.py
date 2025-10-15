@@ -43,9 +43,12 @@ def main():
             
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
-        # In case of error, return a safe default
+        # Record end time even in case of error
+        end_time = time.time()
+        elapsed_ms = int((end_time - start_time) * 1000)
+        # In case of error, return a safe default but preserve elapsed_ms
         output_json = {
-            "elapsed_ms": 0,
+            "elapsed_ms": elapsed_ms,
             "is_redos": False
         }
         with open(output_file_path, 'w') as f:
@@ -86,7 +89,7 @@ def analyze_regex(pattern):
             "--verbose=true",
             "--construct-eda-exploit-string=true",
             "--construct-ida-exploit-string=true",
-            "--timeout=30000"  # 30 second timeout
+            "--timeout=1200000"  # 20 minutes timeout
         ]
         
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
@@ -171,10 +174,11 @@ def analyze_regex(pattern):
     except subprocess.TimeoutExpired:
         print("RegexStatic analysis timed out", file=sys.stderr)
         output["is_redos"] = False
+        output["error"] = "Timeout"
     except Exception as e:
         print(f"Analysis error: {e}", file=sys.stderr)
         output["is_redos"] = False
-    
+        output["error"] = str(e)
     return output
 
 def parse_attack_string(attack_string):

@@ -38,7 +38,7 @@ def encode_to_base64(text):
         return ""
     return base64.b64encode(text.encode('utf-8')).decode('utf-8')
 
-def run_redoshunter(regex, timeout=60):
+def run_redoshunter(regex, timeout=1200):
     """Run ReDoSHunter Java tool on the given regex"""
     jar_path = Path(__file__).parent / "ReDoSHunter.jar"
     
@@ -54,15 +54,25 @@ def run_redoshunter(regex, timeout=60):
     output_dir = tempfile.mkdtemp()
     
     try:
-        # Run ReDoSHunter with Java 8
-        java8_path = '/usr/lib/jvm/java-8-openjdk-amd64/bin/java'
+        # # Run ReDoSHunter with Java 8
+        # java8_path = '/usr/lib/jvm/java-8-openjdk-amd64/bin/java'
+        # cmd = [
+        #     java8_path, '-jar', str(jar_path),
+        #     os.path.dirname(input_file),
+        #     os.path.basename(input_file),
+        #     output_dir
+        # ]
+
+        # Run ReDoSHunter with native image
         cmd = [
-            java8_path, '-jar', str(jar_path),
+            '/app/tools/redoshunter/ReDoSHunter',
             os.path.dirname(input_file),
             os.path.basename(input_file),
             output_dir
         ]
-        
+
+        print(" ".join(cmd))
+
         start_time = time.time()
         result = subprocess.run(
             cmd, 
@@ -85,29 +95,21 @@ def run_redoshunter(regex, timeout=60):
             return {
                 "elapsed_ms": str(elapsed_ms),
                 "is_redos": False,
-                "prefix": "",
-                "infix": "",
-                "suffix": "",
-                "repeat_times": "-1"
+                "error": result.stderr,
+                "stdout": result.stdout
             }
             
     except subprocess.TimeoutExpired:
         return {
             "elapsed_ms": str(timeout * 1000),
             "is_redos": False,
-            "prefix": "",
-            "infix": "",
-            "suffix": "",
-            "repeat_times": "-1"
+            "error": "Timeout"
         }
     except Exception as e:
         return {
             "elapsed_ms": "0",
             "is_redos": False,
-            "prefix": "",
-            "infix": "",
-            "suffix": "",
-            "repeat_times": "-1"
+            "error": str(e)
         }
     finally:
         # Clean up temporary files
@@ -173,24 +175,26 @@ def main():
             json.dump(result, f, indent=2)
             
     except Exception as e:
-        # On any error, output a non-ReDoS result
+        # On any error, output a non-ReDoS result with error details
         error_result = {
             "elapsed_ms": "0",
             "is_redos": False,
             "prefix": "",
             "infix": "",
             "suffix": "",
-            "repeat_times": "-1"
+            "repeat_times": "-1",
+            "error": str(e)
         }
         
         try:
             with open(output_file, 'w') as f:
                 json.dump(error_result, f, indent=2)
-        except:
-            pass
+        except Exception as write_error:
+            print(f"Failed to write output file: {write_error}", file=sys.stderr)
         
         print(f"Error: {e}", file=sys.stderr)
-        sys.exit(1)
+        # Don't exit with error code, just log the error
+        # sys.exit(1)
 
 if __name__ == "__main__":
     main() 

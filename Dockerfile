@@ -33,7 +33,7 @@ ENV \
 # Engines build process
 # =============================================================================
 
-# Install all system packages in a single layer
+# Install all system packages, create user, and setup environment in single layer
 RUN apt-get update && apt-get install -y \
     # Core development tools
     build-essential make git \
@@ -51,8 +51,10 @@ RUN apt-get update && apt-get install -y \
     dotnet-sdk-7.0 \
     # Golang
     golang-go \
-    # Java SDKs
-    openjdk-8-jdk openjdk-11-jdk\
+    # Java SDKs (8, 11, 17)
+    openjdk-8-jdk openjdk-11-jdk openjdk-17-jdk-headless \
+    # Maven
+    maven \
     # Perl and modules
     perl libmime-base64-perl \
     # PHP CLI
@@ -65,12 +67,23 @@ RUN apt-get update && apt-get install -y \
     gawk coreutils \
     # Grep and calculator
     grep bc \
+    # Additional packages needed for regulator-dynamic
+    libicu-dev \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update \
+    && apt-get install -y python3.8 python3.8-dev python3.8-distutils \
     && rm -rf /var/lib/apt/lists/* \
-    && ldconfig
+    && ldconfig \
+    # Create non-root user
+    && useradd -m -s /bin/bash developer \
+    && usermod -aG sudo developer
 
-# Create a non-root user for security
-RUN useradd -m -s /bin/bash developer && \
-    usermod -aG sudo developer
+# Install Python packages for regulator
+RUN python3 -m pip install --no-cache-dir \
+    colored \
+    numpy \
+    scipy \
+    scikit-learn
 
 # Install Rust, nvm and Node.js for developer user
 USER developer
@@ -82,14 +95,11 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | b
     bash -c "source $NVM_DIR/nvm.sh && nvm install 14.21.3 && nvm install 21.7.3 && nvm use 21.7.3 && nvm alias default 21.7.3"
 ENV PATH="$NVM_DIR/versions/node/v21.7.3/bin:$PATH"
 
+# Copy files and build engines in consolidated layers
 USER root
 WORKDIR /app
-
-# Copy all project files
 COPY engines/ /app/engines/
-COPY Dockerfile /app/
-
-# Set proper ownership
+COPY tools/ /app/tools/
 RUN chown -R developer:developer /app && \
     chmod +x /app/engines/run_all_tests.sh
 
@@ -143,12 +153,13 @@ RUN cd /app/engines && \
     (cd re2 && make test || echo "RE2 tests completed")
 
 # =============================================================================
-# TOOLS BUILD AND SETUP
+# TOOLS BUILD AND SETUP (CONSOLIDATED)
 # =============================================================================
 # CURSOR RULE: ALL FUTURE TOOL MODIFICATIONS MUST BE ADDED BELOW THIS LINE
 # This ensures engines remain unchanged and new tools are built after engines
 # =============================================================================
 
+# Install hyperfine and additional dependencies for Gen.py
 USER root
 
 # =============================================================================
@@ -285,4 +296,8 @@ RUN cd build && cmake .. && make -j
 # CONTAINER RUNTIME CONFIGURATION
 # =============================================================================
 
-WORKDIR /app/tools
+COPY Gen.py /app/
+COPY Verify.py /app/
+COPY Dockerfile /app/
+
+WORKDIR /app

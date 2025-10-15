@@ -7,7 +7,7 @@ The `tools/` folder contains the tools for generating regex attack strings.
 
 ### 0  Guidelines
 
-**Rebuild/test Docker image `redosenv`after any change. Always run programs in docker container, do not run programs in local environment.**
+**Rebuild/test Docker image `baselines_only` after any change. Always run programs in docker container, do not run programs in local environment.**
 
 **Keep directory contents minimal—source, README, tests, and build artefacts only.**
 
