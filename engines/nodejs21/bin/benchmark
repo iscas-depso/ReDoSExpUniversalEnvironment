@@ -1,0 +1,13 @@
+#!/bin/bash
+# Node.js 21 Benchmark Wrapper with V8 Non-Backtracking RegExp Engine
+export NVM_DIR="/home/developer/.nvm"
+DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(dirname "$DIR")"
+NODE_FLAGS="--enable-experimental-regexp-engine --default-to-experimental-regexp-engine"
+if [ -f "$NVM_DIR/nvm.sh" ]; then
+    source "$NVM_DIR/nvm.sh"
+    nvm use 21.7.3 >/dev/null 2>&1
+    node $NODE_FLAGS "$SCRIPT_DIR/benchmark.js" "$@"
+else
+    node $NODE_FLAGS "$SCRIPT_DIR/benchmark.js" "$@"
+fi

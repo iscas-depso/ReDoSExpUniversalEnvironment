@@ -1,0 +1,12 @@
+#!/bin/bash
+# Node.js 14 Benchmark Wrapper
+export NVM_DIR="/home/developer/.nvm"
+DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(dirname "$DIR")"
+if [ -f "$NVM_DIR/nvm.sh" ]; then
+    source "$NVM_DIR/nvm.sh"
+    nvm use 14.21.3 >/dev/null 2>&1
+    node "$SCRIPT_DIR/benchmark.js" "$@"
+else
+    node "$SCRIPT_DIR/benchmark.js" "$@"
+fi

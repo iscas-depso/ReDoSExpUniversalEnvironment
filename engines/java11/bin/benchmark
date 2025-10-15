@@ -1,0 +1,5 @@
+#!/bin/bash
+# Java 11 Benchmark Wrapper
+JAVA_HOME_11=/usr/lib/jvm/java-11-openjdk-amd64
+DIR="$(cd "$(dirname "$0")" && pwd)"
+"$JAVA_HOME_11/bin/java" -cp "$DIR" Benchmark "$@"

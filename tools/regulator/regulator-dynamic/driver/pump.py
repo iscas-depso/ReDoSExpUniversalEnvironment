@@ -296,7 +296,11 @@ def get_pump_report(
             _, slowest_pump_pos, slowest_pump_len, pts = pump_timeout
             klass = ('EXPONENTIAL(pump_timeout)',)
         else:
-            for newklass, _, pump_pos, pump_len, pts in profiles:
+            for profile in profiles:
+                # Skip BASE_PUMP_TIMEOUT entries which only have 3 elements
+                if len(profile) == 3:
+                    continue
+                newklass, pump_pos, pump_len, pts = profile
                 assert newklass[0] != 'EXPONENTIAL', 'should have done fastbreak'
                 if newklass[0] == 'POLYNOMIAL':
                     should_replace = (

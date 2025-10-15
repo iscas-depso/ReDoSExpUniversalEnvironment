@@ -1,0 +1,5 @@
+#!/bin/bash
+# Java 8 Benchmark Wrapper
+JAVA_HOME_8=/usr/lib/jvm/java-8-openjdk-amd64
+DIR="$(cd "$(dirname "$0")" && pwd)"
+"$JAVA_HOME_8/bin/java" -cp "$DIR" Benchmark "$@"

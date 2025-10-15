@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "WaU3dxRpZLJR0hKQgap5BMO/nY7UU9sbcv9ByH88bnoVg8StCxIo1lZGdg9aXsphM6GcqlRBSr+zjUQeC8QYDg==",
+  "success": true,
+  "projectFilePath": "/root/Refactoring/new/ReDoSExpUniversalEnvironment/engines/csharp_nonbacktracking/benchmark.csproj",
+  "expectedPackageFiles": [
+    "/root/.nuget/packages/microsoft.netcore.app.ref/7.0.20/microsoft.netcore.app.ref.7.0.20.nupkg.sha512",
+    "/root/.nuget/packages/microsoft.aspnetcore.app.ref/7.0.20/microsoft.aspnetcore.app.ref.7.0.20.nupkg.sha512",
+    "/root/.nuget/packages/microsoft.netcore.app.host.linux-x64/7.0.20/microsoft.netcore.app.host.linux-x64.7.0.20.nupkg.sha512"
+  ],
+  "logs": []
+}

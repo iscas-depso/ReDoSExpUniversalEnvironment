@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "dgSpecHash": "WhnbaemT8Hh7PQkfbBPyNf0rLafIM+SWcxU67GTQsX8FS2OOXZlgwpj9c89GQNNdtqRUzLSIGJMLIoZA3fY8fA==",
+  "success": true,
+  "projectFilePath": "/root/Refactoring/new/ReDoSExpUniversalEnvironment/engines/srm/benchmark.csproj",
+  "expectedPackageFiles": [
+    "/root/.nuget/packages/microsoft.automata.srm/2.0.0-alpha2/microsoft.automata.srm.2.0.0-alpha2.nupkg.sha512",
+    "/root/.nuget/packages/system.collections.immutable/1.6.0/system.collections.immutable.1.6.0.nupkg.sha512",
+    "/root/.nuget/packages/system.numerics.vectors/4.5.0/system.numerics.vectors.4.5.0.nupkg.sha512",
+    "/root/.nuget/packages/system.runtime.compilerservices.unsafe/4.5.2/system.runtime.compilerservices.unsafe.4.5.2.nupkg.sha512",
+    "/root/.nuget/packages/microsoft.netcore.app.ref/7.0.20/microsoft.netcore.app.ref.7.0.20.nupkg.sha512",
+    "/root/.nuget/packages/microsoft.aspnetcore.app.ref/7.0.20/microsoft.aspnetcore.app.ref.7.0.20.nupkg.sha512",
+    "/root/.nuget/packages/microsoft.netcore.app.host.linux-x64/7.0.20/microsoft.netcore.app.host.linux-x64.7.0.20.nupkg.sha512"
+  ],
+  "logs": []
+}

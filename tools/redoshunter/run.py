@@ -39,11 +39,11 @@ def encode_to_base64(text):
     return base64.b64encode(text.encode('utf-8')).decode('utf-8')
 
 def run_redoshunter(regex, timeout=1200):
-    """Run ReDoSHunter Java tool on the given regex"""
-    jar_path = Path(__file__).parent / "ReDoSHunter.jar"
-    
-    if not jar_path.exists():
-        raise FileNotFoundError(f"ReDoSHunter.jar not found at {jar_path}")
+    """Run ReDoSHunter native image on the given regex"""
+    binary_path = Path(__file__).parent / "ReDoSHunter"
+
+    if not binary_path.exists():
+        raise FileNotFoundError(f"ReDoSHunter native binary not found at {binary_path}")
     
     # Create temporary input file
     with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as tmp_file:

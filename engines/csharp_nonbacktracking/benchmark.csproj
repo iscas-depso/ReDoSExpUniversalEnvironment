@@ -5,7 +5,8 @@
     <TargetFramework>net7.0</TargetFramework>
     <AssemblyName>benchmark</AssemblyName>
     <PublishSingleFile>true</PublishSingleFile>
-    <SelfContained>false</SelfContained>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
   </PropertyGroup>
 
 </Project>

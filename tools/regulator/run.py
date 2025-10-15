@@ -314,8 +314,7 @@ def main():
                 print(f"Error during pump analysis: {e}", file=sys.stderr)
                 # Still mark as ReDoS if we found a witness, but without detailed attack structure
                 output_json.update({
-                    "error": str(e),
-                    "stdout": result.stdout
+                    "error": str(e)
                 })
         
         # Write output to file
@@ -327,8 +326,7 @@ def main():
         output_json = {
             "elapsed_ms": 0,
             "is_redos": False,
-            "error": str(e),
-            "stdout": result.stdout
+            "error": str(e)
         }
         with open(output_file_path, 'w') as f:
             json.dump(output_json, f, indent=2)

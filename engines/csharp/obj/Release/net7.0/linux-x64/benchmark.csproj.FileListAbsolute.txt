@@ -1,0 +1,14 @@
+/root/Refactoring/new/ReDoSExpUniversalEnvironment/engines/csharp/bin/Release/net7.0/linux-x64/benchmark
+/root/Refactoring/new/ReDoSExpUniversalEnvironment/engines/csharp/bin/Release/net7.0/linux-x64/benchmark.deps.json
+/root/Refactoring/new/ReDoSExpUniversalEnvironment/engines/csharp/bin/Release/net7.0/linux-x64/benchmark.runtimeconfig.json
+/root/Refactoring/new/ReDoSExpUniversalEnvironment/engines/csharp/bin/Release/net7.0/linux-x64/benchmark.dll
+/root/Refactoring/new/ReDoSExpUniversalEnvironment/engines/csharp/bin/Release/net7.0/linux-x64/benchmark.pdb
+/root/Refactoring/new/ReDoSExpUniversalEnvironment/engines/csharp/obj/Release/net7.0/linux-x64/benchmark.GeneratedMSBuildEditorConfig.editorconfig
+/root/Refactoring/new/ReDoSExpUniversalEnvironment/engines/csharp/obj/Release/net7.0/linux-x64/benchmark.AssemblyInfoInputs.cache
+/root/Refactoring/new/ReDoSExpUniversalEnvironment/engines/csharp/obj/Release/net7.0/linux-x64/benchmark.AssemblyInfo.cs
+/root/Refactoring/new/ReDoSExpUniversalEnvironment/engines/csharp/obj/Release/net7.0/linux-x64/benchmark.csproj.CoreCompileInputs.cache
+/root/Refactoring/new/ReDoSExpUniversalEnvironment/engines/csharp/obj/Release/net7.0/linux-x64/benchmark.dll
+/root/Refactoring/new/ReDoSExpUniversalEnvironment/engines/csharp/obj/Release/net7.0/linux-x64/refint/benchmark.dll
+/root/Refactoring/new/ReDoSExpUniversalEnvironment/engines/csharp/obj/Release/net7.0/linux-x64/benchmark.pdb
+/root/Refactoring/new/ReDoSExpUniversalEnvironment/engines/csharp/obj/Release/net7.0/linux-x64/benchmark.genruntimeconfig.cache
+/root/Refactoring/new/ReDoSExpUniversalEnvironment/engines/csharp/obj/Release/net7.0/linux-x64/ref/benchmark.dll
