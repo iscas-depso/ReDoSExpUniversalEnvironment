@@ -1,0 +1,254 @@
+const path = require('path');
+
+const compression = require('compression');
+const express = require('express');
+const morgan = require('morgan');
+
+const JobManager = require('./job-manager');
+const {
+  TOOL_DEFINITIONS,
+  TOOL_METADATA,
+  ENGINE_DEFINITIONS,
+  ENGINE_METADATA,
+  MATCH_MODES,
+  DEFAULT_OPTIONS
+} = require('./definitions');
+const { runToolsJob } = require('./tool-runner');
+const { runEnginesJob } = require('./engine-runner');
+
+function sanitizeRegexInput(value) {
+  if (typeof value !== 'string') {
+    return '';
+  }
+  return value.trim();
+}
+
+function normalizeIdList(value) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return [...new Set(value.map(item => String(item).trim()).filter(Boolean))];
+}
+
+function createApp(options = {}) {
+  const {
+    jobManager: providedJobManager,
+    runTools = runToolsJob,
+    runEngines = runEnginesJob,
+    logError = console.error
+  } = options;
+
+  const jobManager = providedJobManager || new JobManager();
+  const app = express();
+
+  app.locals.jobManager = jobManager;
+
+  app.disable('x-powered-by');
+  app.use(compression());
+  app.use(express.json({ limit: '1mb' }));
+  app.use(
+    morgan('dev', {
+      skip: () => process.env.NODE_ENV === 'test'
+    })
+  );
+
+  app.get('/api/meta', (req, res) => {
+    res.json({
+      tools: TOOL_METADATA,
+      engines: ENGINE_METADATA,
+      matchModes: MATCH_MODES,
+      defaults: {
+        toolTimeoutSeconds: Math.round(DEFAULT_OPTIONS.toolTimeoutMs / 1000),
+        engineTimeoutSeconds: Math.round(DEFAULT_OPTIONS.engineTimeoutMs / 1000),
+        maxRepeatTimes: DEFAULT_OPTIONS.maxRepeatTimes,
+        maxAttackLength: DEFAULT_OPTIONS.maxAttackLength
+      }
+    });
+  });
+
+  app.get('/api/jobs/:id', (req, res) => {
+    const job = jobManager.getJob(req.params.id);
+    if (!job) {
+      res.status(404).json({ error: 'Job not found' });
+      return;
+    }
+    res.json(jobManager.serialize(job));
+  });
+
+  app.get('/api/jobs/:id/stream', (req, res) => {
+    const job = jobManager.getJob(req.params.id);
+    if (!job) {
+      res.status(404).json({ error: 'Job not found' });
+      return;
+    }
+
+    res.set({
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive'
+    });
+    res.flushHeaders?.();
+
+  jobManager.subscribe(job.id, res);
+  res.write(`data: ${JSON.stringify(jobManager.serialize(job))}\n\n`);
+  res.flush?.();
+});
+
+  app.post('/api/jobs/tools', (req, res) => {
+    const regex = sanitizeRegexInput(req.body?.regex);
+    const toolIds = normalizeIdList(req.body?.tools);
+
+    if (!regex) {
+      res.status(400).json({ error: 'Regex input is required.' });
+      return;
+    }
+
+    if (!toolIds.length) {
+      res.status(400).json({ error: 'At least one tool must be selected.' });
+      return;
+    }
+
+    const invalidTools = toolIds.filter(id => !TOOL_DEFINITIONS[id]);
+    if (invalidTools.length) {
+      res.status(400).json({ error: `Unsupported tools requested: ${invalidTools.join(', ')}` });
+      return;
+    }
+
+    const timeoutSeconds = Number(req.body?.timeoutSeconds);
+    const timeoutMs = Number.isFinite(timeoutSeconds) && timeoutSeconds > 0
+      ? Math.min(timeoutSeconds, 3600) * 1000
+      : undefined;
+
+    const items = toolIds.map(id => ({
+      id,
+      label: TOOL_DEFINITIONS[id].label,
+      description: TOOL_DEFINITIONS[id].description
+    }));
+
+    const job = jobManager.createJob({
+      type: 'tools',
+      items,
+      request: {
+        regexLength: regex.length,
+        toolIds,
+        timeoutMs: timeoutMs || DEFAULT_OPTIONS.toolTimeoutMs
+      }
+    });
+
+    res.status(202).json({
+      jobId: job.id,
+      status: job.status
+    });
+
+    setImmediate(async () => {
+      try {
+        await runTools(jobManager, job, { regex, toolIds, timeoutMs });
+      } catch (error) {
+        logError('Tool job failed:', error);
+        jobManager.finalizeJob(job, 'failed', error);
+      }
+    });
+  });
+
+  app.post('/api/jobs/engines', (req, res) => {
+    const regex = sanitizeRegexInput(req.body?.regex);
+    const engines = normalizeIdList(req.body?.engines);
+    const matchModeRaw = Number(req.body?.matchMode ?? 0);
+    const repeatOverride = Number(req.body?.repeatOverride);
+    const maxAttackLength = Number(req.body?.maxAttackLength);
+    const maxRepeatTimes = Number(req.body?.maxRepeatTimes);
+    const timeoutSeconds = Number(req.body?.timeoutSeconds);
+    const attack = req.body?.attack;
+    const attackSource = req.body?.attackSource || {};
+
+    if (!regex) {
+      res.status(400).json({ error: 'Regex input is required.' });
+      return;
+    }
+
+    if (!Array.isArray(engines) || !engines.length) {
+      res.status(400).json({ error: 'At least one engine must be selected.' });
+      return;
+    }
+
+    if (!attack || typeof attack !== 'object') {
+      res.status(400).json({ error: 'Attack data from a tool result is required.' });
+      return;
+    }
+
+    const invalidEngines = engines.filter(id => !ENGINE_DEFINITIONS[id]);
+    if (invalidEngines.length) {
+      res.status(400).json({ error: `Unsupported engines requested: ${invalidEngines.join(', ')}` });
+      return;
+    }
+
+    const timeoutMs = Number.isFinite(timeoutSeconds) && timeoutSeconds > 0
+      ? Math.min(timeoutSeconds, 3600) * 1000
+      : undefined;
+
+    const matchMode = matchModeRaw === 1 ? 1 : 0;
+
+    const items = engines.map(id => ({
+      id,
+      label: ENGINE_DEFINITIONS[id].label,
+      description: ENGINE_DEFINITIONS[id].description
+    }));
+
+    const job = jobManager.createJob({
+      type: 'engines',
+      items,
+      request: {
+        regexLength: regex.length,
+        engineIds: engines,
+        matchMode,
+        repeatOverride: Number.isFinite(repeatOverride) ? repeatOverride : null,
+        timeoutMs: timeoutMs || DEFAULT_OPTIONS.engineTimeoutMs,
+        attackSource
+      }
+    });
+
+    res.status(202).json({
+      jobId: job.id,
+      status: job.status
+    });
+
+    setImmediate(async () => {
+      try {
+        await runEngines(jobManager, job, {
+          regex,
+          engines,
+          attack,
+          matchMode,
+          timeoutMs,
+          repeatOverride: Number.isFinite(repeatOverride) ? repeatOverride : undefined,
+          maxAttackLength: Number.isFinite(maxAttackLength) && maxAttackLength > 0 ? maxAttackLength : undefined,
+          maxRepeatTimes: Number.isFinite(maxRepeatTimes) && maxRepeatTimes > 0 ? maxRepeatTimes : undefined
+        });
+      } catch (error) {
+        logError('Engine job failed:', error);
+        jobManager.finalizeJob(job, 'failed', error);
+      }
+    });
+  });
+
+  const publicDir = path.join(__dirname, '..', 'public');
+  app.use(express.static(publicDir, { fallthrough: true }));
+
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api/')) {
+      res.status(404).json({ error: 'API route not found' });
+      return;
+    }
+    next();
+  });
+
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(publicDir, 'index.html'));
+  });
+
+  return app;
+}
+
+module.exports = {
+  createApp
+};

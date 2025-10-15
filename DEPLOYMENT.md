@@ -468,6 +468,23 @@ timeout 10 docker run --rm -v /tmp:/tmp redos-test \
   /app/engines/python/bin/benchmark KGErKSti /tmp/attack.txt 0 || echo "Timeout - ReDoS confirmed!"
 ```
 
+#### 4. Web 控制台（可选）
+
+如果希望通过图形界面完成同样的流程：
+
+```bash
+# 启动容器并映射端口 8080
+docker run --rm -p 8080:8080 -v /tmp:/tmp redos-test
+```
+
+然后打开浏览器访问 `http://localhost:8080`：
+
+1. 在“检测工具”面板粘贴正则表达式，勾选需要运行的工具后点击“运行所选工具”
+2. 等待所有工具结束，在结果卡片中选择“用于验证”来锁定某个攻击字符串
+3. 在“验证引擎”面板勾选目标引擎，可调节匹配模式、重复次数或最大输入长度
+4. 点击“运行所选引擎”，页面会以实时流方式展示每个引擎的耗时、匹配次数及标准输出
+5. 若需要重新测试，直接修改参数后再次提交，无需重启容器
+
 ### 高级用法
 
 #### 1. 交互式容器

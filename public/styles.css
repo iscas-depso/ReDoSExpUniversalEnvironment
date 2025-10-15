@@ -1,0 +1,457 @@
+:root {
+  --bg: #0f172a;
+  --panel-bg: #ffffff;
+  --panel-border: #e2e8f0;
+  --panel-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --danger: #dc2626;
+  --neutral: #64748b;
+  --border-radius: 14px;
+  --transition: 0.2s ease;
+  --font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0 0 48px;
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.14) 0%, rgba(15, 23, 42, 0.08) 40%, rgba(15, 23, 42, 0.16) 100%);
+  font-family: var(--font-family);
+  color: var(--text-primary);
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 32px clamp(24px, 6vw, 64px) 16px;
+  color: #fff;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: clamp(26px, 3vw, 34px);
+  font-weight: 700;
+}
+
+.subtitle {
+  margin: 8px 0 0;
+  font-size: 15px;
+  opacity: 0.8;
+}
+
+.runtime-info {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
+  padding: 0 clamp(24px, 6vw, 64px);
+  align-items: start;
+}
+
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--border-radius);
+  box-shadow: var(--panel-shadow);
+  padding: 28px 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.panel-header p {
+  margin: 4px 0 0;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-weight: 600;
+}
+
+textarea,
+input,
+select {
+  font-family: inherit;
+  font-size: 15px;
+  padding: 10px 12px;
+  border: 1px solid #cbd5f5;
+  border-radius: 10px;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  background: #f8fafc;
+}
+
+textarea:focus,
+input:focus,
+select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+  background: #fff;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 96px;
+}
+
+.help-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.selection-group {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.selection-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.selection-header h3 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.selection-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.checkbox-tile {
+  position: relative;
+  border: 1px solid #cbd5f5;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  background: #fff;
+  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+
+.checkbox-tile:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.08);
+}
+
+.checkbox-tile input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.checkbox-tile.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.checkbox-label {
+  font-weight: 600;
+}
+
+.checkbox-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.panel-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+button {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition), background var(--transition);
+  font-family: inherit;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+  box-shadow: none;
+}
+
+.primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.24);
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.ghost {
+  background: rgba(148, 163, 184, 0.16);
+  color: var(--text-primary);
+}
+
+.ghost:hover:not(:disabled) {
+  background: rgba(148, 163, 184, 0.3);
+}
+
+.small {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.job-status {
+  padding: 14px 16px;
+  border: 1px dashed #cbd5f5;
+  border-radius: 12px;
+  background: rgba(226, 232, 240, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.job-status strong {
+  color: var(--text-primary);
+}
+
+.results-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.result-card {
+  border: 1px solid #dbeafe;
+  border-radius: 14px;
+  padding: 18px;
+  background: #f8fbff;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.result-card.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.result-title {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.result-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.result-body {
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.result-body code {
+  background: rgba(15, 23, 42, 0.08);
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+
+.result-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.logs-block {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 13px;
+  overflow-x: auto;
+  max-height: 160px;
+  white-space: pre-wrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.badge-neutral {
+  background: rgba(148, 163, 184, 0.25);
+  color: #e2e8f0;
+}
+
+.badge-status {
+  color: #fff;
+}
+
+.status-queued {
+  background: var(--neutral);
+}
+
+.status-running {
+  background: var(--accent);
+}
+
+.status-completed {
+  background: var(--success);
+}
+
+.status-completed_with_errors {
+  background: var(--warning);
+}
+
+.status-failed,
+.status-cancelled {
+  background: var(--danger);
+}
+
+.attack-summary {
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(37, 99, 235, 0.02));
+  font-size: 14px;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.attack-summary p {
+  margin: 0;
+}
+
+.attack-parts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.attack-part {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  padding: 10px;
+  border: 1px dashed #cbd5f5;
+  font-size: 13px;
+}
+
+.attack-part strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-primary);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.page-footer {
+  margin: 32px clamp(24px, 6vw, 64px) 0;
+  padding: 16px 24px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.2);
+  color: #e2e8f0;
+  font-size: 14px;
+}
+
+@media (max-width: 1100px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .page-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .runtime-info {
+    align-self: flex-start;
+  }
+
+  .panel {
+    padding: 22px;
+  }
+
+  .checkbox-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}

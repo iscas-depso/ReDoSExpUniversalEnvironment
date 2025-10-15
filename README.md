@@ -28,6 +28,18 @@ docker run --rm -v /tmp:/tmp redos-test \
 cat /tmp/test.json
 ```
 
+#### Web控制台启动
+
+```bash
+# 启动容器并开放Web端口
+docker run --rm -p 8080:8080 -v /tmp:/tmp redos-test
+
+# 浏览器访问 http://localhost:8080 进入图形化界面
+```
+
+在网页中可以勾选需要的工具和引擎，先运行“检测工具”阶段获取攻击字符串，再选择其中一个结果进入“引擎验证”阶段。
+如需快速自检，可运行 `npm run test:e2e`（基于 Playwright 的模拟端到端测试，默认使用 mock 运行器，不会真正触发真实工具或引擎）。
+
 ### 核心特性
 
 - **6个ReDoS检测工具**：rescue, regexstatic, regexploit, rengar, redoshunter, regulator
@@ -85,6 +97,18 @@ echo "aaaaaaaaaaaaaaaaaaaaaaaaaab" > /tmp/input.txt
 docker run --rm -v /tmp:/tmp redos-test \
   /app/engines/python/bin/benchmark $REGEX_B64 /tmp/input.txt 0
 ```
+
+#### Web Console Workflow
+
+```bash
+# Launch the container with the dashboard
+docker run --rm -p 8080:8080 -v /tmp:/tmp redos-test
+
+# Open http://localhost:8080 in your browser
+```
+
+The dashboard lets you run detection tools in parallel, pick a generated payload, and then benchmark it against the selected engines with live progress updates.
+To sanity-check the UI workflow without hitting real binaries, run `npm run test:e2e`; this launches a Playwright test suite backed by mocked tool/engine runners.
 
 ### 项目结构
 

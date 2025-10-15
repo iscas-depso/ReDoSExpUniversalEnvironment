@@ -1,0 +1,22 @@
+{
+  "name": "redos-exp-universal-environment",
+  "version": "0.2.0",
+  "description": "ReDoS testing environment with web interface",
+  "private": true,
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon --watch server --watch public --ext js,json,html server/index.js",
+    "test": "npm run test:e2e",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed"
+  },
+  "dependencies": {
+    "compression": "^1.7.4",
+    "express": "^4.19.2",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "nodemon": "^3.1.7"
+  }
+}

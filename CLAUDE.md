@@ -1,57 +1,53 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code (claude.ai/code) when collaborating on this repository.
 
 ## Project Overview
 
-This is a **refactored ReDoS (Regular Expression Denial of Service) testing environment**. The goal is to optimize the Docker build process by pre-building tools and engines locally, then copying binaries into the container instead of compiling everything during Docker image build.
+The **ReDoS Experiment Universal Environment** now centers on delivering a browser-based control plane that orchestrates both ReDoS detection tools and regex engines inside the Docker container. The primary objectives are:
 
-**Original Problem**: The old project (`/root/Refactoring/old/ReDoSExpUniversalEnvironment`) compiled all tools and engines during Docker build, requiring massive memory (130GB for regulator's V8 compilation) and long build times, making it impossible to build on most machines.
+1. Keep all tools and engines pre-built so Docker images remain fast to assemble and predictable in size.
+2. Expose an Express-powered API layer plus a single-page dashboard that lets analysts submit regexes, run selected tools in parallel, review generated payloads, and benchmark those payloads against any subset of regex engines.
+3. Stream detailed job telemetry (status, stdout/stderr, raw JSON) so failures are observable and workflows remain transparent.
 
-**Refactoring Goal**: Pre-build tools and engines locally, copy only binaries/executables into Docker, dramatically reducing build time and memory requirements.
+Historical CLI scripts (`Gen.py`, `Verify.py`) are preserved for reference, but the web interface and its JSON APIs are the preferred user journey.
 
 ## Project Structure
 
 ```
-new/ReDoSExpUniversalEnvironment/
-├── tools/              # ReDoS detection tools (6 tools)
-│   ├── rescue/         # Static analyzer
-│   ├── regexstatic/    # Static analyzer
-│   ├── regexploit/     # Python-based detector
-│   ├── rengar/         # Java-based detector
-│   ├── regulator/      # V8-based detector (memory intensive)
-│   └── redoshunter/    # GraalVM native image detector
-├── engines/            # Regex engines for testing (19 engines)
-│   ├── c/             # PCRE2-based C engine
-│   ├── python/        # Python re module
-│   ├── nodejs21/      # Node.js with V8 engine
-│   └── ...            # (16 more engines)
-├── Gen.py             # Main attack generation script
-├── Verify.py          # Attack verification script
-└── Dockerfile         # Container definition
+ReDoSExpUniversalEnvironment/
+├── tools/              # ReDoS detection tools (6 tools, see below)
+├── engines/            # Regex verification engines (19 engines, see below)
+├── server/             # Node.js/Express orchestration service (REST + SSE)
+├── public/             # Single-page dashboard (HTML/CSS/JS)
+├── Dockerfile          # Container definition
+├── README.md           # User-focused doc (includes web usage)
+├── DEPLOYMENT.md       # Detailed deployment & troubleshooting
+└── package.json        # Node service metadata and scripts
 ```
 
-## Core Workflow
+## Core Workflow (Web-Oriented)
 
-### 1. Attack Generation (`Gen.py`)
-- **Input**: Text file with regexes (one per line)
-- **Output**: SQLite database with attack results
-- Runs all 6 tools against each regex to detect ReDoS vulnerabilities
-- Uses hyperfine for benchmarking
-- Multi-threaded execution (80% of CPU cores)
-- System resource monitoring (pauses if CPU/memory > 90%)
+### 1. Detection Stage (`POST /api/jobs/tools`)
+- **Input**: Regex string and a list of tool IDs.
+- **Behaviour**: Launches each selected tool concurrently; every tool must adhere to the Tool Contract (JSON output written to disk).
+- **Output**: A job entry tracked by the server, with progress streamed over Server-Sent Events (SSE) and final JSON payloads returned to the UI.
 
-### 2. Attack Verification (`Verify.py`)
-- **Input**: Database from Gen.py, max file size (KB), match mode (0=partial, 1=full)
-- **Output**: Verification results added to database
-- Tests generated attack strings against all 19 engines
-- Measures actual execution time to confirm ReDoS
-- Uses hyperfine for accurate timing
+### 2. Verification Stage (`POST /api/jobs/engines`)
+- **Input**: Regex string, encoded attack components from a tool result (prefix, infix, suffix, repeat), a list of engine IDs, and optional overrides (match mode, repeat count, max payload length).
+- **Behaviour**: Builds a bounded attack string, executes each engine’s benchmark binary in parallel, and captures stdout/stderr.
+- **Output**: Streaming SSE updates per engine containing elapsed time, match counts, and any emitted logs.
 
-### 3. Tool Contract
-Every tool must have a `run.py` following this contract:
+### 3. Dashboard (`/public`)
+- Renders the two-stage workflow described above.
+- Consumes metadata from `/api/meta`, listens to job streams, and surfaces raw JSON/logs for analysts.
+- Written in vanilla HTML/CSS/JS to minimize dependencies; any framework introduction needs explicit justification.
+
+## Tool Contract
+
+Every tool provides a `run.py` with the following contract (retain this unchanged):
 - **Args**: `<base64_regex> <output_json_path>`
-- **Output**: JSON file with:
+- **Output**: JSON with fields
   ```json
   {
     "elapsed_ms": <number>,
@@ -62,145 +58,86 @@ Every tool must have a `run.py` following this contract:
     "repeat_times": <number or -1>
   }
   ```
+- Tools may add extra keys (e.g., diagnostics), but the fields above are mandatory.
+- stdout/stderr should remain informative; the web backend truncates long logs but exposes them to users.
 
-### 4. Engine Contract
-Every engine must have a binary at `bin/benchmark` following this contract:
+## Engine Contract
+
+Every engine exposes a benchmark executable at `bin/benchmark`:
 - **Args**: `<base64_regex> <text_file_path> <match_mode>`
-  - `match_mode`: 0 = partial match, 1 = full match
-- **Output**: `{elapsed_ms} - {match_count}`
-  - `elapsed_ms`: 6 decimal places
-  - `match_count`: number of matches found
+  - `match_mode`: `0` for partial match (find all occurrences), `1` for full match.
+- **Output (stdout)**: A single line formatted as `{elapsed_ms} - {match_count}` (elapsed time with 6 decimal places, integer match count).
+- stderr is reserved for diagnostics; the backend streams it to clients.
 
 ## Commands
 
-### Docker Operations
+### Docker
 ```bash
-# Build Docker image (from new/ReDoSExpUniversalEnvironment/)
+# Build image (must be rerun after Dockerfile changes)
 docker build --rm -t redos-test .
 
-# Run attack generation
-docker run --rm -v $(pwd):/workspace redos-test python3 Gen.py /workspace/regexes.txt /workspace/results.db
-
-# Run verification
-docker run --rm -v $(pwd):/workspace redos-test python3 Verify.py /workspace/results.db 100 0
+# Run container with dashboard
+docker run --rm -p 8080:8080 -v /tmp:/tmp redos-test
 ```
 
-### Tool Development
+### Web Service
 ```bash
-# Build a tool
+# Install dependencies
+npm install
+
+# Start local development server with auto-reload
+npm run dev
+
+# Quick syntax checks
+node --check server/index.js
+node --check public/main.js
+```
+
+### Tools
+```bash
 cd tools/<tool_name>
-make all
-
-# Test a tool
-make test
-
-# Run tool manually (following contract)
+make all        # or tool-specific build
+make test       # optional regression tests
 python3 run.py <base64_regex> output.json
 ```
 
-### Engine Development
+### Engines
 ```bash
-# Build an engine
 cd engines/<engine_name>
 make all
-
-# Test an engine
 make test
-
-# Run engine manually
 ./bin/benchmark <base64_regex> <text_file> <0|1>
 ```
 
-### Git Workflow
-```bash
-# Initialize repository (if not already done)
-cd /root/Refactoring/new/ReDoSExpUniversalEnvironment
-git init
+## Development Strategy & Constraints
 
-# After completing refactoring of a tool/engine and testing it works in Docker
-git add .
-git commit -m "Refactor <tool/engine name>: pre-build locally and copy to Docker
+### ⚠️ Critical Rule: Rebuild After Dockerfile Changes
+- ANY modification to the Dockerfile (new `COPY`, packages, environment changes, etc.) requires an immediate rebuild via `docker build --rm -t redos-test .`.
+- Always test within the newly built image; stale images create misleading results.
 
-- Move compilation from Dockerfile to local build
-- Update Dockerfile to copy pre-built binaries
-- Test successful execution in container"
-```
+### Tool/Engine Maintenance
+1. Reference the legacy project (`/root/Refactoring/old/ReDoSExpUniversalEnvironment/`) for historical build steps when unsure.
+2. Build artifacts locally, then adjust the Dockerfile to `COPY` the runtime outputs instead of compiling in-container.
+3. After copying new artifacts, rebuild the image and validate execution inside Docker.
+4. Keep contract compliance: do not break the expected CLI arguments or JSON/STDOUT formats.
 
-## Refactoring Strategy
+### Web Service / Frontend Work
+1. Preserve API contracts. When changes are unavoidable, update `/public/main.js`, README, and DEPLOYMENT docs together.
+2. Use SSE (`/api/jobs/:id/stream`) for progress reporting; avoid introducing redundant polling endpoints unless necessary.
+3. Coordinate UI/UX updates with backend behaviour (payload limits, truncation rules, etc.).
+4. Keep dependencies lean. Introducing new frameworks/bundlers requires prior discussion and justification.
 
-### ⚠️ CRITICAL RULE: Docker Image Rebuilding
+### Testing Expectations
+- **Tools/Engines**: Run their CLI contracts with representative inputs; confirm JSON/STDOUT outputs and error handling.
+- **Web Service**: Smoke test via `npm run dev` locally and through containerized execution (`docker run -p 8080:8080 ...`) to ensure end-to-end flows succeed.
+- **Automation**: Add Playwright or similar tests only when time/benefit trade-offs make sense; keep them optional.
 
-**WHENEVER the Dockerfile is modified, you MUST immediately rebuild the Docker image.**
-
-This is **NON-NEGOTIABLE** and applies to:
-- Adding new `COPY` instructions for tools/engines
-- Installing new runtime dependencies (apt-get packages)
-- Modifying any RUN commands
-- Changing base image or environment variables
-
-**Rebuild command:**
-```bash
-cd /root/Refactoring/new/ReDoSExpUniversalEnvironment
-docker build --rm -t redos-test .
-```
-
-**Testing workflow:**
-1. Modify Dockerfile (add COPY, install dependencies, etc.)
-2. **IMMEDIATELY rebuild Docker image** ← DO NOT SKIP THIS
-3. Test components in the NEW Docker container
-4. If tests pass, commit changes
-5. If tests fail, fix issues and repeat from step 1
-
-**Why this matters:**
-- Old Docker images don't have new dependencies or files
-- Testing with old images gives false negatives
-- Wastes time debugging non-existent problems
-
-### For Each Tool:
-1. **ALWAYS reference the old project configuration first** - check `/root/Refactoring/old/ReDoSExpUniversalEnvironment/` for Dockerfile setup, runtime testing, and tool implementation
-2. Analyze current Dockerfile build steps in old project
-3. Create local build process (Makefile if needed)
-4. Build tool locally to generate binaries/artifacts
-5. Modify Dockerfile to `COPY` pre-built artifacts instead of building
-6. **REBUILD Docker image immediately** ← CRITICAL
-7. Test tool execution inside Docker container
-8. Git commit when successful
-
-### For Each Engine:
-1. **ALWAYS reference the old project configuration first** - check `/root/Refactoring/old/ReDoSExpUniversalEnvironment/` for Dockerfile environment setup, testing approach, and engine implementation
-2. Analyze dependencies and compilation requirements from old project
-3. Build engine locally (using existing Makefile)
-4. Identify which binaries/files are needed at runtime
-5. Modify Dockerfile to `COPY` only runtime artifacts
-6. **REBUILD Docker image immediately** ← CRITICAL
-7. Test engine inside Docker with test suite
-8. Git commit when successful
-
-### Special Cases:
-- **Node.js engines** (nodejs14, nodejs21): May need to copy node_modules or use global installs
-- **Regulator**: Most challenging - requires V8 compilation, focus on this last
-- **GraalVM tools** (redoshunter): Native image compilation can be done locally
-- **Rust/Go**: Static binaries work well, just copy the executable
-
-## Testing Approach
-
-For initial refactoring stages:
-- **Focus on tools and engines only**
-- Skip batch processing and comprehensive testing scripts
-- Test each tool/engine individually after refactoring
-- Use simple test cases to verify functionality
-- Ensure Docker execution works before committing
-
-## Key Considerations
-
-- **Memory constraints**: Pre-building avoids the 130GB memory requirement for regulator
-- **Network issues**: Local builds avoid network failures during Docker build
-- **Build time**: Goal is dramatically faster Docker image creation
-- **Binary compatibility**: Ensure locally-built binaries are compatible with Ubuntu 22.04 base image
-- **Dependencies**: Runtime dependencies must still be installed in Dockerfile (shared libraries, etc.)
+### Key Considerations
+- Maintain fast Docker builds by reusing pre-built binaries and caching Node modules appropriately.
+- Mind runtime dependencies (shared libraries, JVMs, .NET runtimes) required by each tool/engine.
+- Handle failures gracefully: backend should surface errors without crashing, and UI should keep users informed.
+- Optimize for clarity: show attack previews, execution durations, and log snippets to help analysts triage findings quickly.
 
 ## Working Directory
 
-Always work in: `/root/Refactoring/new/ReDoSExpUniversalEnvironment/`
-
-The old project is available for reference at: `/root/Refactoring/old/ReDoSExpUniversalEnvironment/`
+Unless otherwise specified, operate from `/root/Refactoring/new/ReDoSExpUniversalEnvironment/`. The legacy project under `/root/Refactoring/old/ReDoSExpUniversalEnvironment/` remains a reference point for build scripts and configurations.

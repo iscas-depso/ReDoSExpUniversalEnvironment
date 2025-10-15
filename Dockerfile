@@ -162,6 +162,11 @@ COPY engines/csharp/ /app/engines/csharp/
 COPY engines/csharp_nonbacktracking/ /app/engines/csharp_nonbacktracking/
 COPY engines/srm/ /app/engines/srm/
 
+# Copy web interface assets and server
+COPY package.json package-lock.json /app/
+COPY public/ /app/public/
+COPY server/ /app/server/
+
 # Change ownership to developer
 RUN chown -R developer:developer /app
 
@@ -172,3 +177,10 @@ USER developer
 # =============================================================================
 
 WORKDIR /app
+
+# Install node dependencies for the web service
+RUN npm ci --omit=dev
+
+EXPOSE 8080
+
+CMD ["npm", "start"]
