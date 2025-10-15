@@ -105,7 +105,7 @@ RUN chown -R developer:developer /app && \
 
 USER developer
 
-# Build all engines in consolidated layer
+# Build all engines in consolidated layers
 RUN cd /app/engines && \
     # Build compiled engines
     (cd awk && make all) && \
@@ -161,33 +161,136 @@ RUN cd /app/engines && \
 
 # Install hyperfine and additional dependencies for Gen.py
 USER root
-RUN wget https://github.com/sharkdp/hyperfine/releases/download/v1.19.0/hyperfine_1.19.0_amd64.deb -O /tmp/hyperfine.deb && \
-    dpkg -i /tmp/hyperfine.deb || apt-get install -y -f && \
-    rm /tmp/hyperfine.deb && \
-    # Install additional Python dependencies for Gen.py
-    python3 -m pip install --no-cache-dir psutil
+
+# =============================================================================
+# Install Dependencies
+# =============================================================================
+
+RUN apt-get update && apt-get install -y \
+    # Java 17 SDK
+    --no-install-recommends openjdk-17-jdk-headless  \
+    # Maven
+    maven \
+    # JSON library for C++ tools
+    nlohmann-json3-dev
+
+# =============================================================================
+# Copy Source Code
+# =============================================================================
+
+COPY tools/ /app/tools/
+
+
+# Set proper ownership
+RUN chown -R developer:developer /app
+
+
+# # =============================================================================
+# # Build and Test Rengar tool
+# # =============================================================================
+
+# USER developer
+
+# # Build Rengar tool
+# WORKDIR /app/tools/rengar
+# RUN make all
+# # Test Rengar tool
+# RUN make test || echo "Rengar tool tests completed"
+
+# # =============================================================================
+# # Build and Test ReDoSHunter tool
+# # =============================================================================
+
+# USER developer
+
+# # Build ReDoSHunter tool
+# WORKDIR /app/tools/redoshunter
+# RUN make all
+# # Test ReDoSHunter tool
+# RUN make test || echo "ReDoSHunter tool tests completed"
+
+# # =============================================================================
+# # Build and Test Regulator tool
+# # =============================================================================
+
+# USER root
+
+# # Install additional Python packages needed for Regulator
+# RUN apt-get update && apt-get install -y \
+#     # Additional packages needed for regulator-dynamic
+#     libicu-dev \
+#     # Install Python 3.8 for Node.js compatibility
+#     software-properties-common \
+#     && add-apt-repository ppa:deadsnakes/ppa \
+#     && apt-get update \
+#     && apt-get install -y python3.8 python3.8-dev python3.8-distutils \
+#     && rm -rf /var/lib/apt/lists/*
+
+# # Install Python packages for regulator
+# RUN python3 -m pip install --no-cache-dir \
+#     colored \
+#     numpy \
+#     scipy \
+#     scikit-learn
+
+# USER developer
+
+# # Build Regulator tool
+# WORKDIR /app/tools/regulator
+# # Take very long time to build and about 130GB memory
+# RUN make all -j
+# # Test Regulator tool  
+# RUN make test || echo "Regulator tool tests completed"
+
+
+# # =============================================================================
+# # Build and Test Regexploit tool
+# # =============================================================================
+
+# USER developer
+
+# # Build Regexploit tool
+# WORKDIR /app/tools/regexploit
+# RUN make all
+# # Test Regexploit tool
+# RUN make test || echo "Regexploit tool tests completed"
+
+# # =============================================================================
+# # Build and Test RegexStatic tool
+# # =============================================================================
+
+# USER developer
+
+# # Build RegexStatic tool
+# WORKDIR /app/tools/regexstatic
+# RUN make all
+# # Test RegexStatic tool
+# RUN make test || echo "RegexStatic tool tests completed"
+
+# # =============================================================================
+# # Build and Test ReScue tool
+# # =============================================================================
+
+# USER developer
+
+# # Build ReScue tool
+# WORKDIR /app/tools/rescue
+# RUN make all
+# # Test ReScue tool
+# RUN make test || echo "ReScue tool tests completed"
+
+# =============================================================================
+# Build and Test GREWIA tool
+# =============================================================================
 
 USER developer
 
-
-# Build and test Regexploit tool
-RUN (cd /app/tools/regexploit && make all && make test && echo "Regexploit tool tests completed")
-# Build and test RegexStatic tool
-RUN (cd /app/tools/regexstatic && make all && make test && echo "RegexStatic tool tests completed")
-# Build and test ReDoSHunter tool
-RUN curl -s "https://get.sdkman.io" | bash
-SHELL ["/bin/bash", "-c"] 
-RUN chmod a+x "$HOME/.sdkman/bin/sdkman-init.sh"
-RUN source "$HOME/.sdkman/bin/sdkman-init.sh"   \
-                && sdk install java 24.0.2-graal
-RUN (cd /app/tools/redoshunter && make all && native-image -jar ReDoSHunter.jar  && make test && echo "ReDoSHunter tool tests completed")
-# RUN (cd /app/tools/redoshunter && make all && make test && echo "ReDoSHunter tool tests completed")
-# Build and test ReScue tool
-RUN (cd /app/tools/rescue && make all && make test && echo "ReScue tool tests completed")
-# Build and test Rengar tool
-RUN (cd /app/tools/rengar && make all && make test && echo "Rengar tool tests completed")
-# Build and test Regulator tool (takes very long time and about 130GB memory)
-RUN (cd /app/tools/regulator && chmod -R 777 . && make all -j && make test && echo "Regulator tool tests completed")
+# Build GREWIA tool
+WORKDIR /app/tools/GREWIA
+# Create build directory
+RUN mkdir -p build
+# Build GREWIA tool
+RUN cd build && cmake .. && make -j
 
 # =============================================================================
 # CONTAINER RUNTIME CONFIGURATION
