@@ -1,5 +1,5 @@
 env/
-build/
+# build/
 bin/
 deps/v8
 deps/icu-small
