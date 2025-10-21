@@ -89,6 +89,7 @@ def run_redoshunter(regex, timeout=1200):
             # Parse ReDoSHunter output
             with open(output_files[0], 'r') as f:
                 redoshunter_output = json.load(f)
+                print(redoshunter_output)
             return parse_redoshunter_output(redoshunter_output, elapsed_ms)
         else:
             # No ReDoS detected or error occurred
@@ -111,14 +112,14 @@ def run_redoshunter(regex, timeout=1200):
             "is_redos": False,
             "error": str(e)
         }
-    finally:
-        # Clean up temporary files
-        try:
-            os.unlink(input_file)
-            import shutil
-            shutil.rmtree(output_dir, ignore_errors=True)
-        except:
-            pass
+    # finally:
+        # # Clean up temporary files
+        # try:
+        #     os.unlink(input_file)
+        #     import shutil
+        #     shutil.rmtree(output_dir, ignore_errors=True)
+        # except:
+        #     pass
 
 def parse_redoshunter_output(redoshunter_data, elapsed_ms):
     """Parse ReDoSHunter output and convert to project format"""
