@@ -65,7 +65,7 @@ def run_redoshunter(regex, timeout=1200):
 
         # Run ReDoSHunter with native image
         cmd = [
-            '/app/tools/redoshunter/ReDoSHunter',
+            '/app/tools/redoshunter/ReDoSHunter8',
             os.path.dirname(input_file),
             os.path.basename(input_file),
             output_dir
