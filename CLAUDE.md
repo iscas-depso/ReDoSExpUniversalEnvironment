@@ -139,4 +139,4 @@ make test
 
 ## Working Directory
 
-Unless otherwise specified, operate from `/root/Refactoring/new/ReDoSExpUniversalEnvironment/`. The legacy project under `/root/Refactoring/old/ReDoSExpUniversalEnvironment/` remains a reference point for build scripts and configurations.
+Unless otherwise specified, operate from `/root/Refactoring/ReDoSExpUniversalEnvironment/` (the designated “main” development directory). Keep this path in mind for all tooling, scripts, and documentation updates. The older snapshot at `/root/Refactoring/old/ReDoSExpUniversalEnvironment/` remains a reference point for build scripts and configurations.

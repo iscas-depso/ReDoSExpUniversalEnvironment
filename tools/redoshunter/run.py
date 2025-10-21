@@ -39,12 +39,15 @@ def encode_to_base64(text):
     return base64.b64encode(text.encode('utf-8')).decode('utf-8')
 
 def run_redoshunter(regex, timeout=1200):
-    """Run ReDoSHunter native image on the given regex"""
-    binary_path = Path(__file__).parent / "ReDoSHunter"
+    """Run ReDoSHunter shaded JAR on the given regex"""
+    jar_path = Path(__file__).parent / "ReDoSHunter.jar"
+    if not jar_path.exists():
+        raise FileNotFoundError(f"ReDoSHunter JAR not found at {jar_path}")
 
-    if not binary_path.exists():
-        raise FileNotFoundError(f"ReDoSHunter native binary not found at {binary_path}")
-    
+    java_home = os.environ.get("JAVA_HOME")
+    java_cmd = Path(java_home) / "bin" / "java" if java_home else Path("java")
+    java_cmd = str(java_cmd)
+
     # Create temporary input file
     with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as tmp_file:
         tmp_file.write(regex + '\n')
@@ -54,24 +57,12 @@ def run_redoshunter(regex, timeout=1200):
     output_dir = tempfile.mkdtemp()
     
     try:
-        # # Run ReDoSHunter with Java 8
-        # java8_path = '/usr/lib/jvm/java-8-openjdk-amd64/bin/java'
-        # cmd = [
-        #     java8_path, '-jar', str(jar_path),
-        #     os.path.dirname(input_file),
-        #     os.path.basename(input_file),
-        #     output_dir
-        # ]
-
-        # Run ReDoSHunter with native image
         cmd = [
-            '/app/tools/redoshunter/ReDoSHunter8',
+            java_cmd, '-jar', str(jar_path),
             os.path.dirname(input_file),
             os.path.basename(input_file),
             output_dir
         ]
-
-        print(" ".join(cmd))
 
         start_time = time.time()
         result = subprocess.run(
@@ -89,7 +80,6 @@ def run_redoshunter(regex, timeout=1200):
             # Parse ReDoSHunter output
             with open(output_files[0], 'r') as f:
                 redoshunter_output = json.load(f)
-                print(redoshunter_output)
             return parse_redoshunter_output(redoshunter_output, elapsed_ms)
         else:
             # No ReDoS detected or error occurred
@@ -112,14 +102,13 @@ def run_redoshunter(regex, timeout=1200):
             "is_redos": False,
             "error": str(e)
         }
-    # finally:
-        # # Clean up temporary files
-        # try:
-        #     os.unlink(input_file)
-        #     import shutil
-        #     shutil.rmtree(output_dir, ignore_errors=True)
-        # except:
-        #     pass
+    finally:
+        try:
+            os.unlink(input_file)
+        except OSError:
+            pass
+        import shutil
+        shutil.rmtree(output_dir, ignore_errors=True)
 
 def parse_redoshunter_output(redoshunter_data, elapsed_ms):
     """Parse ReDoSHunter output and convert to project format"""
@@ -198,4 +187,4 @@ def main():
         # sys.exit(1)
 
 if __name__ == "__main__":
-    main() 
+    main()

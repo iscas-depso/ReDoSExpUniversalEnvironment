@@ -92,6 +92,12 @@
             <groupId>com.github.julianthome</groupId>
             <artifactId>autorex</artifactId>
             <version>1.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>dk.brics.automaton</groupId>
+                    <artifactId>automaton</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
