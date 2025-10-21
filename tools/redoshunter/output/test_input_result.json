@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "regex": "^\\w+a.+c",
+    "attackArrayList": [
+      {
+        "prefix": "",
+        "infix": "0aa",
+        "suffix": "",
+        "type": "POLYNOMIAL",
+        "patternType": "POA",
+        "redos": "",
+        "repeatTimes": 10000
+      }
+    ]
+  }
+]

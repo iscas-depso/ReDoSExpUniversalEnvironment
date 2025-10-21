@@ -34,7 +34,7 @@ public class Main {
             // Read input file
             File file = new File(inputDir, inputFile);
             List<String> lines = FileUtils.readLines(file, "utf-8");
-            
+
             if (lines.isEmpty()) {
                 System.err.println("Input file is empty");
                 System.exit(1);
@@ -56,6 +56,7 @@ public class Main {
                 // Convert to output format
                 ArrayList<Attack> attackList = new ArrayList<>();
                 for (AttackBean attackBean : validatedResult.getAttackBeanList()) {
+                    if (!attackBean.isAttackSuccess()) continue;
                     Attack attack = new Attack(
                         attackBean.getPrefix(),
                         attackBean.getInfix(), 

@@ -10,7 +10,6 @@ The **ReDoS Experiment Universal Environment** now centers on delivering a brows
 2. Expose an Express-powered API layer plus a single-page dashboard that lets analysts submit regexes, run selected tools in parallel, review generated payloads, and benchmark those payloads against any subset of regex engines.
 3. Stream detailed job telemetry (status, stdout/stderr, raw JSON) so failures are observable and workflows remain transparent.
 
-Historical CLI scripts (`Gen.py`, `Verify.py`) are preserved for reference, but the web interface and its JSON APIs are the preferred user journey.
 
 ## Project Structure
 

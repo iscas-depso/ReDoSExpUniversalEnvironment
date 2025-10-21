@@ -21,8 +21,7 @@ docker build --rm -t redos-test .
 bash quick_verify.sh
 
 # 3. 测试单个正则表达式
-docker run --rm -v /tmp:/tmp redos-test \
-  python3 /app/tools/regexploit/run.py KGErKSti /tmp/test.json
+docker run --rm -v /tmp:/tmp redos-test python3 /app/tools/regexploit/run.py KGErKSti /tmp/test.json
 
 # 4. 查看结果
 cat /tmp/test.json
