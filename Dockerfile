@@ -166,6 +166,7 @@ COPY engines/srm/ /app/engines/srm/
 COPY package.json package-lock.json /app/
 COPY public/ /app/public/
 COPY server/ /app/server/
+COPY benchexec/ /app/benchexec/
 
 # Change ownership to developer
 RUN chown -R developer:developer /app

@@ -7,6 +7,7 @@ const childProcess = require('child_process');
 const execFile = util.promisify(childProcess.execFile);
 
 const { TOOL_DEFINITIONS, DEFAULT_OPTIONS } = require('./definitions');
+const { runWithRunexec } = require('./runexec');
 
 const LOG_LIMIT = 4000;
 
@@ -31,7 +32,7 @@ function prepResult(jobManager, job, toolId, statusUpdates = {}) {
   });
 }
 
-async function executeTool(toolId, regexBase64, timeoutMs) {
+async function executeTool(toolId, regexBase64, timeoutMs, { cpuAllocator, cpuCores, memoryMB } = {}) {
   const definition = TOOL_DEFINITIONS[toolId];
   if (!definition) {
     throw new Error(`Unknown tool: ${toolId}`);
@@ -39,6 +40,7 @@ async function executeTool(toolId, regexBase64, timeoutMs) {
 
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), `redos-tool-${toolId}-`));
   const outputPath = path.join(tempDir, 'output.json');
+  const programOutputPath = path.join(tempDir, 'output.log');
 
   const { file, args, options = {} } = definition.buildCommand(regexBase64, outputPath);
   const start = Date.now();
@@ -46,18 +48,45 @@ async function executeTool(toolId, regexBase64, timeoutMs) {
   let stderr = '';
   let parsedOutput = null;
   let rawOutput = null;
+  let allocated = null;
 
   try {
-    const execOptions = {
-      cwd: options.cwd,
-      env: { ...process.env, ...(options.env || {}) },
-      timeout: timeoutMs,
-      maxBuffer: 20 * 1024 * 1024
-    };
+    if (cpuAllocator && Number.isFinite(cpuCores) && cpuCores > 0) {
+      allocated = await cpuAllocator.acquire(cpuCores);
+    }
 
-    const result = await execFile(file, args, execOptions);
-    stdout = result.stdout || '';
-    stderr = result.stderr || '';
+    // Prefer runexec wrapper for limits if available
+    const useRunexec = true;
+    if (useRunexec) {
+      const r = await runWithRunexec({
+        cmd: file,
+        args,
+        cwd: options.cwd,
+        env: options.env || {},
+        outputLogPath: programOutputPath,
+        timelimitSeconds: timeoutMs ? Math.floor(timeoutMs / 1000) : undefined,
+        walltimelimitSeconds: timeoutMs ? Math.floor(timeoutMs / 1000) : undefined,
+        memoryMB,
+        cores: allocated?.cores
+      });
+      // Program output is redirected to programOutputPath
+      try {
+        stdout = await fs.readFile(programOutputPath, 'utf8');
+      } catch {
+        stdout = '';
+      }
+      stderr = '';
+    } else {
+      const execOptions = {
+        cwd: options.cwd,
+        env: { ...process.env, ...(options.env || {}) },
+        timeout: timeoutMs,
+        maxBuffer: 20 * 1024 * 1024
+      };
+      const result = await execFile(file, args, execOptions);
+      stdout = result.stdout || '';
+      stderr = result.stderr || '';
+    }
 
     rawOutput = await fs.readFile(outputPath, 'utf8');
     parsedOutput = JSON.parse(rawOutput);
@@ -83,6 +112,7 @@ async function executeTool(toolId, regexBase64, timeoutMs) {
       durationMs: Date.now() - start
     });
   } finally {
+    try { allocated?.release(); } catch {}
     await fs.rm(tempDir, { recursive: true, force: true });
   }
 
@@ -95,7 +125,7 @@ async function executeTool(toolId, regexBase64, timeoutMs) {
   };
 }
 
-async function runToolsJob(jobManager, job, { regex, toolIds, timeoutMs }) {
+async function runToolsJob(jobManager, job, { regex, toolIds, timeoutMs, cpuAllocator, cpuCores, memoryMB }) {
   const effectiveTimeout = timeoutMs || DEFAULT_OPTIONS.toolTimeoutMs;
   const regexBase64 = encodeRegex(regex);
 
@@ -121,7 +151,7 @@ async function runToolsJob(jobManager, job, { regex, toolIds, timeoutMs }) {
     });
 
     try {
-      const result = await executeTool(toolId, regexBase64, effectiveTimeout);
+      const result = await executeTool(toolId, regexBase64, effectiveTimeout, { cpuAllocator, cpuCores, memoryMB });
 
       prepResult(jobManager, job, toolId, {
         status: 'completed',

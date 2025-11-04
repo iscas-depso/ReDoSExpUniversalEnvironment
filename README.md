@@ -336,3 +336,9 @@ Issues and pull requests are welcome for bug reports and improvements.
 ### License
 
 This project is refactored from the original ReDoS testing environment and follows the original licenses of each tool and engine.
+### Resource limits (BenchExec runexec)
+
+- 网页中“检测工具”和“引擎验证”已支持为每次运行设置资源限制：运行时间（秒）、核心数、内存（MB）。
+- 后端通过 BenchExec 的 unexec 对应参数（--timelimit/--walltimelimit、--cores、--memlimit）进行强制限制。
+- 本仓库默认在容器内路径 /app/benchexec 提供 unexec（由工作区 enchexec/ 目录拷入）。如需在 Docker 中启用 cgroups/绑核，请参考 enchexec/examples/runexec-in-docker-quickstart.md，建议在受控环境中使用 --privileged 或按 BenchExec 文档配置 Podman rootless。
+- 若 unexec 不可用，强制限制将无法生效并可能导致任务失败，请确保容器内 Python3 可用且存在 /app/benchexec/bin/runexec。

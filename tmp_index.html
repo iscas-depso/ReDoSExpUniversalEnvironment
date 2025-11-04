@@ -1,0 +1,141 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ReDoS 检测与验证控制台</title>
+  <link rel=\"stylesheet\" href=\"./styles.css\">
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 0; padding: 0; }
+    .layout { padding: 16px; display: grid; gap: 16px; }
+    .panel { border: 1px solid #ddd; border-radius: 8px; padding: 16px; }
+    .form-group { margin: 8px 0; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
+    .panel-actions { margin-top: 8px; }
+    .primary { padding: 8px 12px; }
+  </style>
+  <meta http-equiv=\"Cache-Control\" content=\"no-cache, no-store, must-revalidate\" />
+  <meta http-equiv=\"Pragma\" content=\"no-cache\" />
+  <meta http-equiv=\"Expires\" content=\"0\" />
+</head>
+<body>
+  <header class=\"page-header\">
+    <div>
+      <h1>ReDoS 检测与验证控制台</h1>
+      <p class=\"subtitle\">在容器中并行运行工具与引擎，快速完成 ReDoS 检测与验证</p>
+    </div>
+    <div class=\"runtime-info\">
+      <span class=\"badge badge-neutral\">容器内服务</span>
+      <span class=\"badge badge-neutral\">端口 <span id=\"runtime-port\">8080</span></span>
+    </div>
+  </header>
+  <main class=\"layout\">
+    <section class=\"panel\" id=\"tools-panel\">
+      <div class=\"panel-header\">
+        <h2>第一阶段：检测工具</h2>
+        <p>选择要运行的检测工具，它们会并行执行并给出潜在的攻击字符串。</p>
+      </div>
+      <div class=\"form-group\">
+        <label for=\"regex-input\">目标正则表达式</label>
+        <textarea id=\"regex-input\" placeholder=\"示例：^(a+)+$\" rows=\"4\"></textarea>
+        <p class=\"help-text\">输入原始正则表达式，后端会自动进行 Base64 编码。</p>
+      </div>
+      <div class=\"selection-group\">
+        <div class=\"selection-header\">
+          <h3>检测工具</h3>
+          <div class=\"selection-actions\">
+            <button id=\"tools-select-all\" type=\"button\" class=\"ghost small\">全选</button>
+            <button id=\"tools-clear\" type=\"button\" class=\"ghost small\">清空</button>
+          </div>
+        </div>
+        <div id=\"tools-list\" class=\"checkbox-grid\"></div>
+      </div>
+      <div class=\"form-grid\">
+        <div class=\"form-group\">
+          <label for=\"tools-timeout\">运行时间 (秒)</label>
+          <input id=\"tools-timeout\" type=\"number\" min=\"1\" placeholder=\"默认\">
+          <p class=\"help-text\">不填则使用系统默认超时。</p>
+        </div>
+        <div class=\"form-group\">
+          <label for=\"tools-cores\">核心数</label>
+          <input id=\"tools-cores\" type=\"number\" min=\"1\" placeholder=\"不限\">
+          <p class=\"help-text\">仅指定使用几个核心，具体绑核由后端自动分配。</p>
+        </div>
+        <div class=\"form-group\">
+          <label for=\"tools-memory\">内存限制 (MB)</label>
+          <input id=\"tools-memory\" type=\"number\" min=\"1\" placeholder=\"不限\">
+          <p class=\"help-text\">不填则不限制内存。</p>
+        </div>
+      </div>
+      <div class=\"panel-actions\">
+        <button id=\"run-tools\" class=\"primary\">运行所选工具</button>
+      </div>
+      <div id=\"tool-job-status\" class=\"job-status\"></div>
+      <div id=\"tool-results\" class=\"results-container\"></div>
+    </section>
+
+    <section class=\"panel\" id=\"engines-panel\">
+      <div class=\"panel-header\">
+        <h2>第二阶段：引擎验证</h2>
+        <p>从上一阶段选择一个攻击字符串，在多个执行引擎上验证耗时表现。</p>
+      </div>
+      <div id=\"attack-summary\" class=\"attack-summary\">
+        <p>还没有选择工具结果。完成第一阶段后，点击对应结果的“用于验证”按钮。</p>
+      </div>
+      <div class=\"form-grid\">
+        <div class=\"form-group\">
+          <label for=\"match-mode\">匹配模式</label>
+          <select id=\"match-mode\"></select>
+        </div>
+        <div class=\"form-group\">
+          <label for=\"repeat-override\">重复次数覆盖（可选）</label>
+          <input id=\"repeat-override\" type=\"number\" min=\"1\" placeholder=\"使用工具推荐值\">
+          <p class=\"help-text\">若希望自定义重复次数，可在此输入正整数。</p>
+        </div>
+        <div class=\"form-group\">
+          <label for=\"max-attack-length\">最大攻击串长度</label>
+          <input id=\"max-attack-length\" type=\"number\" min=\"64\">
+          <p class=\"help-text\">防止生成过大的测试负载，默认值会在页面加载时填充。</p>
+        </div>
+        <div class=\"form-group\">
+          <label for=\"engines-timeout\">运行时间 (秒)</label>
+          <input id=\"engines-timeout\" type=\"number\" min=\"1\" placeholder=\"默认\">
+          <p class=\"help-text\">不填则使用系统默认超时。</p>
+        </div>
+        <div class=\"form-group\">
+          <label for=\"engines-cores\">核心数</label>
+          <input id=\"engines-cores\" type=\"number\" min=\"1\" placeholder=\"不限\">
+          <p class=\"help-text\">仅指定使用几个核心，具体绑核由后端自动分配。</p>
+        </div>
+        <div class=\"form-group\">
+          <label for=\"engines-memory\">内存限制 (MB)</label>
+          <input id=\"engines-memory\" type=\"number\" min=\"1\" placeholder=\"不限\">
+          <p class=\"help-text\">不填则不限制内存。</p>
+        </div>
+      </div>
+      <div class=\"selection-group\">
+        <div class=\"selection-header\">
+          <h3>验证引擎</h3>
+          <div class=\"selection-actions\">
+            <button id=\"engines-select-all\" type=\"button\" class=\"ghost small\">全选</button>
+            <button id=\"engines-clear\" type=\"button\" class=\"ghost small\">清空</button>
+          </div>
+        </div>
+        <div id=\"engines-list\" class=\"checkbox-grid\"></div>
+      </div>
+      <div class=\"panel-actions\">
+        <button id=\"run-engines\" class=\"primary\" disabled>运行所选引擎</button>
+      </div>
+      <div id=\"engine-job-status\" class=\"job-status\"></div>
+      <div id=\"engine-results\" class=\"results-container\"></div>
+    </section>
+  </main>
+  <footer class=\"page-footer\">
+    <p>💡 提示：若长时间无响应，可在 Docker 容器中查看服务日志，确认依赖是否正确安装。</p>
+  </footer>
+
+  <script src=\"./main.js\"></script>
+</body>
+</html>
+

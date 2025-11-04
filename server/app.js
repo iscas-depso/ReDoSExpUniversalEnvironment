@@ -5,6 +5,7 @@ const express = require('express');
 const morgan = require('morgan');
 
 const JobManager = require('./job-manager');
+const { CpuAllocator } = require('./cpu-allocator');
 const {
   TOOL_DEFINITIONS,
   TOOL_METADATA,
@@ -39,9 +40,11 @@ function createApp(options = {}) {
   } = options;
 
   const jobManager = providedJobManager || new JobManager();
+  const cpuAllocator = new CpuAllocator();
   const app = express();
 
   app.locals.jobManager = jobManager;
+  app.locals.cpuAllocator = cpuAllocator;
 
   app.disable('x-powered-by');
   app.use(compression());
@@ -61,7 +64,9 @@ function createApp(options = {}) {
         toolTimeoutSeconds: Math.round(DEFAULT_OPTIONS.toolTimeoutMs / 1000),
         engineTimeoutSeconds: Math.round(DEFAULT_OPTIONS.engineTimeoutMs / 1000),
         maxRepeatTimes: DEFAULT_OPTIONS.maxRepeatTimes,
-        maxAttackLength: DEFAULT_OPTIONS.maxAttackLength
+        maxAttackLength: DEFAULT_OPTIONS.maxAttackLength,
+        defaultCores: DEFAULT_OPTIONS.defaultCores || null,
+        defaultMemoryMB: DEFAULT_OPTIONS.defaultMemoryMB || null
       }
     });
   });
@@ -115,6 +120,8 @@ function createApp(options = {}) {
     }
 
     const timeoutSeconds = Number(req.body?.timeoutSeconds);
+    const cpuCores = Number(req.body?.cpuCores);
+    const memoryMB = Number(req.body?.memoryMB);
     const timeoutMs = Number.isFinite(timeoutSeconds) && timeoutSeconds > 0
       ? Math.min(timeoutSeconds, 3600) * 1000
       : undefined;
@@ -131,7 +138,9 @@ function createApp(options = {}) {
       request: {
         regexLength: regex.length,
         toolIds,
-        timeoutMs: timeoutMs || DEFAULT_OPTIONS.toolTimeoutMs
+        timeoutMs: timeoutMs || DEFAULT_OPTIONS.toolTimeoutMs,
+        cpuCores: Number.isFinite(cpuCores) && cpuCores > 0 ? cpuCores : (DEFAULT_OPTIONS.defaultCores || null),
+        memoryMB: Number.isFinite(memoryMB) && memoryMB > 0 ? memoryMB : (DEFAULT_OPTIONS.defaultMemoryMB || null)
       }
     });
 
@@ -142,7 +151,14 @@ function createApp(options = {}) {
 
     setImmediate(async () => {
       try {
-        await runTools(jobManager, job, { regex, toolIds, timeoutMs });
+        await runTools(jobManager, job, {
+          regex,
+          toolIds,
+          timeoutMs,
+          cpuAllocator,
+          cpuCores: Number.isFinite(cpuCores) && cpuCores > 0 ? cpuCores : undefined,
+          memoryMB: Number.isFinite(memoryMB) && memoryMB > 0 ? memoryMB : undefined
+        });
       } catch (error) {
         logError('Tool job failed:', error);
         jobManager.finalizeJob(job, 'failed', error);
@@ -159,6 +175,8 @@ function createApp(options = {}) {
     const maxRepeatTimes = Number(req.body?.maxRepeatTimes);
     const timeoutSeconds = Number(req.body?.timeoutSeconds);
     const attack = req.body?.attack;
+    const cpuCores = Number(req.body?.cpuCores);
+    const memoryMB = Number(req.body?.memoryMB);
     const attackSource = req.body?.attackSource || {};
 
     if (!regex) {
@@ -203,6 +221,8 @@ function createApp(options = {}) {
         matchMode,
         repeatOverride: Number.isFinite(repeatOverride) ? repeatOverride : null,
         timeoutMs: timeoutMs || DEFAULT_OPTIONS.engineTimeoutMs,
+        cpuCores: Number.isFinite(cpuCores) && cpuCores > 0 ? cpuCores : (DEFAULT_OPTIONS.defaultCores || null),
+        memoryMB: Number.isFinite(memoryMB) && memoryMB > 0 ? memoryMB : (DEFAULT_OPTIONS.defaultMemoryMB || null),
         attackSource
       }
     });
@@ -220,6 +240,9 @@ function createApp(options = {}) {
           attack,
           matchMode,
           timeoutMs,
+          cpuAllocator,
+          cpuCores: Number.isFinite(cpuCores) && cpuCores > 0 ? cpuCores : undefined,
+          memoryMB: Number.isFinite(memoryMB) && memoryMB > 0 ? memoryMB : undefined,
           repeatOverride: Number.isFinite(repeatOverride) ? repeatOverride : undefined,
           maxAttackLength: Number.isFinite(maxAttackLength) && maxAttackLength > 0 ? maxAttackLength : undefined,
           maxRepeatTimes: Number.isFinite(maxRepeatTimes) && maxRepeatTimes > 0 ? maxRepeatTimes : undefined

@@ -7,6 +7,7 @@ const childProcess = require('child_process');
 const execFile = util.promisify(childProcess.execFile);
 
 const { ENGINE_DEFINITIONS, DEFAULT_OPTIONS } = require('./definitions');
+const { runWithRunexec } = require('./runexec');
 
 const LOG_LIMIT = 4000;
 
@@ -130,24 +131,39 @@ function prepResult(jobManager, job, engineId, statusUpdates = {}) {
   });
 }
 
-async function executeEngine(engineId, payloadPath, regexBase64, matchMode, timeoutMs) {
+async function executeEngine(engineId, payloadPath, regexBase64, matchMode, timeoutMs, { cpuAllocator, cpuCores, memoryMB } = {}) {
   const definition = ENGINE_DEFINITIONS[engineId];
   if (!definition) {
     throw new Error(`Unknown engine: ${engineId}`);
   }
 
   const { binaryPath } = definition;
-  const { stdout, stderr } = await execFile(
-    binaryPath,
-    [regexBase64, payloadPath, String(matchMode)],
-    {
-      cwd: path.dirname(binaryPath),
-      timeout: timeoutMs,
-      maxBuffer: 20 * 1024 * 1024
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), `redos-engine-${engineId}-`));
+  const programOutputPath = path.join(tempDir, 'output.log');
+  let allocated = null;
+  try {
+    if (cpuAllocator && Number.isFinite(cpuCores) && cpuCores > 0) {
+      allocated = await cpuAllocator.acquire(cpuCores);
     }
-  );
-
-  return { stdout, stderr };
+    await runWithRunexec({
+      cmd: binaryPath,
+      args: [regexBase64, payloadPath, String(matchMode)],
+      cwd: path.dirname(binaryPath),
+      env: {},
+      outputLogPath: programOutputPath,
+      timelimitSeconds: timeoutMs ? Math.floor(timeoutMs / 1000) : undefined,
+      walltimelimitSeconds: timeoutMs ? Math.floor(timeoutMs / 1000) : undefined,
+      memoryMB,
+      cores: allocated?.cores
+    });
+    let stdout = '';
+    try { stdout = await fs.readFile(programOutputPath, 'utf8'); } catch {}
+    const stderr = '';
+    return { stdout, stderr };
+  } finally {
+    try { allocated?.release(); } catch {}
+    await fs.rm(tempDir, { recursive: true, force: true });
+  }
 }
 
 async function runEnginesJob(
@@ -159,6 +175,9 @@ async function runEnginesJob(
     attack,
     matchMode = 0,
     timeoutMs,
+    cpuAllocator,
+    cpuCores,
+    memoryMB,
     repeatOverride,
     maxAttackLength,
     maxRepeatTimes
@@ -215,7 +234,14 @@ async function runEnginesJob(
 
     try {
       const start = Date.now();
-      const result = await executeEngine(engineId, payloadPath, regexBase64, matchMode, effectiveTimeout);
+      const result = await executeEngine(
+        engineId,
+        payloadPath,
+        regexBase64,
+        matchMode,
+        effectiveTimeout,
+        { cpuAllocator, cpuCores, memoryMB }
+      );
       const parsed = parseEngineOutput(result.stdout);
 
       prepResult(jobManager, job, engineId, {

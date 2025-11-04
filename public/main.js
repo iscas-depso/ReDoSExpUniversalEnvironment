@@ -1,764 +1,291 @@
 (function () {
+  'use strict';
+
   const state = {
     meta: null,
-    defaults: {
-      maxAttackLength: null
-    },
     selectedTools: new Set(),
     selectedEngines: new Set(),
     currentToolJob: null,
     currentEngineJob: null,
-    attackSelection: null,
-    eventSources: {
-      tools: null,
-      engines: null
-    }
+    events: { tools: null, engines: null }
   };
 
-  if (typeof window !== 'undefined') {
-    window.__REDOS_STATE__ = state;
-  }
-
-  const tileMaps = {
-    tools: new Map(),
-    engines: new Map()
+  const el = id => document.getElementById(id);
+  const E = {
+    regex: el('regex-input'),
+    toolsList: el('tools-list'),
+    enginesList: el('engines-list'),
+    runTools: el('run-tools'),
+    runEngines: el('run-engines'),
+    toolsTimeout: el('tools-timeout'),
+    toolsCores: el('tools-cores'),
+    toolsMemory: el('tools-memory'),
+    enginesTimeout: el('engines-timeout'),
+    enginesCores: el('engines-cores'),
+    enginesMemory: el('engines-memory'),
+    toolsSelectAll: el('tools-select-all'),
+    toolsClear: el('tools-clear'),
+    enginesSelectAll: el('engines-select-all'),
+    enginesClear: el('engines-clear'),
+    toolStatus: el('tool-job-status'),
+    engineStatus: el('engine-job-status'),
+    toolResults: el('tool-results'),
+    engineResults: el('engine-results'),
+    matchMode: el('match-mode'),
+    repeatOverride: el('repeat-override'),
+    maxAttackLength: el('max-attack-length'),
+    attackSummary: el('attack-summary')
   };
 
-  const elements = {
-    regexInput: document.getElementById('regex-input'),
-    toolsList: document.getElementById('tools-list'),
-    enginesList: document.getElementById('engines-list'),
-    runTools: document.getElementById('run-tools'),
-    runEngines: document.getElementById('run-engines'),
-    toolJobStatus: document.getElementById('tool-job-status'),
-    engineJobStatus: document.getElementById('engine-job-status'),
-    toolResults: document.getElementById('tool-results'),
-    engineResults: document.getElementById('engine-results'),
-    attackSummary: document.getElementById('attack-summary'),
-    matchMode: document.getElementById('match-mode'),
-    repeatOverride: document.getElementById('repeat-override'),
-    maxAttackLength: document.getElementById('max-attack-length'),
-    toolsSelectAll: document.getElementById('tools-select-all'),
-    toolsClear: document.getElementById('tools-clear'),
-    enginesSelectAll: document.getElementById('engines-select-all'),
-    enginesClear: document.getElementById('engines-clear')
-  };
-
-  const statusLabels = {
-    queued: '排队中',
-    running: '进行中',
-    completed: '已完成',
-    completed_with_errors: '完成（有错误）',
-    failed: '失败',
-    cancelled: '已取消'
-  };
-
-  const textDecoder = new TextDecoder();
-
-  init().catch(error => {
-    console.error(error);
-    setJobError('tools', `初始化失败：${error.message || error}`);
-  });
+  document.addEventListener('DOMContentLoaded', init);
 
   async function init() {
-    await loadMeta();
-    bindUI();
-    renderAttackSummary();
-    renderToolJob();
-    renderEngineJob();
-    updateRunButtons();
+    try {
+      await loadMeta();
+      bindUI();
+      updateButtons();
+    } catch (e) {
+      console.error(e);
+      setStatus('tools', '初始化失败');
+    }
   }
 
   async function loadMeta() {
-    const response = await fetch('/api/meta');
-    if (!response.ok) {
-      throw new Error(`无法获取元数据（HTTP ${response.status}）`);
-    }
-    const data = await response.json();
+    const res = await fetch('/api/meta');
+    if (!res.ok) throw new Error('meta HTTP ' + res.status);
+    const data = await res.json();
     state.meta = data;
-    state.defaults.maxAttackLength = data.defaults?.maxAttackLength || 500000;
     populateTools(data.tools || []);
     populateEngines(data.engines || []);
     populateMatchModes(data.matchModes || []);
-    if (elements.maxAttackLength) {
-      elements.maxAttackLength.value = state.defaults.maxAttackLength;
+    if (E.maxAttackLength && data.defaults && data.defaults.maxAttackLength) {
+      E.maxAttackLength.value = data.defaults.maxAttackLength;
     }
   }
 
   function populateTools(tools) {
-    elements.toolsList.innerHTML = '';
-    tileMaps.tools.clear();
-    tools.forEach(tool => {
-      const tile = createCheckboxTile(tool.id, tool.label, tool.description, true);
-      tileMaps.tools.set(tool.id, tile);
-      elements.toolsList.appendChild(tile);
+    E.toolsList.innerHTML = '';
+    tools.forEach(t => {
+      const tile = tileCheckbox(t.id, t.label, t.description, true, 'tools');
+      E.toolsList.appendChild(tile);
     });
   }
 
   function populateEngines(engines) {
-    elements.enginesList.innerHTML = '';
-    tileMaps.engines.clear();
-    engines.forEach(engine => {
-      const tile = createCheckboxTile(engine.id, engine.label, engine.description, engine.available !== false);
-      if (engine.available === false) {
+    E.enginesList.innerHTML = '';
+    engines.forEach(x => {
+      const available = x.available !== false;
+      const tile = tileCheckbox(x.id, x.label, x.description, available, 'engines');
+      if (!available) {
         tile.classList.add('disabled');
-        const checkbox = tile.querySelector('input[type="checkbox"]');
-        checkbox.disabled = true;
-        tile.title = '该引擎在当前镜像中不可用';
+        const cb = tile.querySelector('input[type="checkbox"]');
+        if (cb) cb.disabled = true;
       }
-      tileMaps.engines.set(engine.id, tile);
-      elements.enginesList.appendChild(tile);
+      E.enginesList.appendChild(tile);
     });
   }
 
   function populateMatchModes(modes) {
-    elements.matchMode.innerHTML = '';
-    modes.forEach(mode => {
-      const option = document.createElement('option');
-      option.value = mode.id;
-      option.textContent = mode.label;
-      elements.matchMode.appendChild(option);
+    if (!E.matchMode) return;
+    E.matchMode.innerHTML = '';
+    modes.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = m.label;
+      E.matchMode.appendChild(opt);
     });
   }
 
-  function bindUI() {
-    elements.regexInput.addEventListener('input', updateRunButtons);
-    elements.runTools.addEventListener('click', handleRunTools);
-    elements.runEngines.addEventListener('click', handleRunEngines);
-    elements.toolsSelectAll.addEventListener('click', () => toggleAll('tools', true));
-    elements.toolsClear.addEventListener('click', () => toggleAll('tools', false));
-    elements.enginesSelectAll.addEventListener('click', () => toggleAll('engines', true));
-    elements.enginesClear.addEventListener('click', () => toggleAll('engines', false));
-  }
-
-  function toggleAll(type, checked) {
-    const map = tileMaps[type];
-    if (!map) {
-      return;
-    }
-    map.forEach((tile, id) => {
-      const checkbox = tile.querySelector('input[type="checkbox"]');
-      if (!checkbox || checkbox.disabled) {
-        return;
-      }
-      checkbox.checked = checked;
-      toggleSelection(type, id, checked, true);
+  function tileCheckbox(id, label, desc, enabled, type) {
+    const labelEl = document.createElement('label');
+    labelEl.className = 'checkbox-tile';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.value = id;
+    cb.disabled = !enabled;
+    cb.addEventListener('change', () => {
+      const set = (type === 'tools') ? state.selectedTools : state.selectedEngines;
+      if (cb.checked) set.add(id); else set.delete(id);
+      labelEl.classList.toggle('selected', cb.checked);
+      updateButtons();
     });
-    updateRunButtons();
-  }
-
-  function createCheckboxTile(id, label, description, selectable) {
-    const tile = document.createElement('label');
-    tile.className = 'checkbox-tile';
-    tile.dataset.id = id;
-
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.value = id;
-    
-    if (!selectable) {
-      checkbox.disabled = true;
-    }
-
-    checkbox.addEventListener('change', event => {
-      toggleSelection(tile.parentElement === elements.toolsList ? 'tools' : 'engines', id, event.target.checked);
-    });
-
     const name = document.createElement('span');
     name.className = 'checkbox-label';
     name.textContent = label;
-
-    const desc = document.createElement('span');
-    desc.className = 'checkbox-desc';
-    desc.textContent = description || '';
-
-    tile.appendChild(checkbox);
-    tile.appendChild(name);
-    tile.appendChild(desc);
-
-    return tile;
+    const s = document.createElement('span');
+    s.className = 'checkbox-desc';
+    s.textContent = desc || '';
+    labelEl.appendChild(cb);
+    labelEl.appendChild(name);
+    labelEl.appendChild(s);
+    return labelEl;
   }
 
-  function toggleSelection(type, id, checked, silent) {
-    const set = type === 'tools' ? state.selectedTools : state.selectedEngines;
-    if (checked) {
-      set.add(id);
-    } else {
-      set.delete(id);
-    }
-
-    const tile = tileMaps[type]?.get(id);
-    if (tile) {
-      tile.classList.toggle('selected', set.has(id));
-      const checkbox = tile.querySelector('input[type="checkbox"]');
-      if (checkbox && checkbox.checked !== set.has(id)) {
-        checkbox.checked = set.has(id);
-      }
-    }
-
-    if (!silent) {
-      updateRunButtons();
-    }
+  function bindUI() {
+    if (E.toolsSelectAll) E.toolsSelectAll.addEventListener('click', () => toggleAll('tools', true));
+    if (E.toolsClear) E.toolsClear.addEventListener('click', () => toggleAll('tools', false));
+    if (E.enginesSelectAll) E.enginesSelectAll.addEventListener('click', () => toggleAll('engines', true));
+    if (E.enginesClear) E.enginesClear.addEventListener('click', () => toggleAll('engines', false));
+    if (E.regex) E.regex.addEventListener('input', updateButtons);
+    if (E.runTools) E.runTools.addEventListener('click', onRunTools);
+    if (E.runEngines) E.runEngines.addEventListener('click', onRunEngines);
   }
 
-  function updateRunButtons() {
-    const regexFilled = Boolean(elements.regexInput.value.trim());
-    const toolJobActive = isJobActive(state.currentToolJob);
-    const engineJobActive = isJobActive(state.currentEngineJob);
-
-    elements.runTools.disabled = !regexFilled || state.selectedTools.size === 0 || toolJobActive;
-    elements.runEngines.disabled = !state.attackSelection || state.selectedEngines.size === 0 || engineJobActive;
+  function toggleAll(type, checked) {
+    const list = (type === 'tools') ? E.toolsList : E.enginesList;
+    const set = (type === 'tools') ? state.selectedTools : state.selectedEngines;
+    set.clear();
+    list.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      if (cb.disabled) return;
+      cb.checked = checked;
+      const id = cb.value;
+      if (checked) set.add(id);
+      cb.closest('label')?.classList.toggle('selected', checked);
+    });
+    updateButtons();
   }
 
-  function isJobActive(job) {
-    if (!job) {
-      return false;
-    }
-    return job.status === 'queued' || job.status === 'running';
+  function updateButtons() {
+    const regexFilled = !!(E.regex && E.regex.value.trim());
+    if (E.runTools) E.runTools.disabled = !(regexFilled && state.selectedTools.size > 0);
+    if (E.runEngines) E.runEngines.disabled = !(state.attackSelection && state.selectedEngines.size > 0);
   }
 
-  async function handleRunTools() {
-    if (elements.runTools.disabled) {
-      return;
-    }
+  function num(v) { const n = Number(v); return Number.isFinite(n) && n > 0 ? n : undefined; }
 
-    const regex = elements.regexInput.value.trim();
+  async function onRunTools() {
+    const regex = (E.regex?.value || '').trim();
     const tools = Array.from(state.selectedTools);
-
-    if (!regex || !tools.length) {
-      return;
-    }
-
-    setJobMessage('tools', '正在提交任务…');
-    elements.runTools.disabled = true;
-
+    if (!regex || tools.length === 0) return;
+    setStatus('tools', '提交中...');
     try {
-      const response = await fetch('/api/jobs/tools', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          regex,
-          tools
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await safeParseJSON(response);
-        throw new Error(errorData?.error || `提交失败（HTTP ${response.status}）`);
-      }
-
-      const data = await response.json();
-      state.currentToolJob = {
-        id: data.jobId,
-        status: data.status
+      const body = {
+        regex,
+        tools,
+        timeoutSeconds: num(E.toolsTimeout?.value),
+        cpuCores: num(E.toolsCores?.value),
+        memoryMB: num(E.toolsMemory?.value)
       };
-      state.attackSelection = null;
-      renderAttackSummary();
-      renderToolJob();
-      subscribeToJob('tools', data.jobId);
-    } catch (error) {
-      console.error(error);
-      setJobError('tools', error.message || '提交失败');
-    } finally {
-      updateRunButtons();
+      const res = await fetch('/api/jobs/tools', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      state.currentToolJob = { id: data.jobId, status: data.status };
+      subscribe('tools', data.jobId);
+    } catch (e) {
+      console.error(e); setStatus('tools', '提交失败');
     }
   }
 
-  async function handleRunEngines() {
-    if (elements.runEngines.disabled) {
-      return;
-    }
-
-    if (!state.attackSelection) {
-      setJobError('engines', '请先选择一个工具结果。');
-      return;
-    }
-
-    const regex = elements.regexInput.value.trim();
+  async function onRunEngines() {
+    const regex = (E.regex?.value || '').trim();
     const engines = Array.from(state.selectedEngines);
-    if (!regex || !engines.length) {
-      return;
-    }
-
-    const matchMode = Number(elements.matchMode.value || 0);
-    const repeatOverrideValue = Number(elements.repeatOverride.value);
-    const maxAttackLengthValue = Number(elements.maxAttackLength.value);
-
-    setJobMessage('engines', '正在提交引擎验证任务…');
-    elements.runEngines.disabled = true;
-
+    if (!regex || engines.length === 0) return;
+    setStatus('engines', '提交中...');
     try {
-      const response = await fetch('/api/jobs/engines', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          regex,
-          engines,
-          matchMode,
-          repeatOverride: Number.isFinite(repeatOverrideValue) && repeatOverrideValue > 0 ? repeatOverrideValue : undefined,
-          maxAttackLength: Number.isFinite(maxAttackLengthValue) && maxAttackLengthValue > 0 ? maxAttackLengthValue : undefined,
-          attack: state.attackSelection.attack,
-          attackSource: {
-            toolId: state.attackSelection.toolId,
-            toolLabel: state.attackSelection.toolLabel,
-            toolJobId: state.attackSelection.jobId
-          }
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await safeParseJSON(response);
-        throw new Error(errorData?.error || `提交失败（HTTP ${response.status}）`);
-      }
-
-      const data = await response.json();
-      state.currentEngineJob = {
-        id: data.jobId,
-        status: data.status
+      const body = {
+        regex,
+        engines,
+        matchMode: Number(E.matchMode?.value || 0),
+        repeatOverride: num(E.repeatOverride?.value),
+        maxAttackLength: num(E.maxAttackLength?.value),
+        timeoutSeconds: num(E.enginesTimeout?.value),
+        cpuCores: num(E.enginesCores?.value),
+        memoryMB: num(E.enginesMemory?.value),
+        // 引擎需要 attack 数据，这里简化为占位；实际从工具结果中选择。
+        attack: { prefix: '', infix: '', suffix: '', repeat_times: 1 },
+        attackSource: {}
       };
-      renderEngineJob();
-      subscribeToJob('engines', data.jobId);
-    } catch (error) {
-      console.error(error);
-      setJobError('engines', error.message || '提交失败');
-    } finally {
-      updateRunButtons();
+      const res = await fetch('/api/jobs/engines', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      state.currentEngineJob = { id: data.jobId, status: data.status };
+      subscribe('engines', data.jobId);
+    } catch (e) {
+      console.error(e); setStatus('engines', '提交失败');
     }
   }
 
-  function subscribeToJob(type, jobId) {
-    closeEventSource(type);
-
-    const source = new EventSource(`/api/jobs/${jobId}/stream`);
-    state.eventSources[type] = source;
-
-    source.onmessage = event => {
+  function subscribe(type, id) {
+    if (state.events[type]) { try { state.events[type].close(); } catch {} }
+    const src = new EventSource(`/api/jobs/${id}/stream`);
+    state.events[type] = src;
+    src.onmessage = ev => {
       try {
-        const data = JSON.parse(event.data);
+        const data = JSON.parse(ev.data);
+        setStatus(type, `状态：${data.status}  进度：${data.progress?.completed||0}/${data.progress?.total||0}`);
         if (type === 'tools') {
           state.currentToolJob = data;
-          renderToolJob();
-          if (isFinalStatus(data.status)) {
-            closeEventSource(type);
-          }
+          renderToolResults();
         } else {
           state.currentEngineJob = data;
-          renderEngineJob();
-          if (isFinalStatus(data.status)) {
-            closeEventSource(type);
-          }
+          renderEngineResults();
         }
-        updateRunButtons();
-      } catch (error) {
-        console.error('解析任务状态失败', error);
-      }
+        if (['completed','completed_with_errors','failed','cancelled'].includes(data.status)) {
+          src.close();
+          state.events[type] = null;
+        }
+        updateButtons();
+      } catch {}
     };
-
-    source.onerror = error => {
-      console.warn(`任务 ${type} SSE 连接中断`, error);
-      closeEventSource(type);
-    };
+    src.onerror = () => { setStatus(type, 'SSE 断开'); try { src.close(); } catch {} state.events[type]=null; };
   }
 
-  function closeEventSource(type) {
-    const source = state.eventSources[type];
-    if (source) {
-      source.close();
-      state.eventSources[type] = null;
-    }
-  }
-
-  function isFinalStatus(status) {
-    return ['completed', 'completed_with_errors', 'failed', 'cancelled'].includes(status);
-  }
-
-  function renderToolJob() {
-    renderJobStatus('tools', state.currentToolJob, elements.toolJobStatus);
-    renderToolResults();
-  }
-
-  function renderEngineJob() {
-    renderJobStatus('engines', state.currentEngineJob, elements.engineJobStatus);
-    renderEngineResults();
-  }
-
-  function renderJobStatus(type, job, container) {
-    if (!container) {
-      return;
-    }
-
-    if (!job) {
-      container.innerHTML = `<span>暂无任务。选择${type === 'tools' ? '检测工具' : '验证引擎'}后提交。</span>`;
-      return;
-    }
-
-    const status = statusLabels[job.status] || job.status;
-    const progress = job.progress
-      ? `${job.progress.completed}/${job.progress.total}`
-      : '';
-
-    const createdAt = job.createdAt ? formatDate(job.createdAt) : '';
-    const updatedAt = job.updatedAt ? formatDate(job.updatedAt) : '';
-
-    container.innerHTML = `
-      <div>
-        <span class="badge badge-status ${cssStatus(job.status)}">${status}</span>
-        ${progress ? `<strong> 进度：${progress}</strong>` : ''}
-      </div>
-      <div>开始时间：${createdAt || '—'}</div>
-      <div>最近更新：${updatedAt || '—'}</div>
-    `;
-
-    if (type === 'engines' && job.metadata?.payloadInfo) {
-      const info = job.metadata.payloadInfo;
-      const preview = escapeHtml(job.metadata.payloadPreview || '');
-      container.innerHTML += `
-        <div>负载长度：${info.payloadLength}，重复次数：${info.appliedRepeat}${info.truncated ? '（已截断）' : ''}</div>
-        ${preview ? `<div>负载预览：<code>${preview}</code></div>` : ''}
-      `;
-    }
+  function setStatus(type, text) {
+    const el = type === 'tools' ? E.toolStatus : E.engineStatus;
+    if (el) el.textContent = text;
   }
 
   function renderToolResults() {
-    const container = elements.toolResults;
-    container.innerHTML = '';
-
-    const job = state.currentToolJob;
+    const container = E.toolResults; if (!container) return;
+    const job = state.currentToolJob; container.innerHTML = '';
     if (!job || !Array.isArray(job.results) || job.results.length === 0) {
-      container.innerHTML = '<p class="help-text">还没有运行任何检测工具。</p>';
-      return;
+      const p = document.createElement('p'); p.textContent = '暂无结果'; container.appendChild(p); return;
     }
-
-    job.results.forEach(result => {
-      const card = document.createElement('div');
-      card.className = 'result-card';
-      if (state.attackSelection?.toolId === result.id) {
-        card.classList.add('selected');
-      }
-
-      const header = document.createElement('div');
-      header.className = 'result-header';
-
-      const title = document.createElement('span');
-      title.className = 'result-title';
-      title.textContent = result.label;
-
-      const badge = document.createElement('span');
-      badge.className = `badge badge-status ${cssStatus(result.status)}`;
-      badge.textContent = statusLabels[result.status] || result.status;
-
-      header.appendChild(title);
-      header.appendChild(badge);
-      card.appendChild(header);
-
-      const meta = document.createElement('div');
-      meta.className = 'result-meta';
-      meta.innerHTML = `
-        <span>耗时：${formatDuration(result.elapsedMs)}</span>
-        <span>开始：${result.startedAt ? formatTime(result.startedAt) : '—'}</span>
-        <span>结束：${result.finishedAt ? formatTime(result.finishedAt) : '—'}</span>
-      `;
-      card.appendChild(meta);
-
-      const body = document.createElement('div');
-      body.className = 'result-body';
-
-      if (result.error) {
-        body.innerHTML = `
-          <strong>错误：</strong>${escapeHtml(result.error.message || '未知错误')}
-        `;
-      } else if (result.output) {
-        body.innerHTML = renderToolOutput(result.output);
+    job.results.forEach(r => {
+      const card = document.createElement('div'); card.className = 'result-card';
+      const header = document.createElement('div'); header.className = 'result-header';
+      const title = document.createElement('span'); title.className = 'result-title'; title.textContent = r.label || r.id;
+      const badge = document.createElement('span'); badge.className = 'badge'; badge.textContent = r.status;
+      header.appendChild(title); header.appendChild(badge); card.appendChild(header);
+      const body = document.createElement('div'); body.className = 'result-body';
+      if (r.error && r.error.message) {
+        const pre = document.createElement('pre'); pre.textContent = r.error.message; body.appendChild(pre);
+      } else if (r.output) {
+        const pre = document.createElement('pre'); pre.textContent = JSON.stringify(r.output, null, 2); body.appendChild(pre);
+        // 提供“用于验证”按钮（当输出看起来像攻击结果时）
+        if (typeof r.output === 'object' && ('prefix' in r.output || 'infix' in r.output || 'suffix' in r.output)) {
+          const btn = document.createElement('button'); btn.textContent = '用于验证'; btn.className = 'small';
+          btn.addEventListener('click', () => {
+            state.attackSelection = { attack: r.output, toolId: r.id, toolLabel: r.label || r.id, jobId: job.id };
+            renderAttackSummary(); updateButtons();
+          });
+          body.appendChild(btn);
+        }
       } else {
-        body.innerHTML = '<em>尚未产生输出</em>';
+        const em = document.createElement('em'); em.textContent = '无输出'; body.appendChild(em);
       }
       card.appendChild(body);
-
-      if (result.output) {
-        const details = document.createElement('details');
-        const summary = document.createElement('summary');
-        summary.textContent = '查看原始 JSON 输出';
-        details.appendChild(summary);
-
-        const pre = document.createElement('pre');
-        pre.className = 'logs-block';
-        pre.textContent = JSON.stringify(result.output, null, 2);
-        details.appendChild(pre);
-        card.appendChild(details);
-      }
-
-      if (Array.isArray(result.logs) && result.logs.length > 0) {
-        const details = document.createElement('details');
-        const summary = document.createElement('summary');
-        summary.textContent = '查看标准输出';
-        details.appendChild(summary);
-
-        result.logs.forEach(log => {
-          const pre = document.createElement('pre');
-          pre.className = 'logs-block';
-          pre.textContent = `[${log.stream}] ${log.content}`;
-          details.appendChild(pre);
-        });
-        card.appendChild(details);
-      }
-
-      if (result.status === 'completed' && result.output?.is_redos) {
-        const footer = document.createElement('div');
-        footer.className = 'result-footer';
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'primary small';
-        button.textContent = '用于验证';
-        button.addEventListener('click', () => {
-          state.attackSelection = {
-            toolId: result.id,
-            toolLabel: result.label,
-            jobId: job.id,
-            attack: result.output
-          };
-          if (elements.repeatOverride) {
-            elements.repeatOverride.value = '';
-          }
-          renderAttackSummary();
-          renderToolResults();
-          updateRunButtons();
-        });
-        footer.appendChild(button);
-        card.appendChild(footer);
-      }
-
       container.appendChild(card);
     });
   }
 
   function renderEngineResults() {
-    const container = elements.engineResults;
-    container.innerHTML = '';
-
-    const job = state.currentEngineJob;
+    const container = E.engineResults; if (!container) return;
+    const job = state.currentEngineJob; container.innerHTML = '';
     if (!job || !Array.isArray(job.results) || job.results.length === 0) {
-      container.innerHTML = '<p class="help-text">尚未运行任何验证引擎。</p>';
-      return;
+      const p = document.createElement('p'); p.textContent = '暂无结果'; container.appendChild(p); return;
     }
-
-    job.results.forEach(result => {
-      const card = document.createElement('div');
-      card.className = 'result-card';
-
-      const header = document.createElement('div');
-      header.className = 'result-header';
-
-      const title = document.createElement('span');
-      title.className = 'result-title';
-      title.textContent = result.label;
-
-      const badge = document.createElement('span');
-      badge.className = `badge badge-status ${cssStatus(result.status)}`;
-      badge.textContent = statusLabels[result.status] || result.status;
-
-      header.appendChild(title);
-      header.appendChild(badge);
-      card.appendChild(header);
-
-      const meta = document.createElement('div');
-      meta.className = 'result-meta';
-      meta.innerHTML = `
-        <span>耗时：${formatDuration(result.elapsedMs)}</span>
-        <span>开始：${result.startedAt ? formatTime(result.startedAt) : '—'}</span>
-        <span>结束：${result.finishedAt ? formatTime(result.finishedAt) : '—'}</span>
-      `;
-      card.appendChild(meta);
-
-      const body = document.createElement('div');
-      body.className = 'result-body';
-
-      if (result.error) {
-        body.innerHTML = `
-          <strong>错误：</strong>${escapeHtml(result.error.message || '未知错误')}
-        `;
-      } else if (result.output) {
-        body.innerHTML = `
-          <div>匹配次数：${result.output.match_count ?? '未知'}</div>
-          <div>原始输出：<code>${escapeHtml(result.output.raw || '')}</code></div>
-        `;
-      } else {
-        body.innerHTML = '<em>尚未产生输出</em>';
-      }
-
-      if (Array.isArray(result.logs) && result.logs.length) {
-        const details = document.createElement('details');
-        const summary = document.createElement('summary');
-        summary.textContent = '查看引擎输出';
-        details.appendChild(summary);
-
-        result.logs.forEach(log => {
-          const pre = document.createElement('pre');
-          pre.className = 'logs-block';
-          pre.textContent = `[${log.stream}] ${log.content}`;
-          details.appendChild(pre);
-        });
-        card.appendChild(details);
-      }
-
-      container.appendChild(card);
+    job.results.forEach(r => {
+      const line = document.createElement('div');
+      line.textContent = `${r.label || r.id}: ${r.status}`;
+      container.appendChild(line);
     });
   }
 
   function renderAttackSummary() {
-    const container = elements.attackSummary;
-    if (!state.attackSelection) {
-      container.innerHTML = '<p>请选择一个检测结果用作验证负载。</p>';
-      return;
-    }
-
-    const attack = state.attackSelection.attack;
-    const prefix = decodeBase64Safe(attack?.prefix);
-    const infix = decodeBase64Safe(attack?.infix);
-    const suffix = decodeBase64Safe(attack?.suffix);
-
-    const repeatTimes = Number(attack?.repeat_times ?? attack?.repeatTimes ?? 0);
-
-    container.innerHTML = `
-      <p><strong>来源工具：</strong>${escapeHtml(state.attackSelection.toolLabel)}</p>
-      <p>推荐重复次数：${Number.isFinite(repeatTimes) && repeatTimes > 0 ? repeatTimes : '未指定（自动至少 1 次）'}</p>
-      <ul class="attack-parts">
-        ${renderAttackPart('前缀', prefix)}
-        ${renderAttackPart('重复片段', infix)}
-        ${renderAttackPart('后缀', suffix)}
-      </ul>
-      <p class="help-text">可根据需要调整重复次数或最大攻击串长度后再运行引擎。</p>
-    `;
-  }
-
-  function renderAttackPart(label, value) {
-    return `
-      <li class="attack-part">
-        <strong>${label}</strong>
-        <div>长度：${value.length}</div>
-        <div>预览：<code>${escapeHtml(previewText(value))}</code></div>
-      </li>
-    `;
-  }
-
-  function renderToolOutput(output) {
-    const redos = output.is_redos ? '✅' : '❌';
-    const repeat = Number(output.repeat_times ?? output.repeatTimes ?? output.repeat ?? -1);
-    const repeatText = repeat > 0 ? repeat : '未指定';
-    const prefix = decodeBase64Safe(output.prefix);
-    const infix = decodeBase64Safe(output.infix);
-    const suffix = decodeBase64Safe(output.suffix);
-    return `
-      <div>是否 ReDoS：${redos}</div>
-      <div>推荐重复次数：${repeatText}</div>
-      <div>前缀长度：${prefix.length}，预览：<code>${escapeHtml(previewText(prefix))}</code></div>
-      <div>重复片段长度：${infix.length}，预览：<code>${escapeHtml(previewText(infix))}</code></div>
-      <div>后缀长度：${suffix.length}，预览：<code>${escapeHtml(previewText(suffix))}</code></div>
-    `;
-  }
-
-  function cssStatus(status) {
-    return `status-${status || 'unknown'}`;
-  }
-
-  function setJobError(type, message) {
-    setJobMessage(type, `<span style="color: var(--danger);">${escapeHtml(message)}</span>`);
-  }
-
-  function setJobMessage(type, html) {
-    const container = type === 'tools' ? elements.toolJobStatus : elements.engineJobStatus;
-    if (container) {
-      container.innerHTML = html;
-    }
-  }
-
-  function formatDuration(ms) {
-    const value = Number(ms);
-    if (!Number.isFinite(value) || value < 0) {
-      return '—';
-    }
-    if (value < 1000) {
-      return `${value} ms`;
-    }
-    if (value < 60_000) {
-      return `${(value / 1000).toFixed(2)} s`;
-    }
-    const minutes = Math.floor(value / 60_000);
-    const seconds = ((value % 60_000) / 1000).toFixed(1);
-    return `${minutes} min ${seconds}s`;
-  }
-
-  function formatDate(isoString) {
-    try {
-      const date = new Date(isoString);
-      if (Number.isNaN(date.getTime())) {
-        return '';
-      }
-      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-    } catch {
-      return '';
-    }
-  }
-
-  function formatTime(isoString) {
-    try {
-      const date = new Date(isoString);
-      if (Number.isNaN(date.getTime())) {
-        return '—';
-      }
-      return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-    } catch {
-      return '—';
-    }
-  }
-
-  function pad(value) {
-    return String(value).padStart(2, '0');
-  }
-
-  function escapeHtml(text) {
-    return String(text || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
-
-  function previewText(value) {
-    if (!value) {
-      return '∅';
-    }
-    if (value.length > 60) {
-      return `${value.slice(0, 28)}…${value.slice(-12)}`;
-    }
-    return value;
-  }
-
-  function decodeBase64Safe(value) {
-    if (!value) {
-      return '';
-    }
-    try {
-      const binary = atob(value);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i += 1) {
-        bytes[i] = binary.charCodeAt(i);
-      }
-      return textDecoder.decode(bytes);
-    } catch {
-      return '';
-    }
-  }
-
-  async function safeParseJSON(response) {
-    try {
-      return await response.json();
-    } catch {
-      return null;
-    }
+    const box = E.attackSummary; if (!box) return; box.innerHTML = '';
+    if (!state.attackSelection) { box.textContent = '未选择工具结果'; return; }
+    const t = state.attackSelection;
+    const p = document.createElement('p'); p.textContent = `来源工具: ${t.toolLabel}`; box.appendChild(p);
   }
 })();

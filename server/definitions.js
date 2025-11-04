@@ -11,7 +11,14 @@ const DEFAULT_OPTIONS = {
   toolTimeoutMs: Number(process.env.TOOL_TIMEOUT_MS) || 10 * 60 * 1000,
   engineTimeoutMs: Number(process.env.ENGINE_TIMEOUT_MS) || 2 * 60 * 1000,
   maxRepeatTimes: Number(process.env.MAX_REPEAT_TIMES) || 8192,
-  maxAttackLength: Number(process.env.MAX_ATTACK_LENGTH) || 500_000
+  maxAttackLength: Number(process.env.MAX_ATTACK_LENGTH) || 500_000,
+  // Optional resource defaults (undefined => no explicit limit)
+  defaultCores: (Number.isFinite(Number(process.env.DEFAULT_CORES)) && Number(process.env.DEFAULT_CORES) > 0)
+    ? Number(process.env.DEFAULT_CORES)
+    : undefined,
+  defaultMemoryMB: (Number.isFinite(Number(process.env.DEFAULT_MEMORY_MB)) && Number(process.env.DEFAULT_MEMORY_MB) > 0)
+    ? Number(process.env.DEFAULT_MEMORY_MB)
+    : undefined
 };
 
 const MATCH_MODES = [
