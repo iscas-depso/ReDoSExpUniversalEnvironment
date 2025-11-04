@@ -305,6 +305,9 @@ button:disabled {
   font-size: 14px;
   color: var(--text-primary);
   line-height: 1.6;
+  /* allow long words/paths to wrap within cards */
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .result-body code {
@@ -328,6 +331,14 @@ button:disabled {
   overflow-x: auto;
   max-height: 160px;
   white-space: pre-wrap;
+}
+
+/* wrap long lines inside generic pre blocks within result cards */
+.result-card pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
 }
 
 .badge {
