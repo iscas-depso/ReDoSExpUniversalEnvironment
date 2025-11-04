@@ -1,0 +1,9 @@
+python /work/examples/runexec-docker-minimal/cpu_bench.py --loops 15000000 --workers 2
+
+
+--------------------------------------------------------------------------------
+
+
+Cpus_allowed_list:	0
+workers=2 loops_per_worker=15000000
+result=3150463360 elapsed=1.369s

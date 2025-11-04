@@ -1,0 +1,35 @@
+# This file is part of BenchExec, a framework for reliable benchmarking:
+# https://github.com/sosy-lab/benchexec
+#
+# SPDX-FileCopyrightText: 2023 Dirk Beyer <https://www.sosy-lab.org>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Ruff
+
+on: [push, pull_request]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/ruff-action@v3
+        with:
+          # keep version consistent with .gitlab-ci.yml
+          version: "==0.14.*"
+
+  format:
+    name: Code format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/ruff-action@v3
+        with:
+          # keep version consistent with .gitlab-ci.yml
+          version: "==0.14.*"
+          args: "format --check --diff"
