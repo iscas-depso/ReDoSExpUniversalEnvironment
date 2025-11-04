@@ -191,9 +191,12 @@
         timeoutSeconds: num(E.enginesTimeout?.value),
         cpuCores: num(E.enginesCores?.value),
         memoryMB: num(E.enginesMemory?.value),
-        // 引擎需要 attack 数据，这里简化为占位；实际从工具结果中选择。
-        attack: { prefix: '', infix: '', suffix: '', repeat_times: 1 },
-        attackSource: {}
+        attack: (state.attackSelection && state.attackSelection.attack) || null,
+        attackSource: state.attackSelection ? {
+          toolId: state.attackSelection.toolId,
+          toolLabel: state.attackSelection.toolLabel,
+          toolJobId: state.attackSelection.jobId
+        } : {}
       };
       const res = await fetch('/api/jobs/engines', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -276,10 +279,54 @@
       const p = document.createElement('p'); p.textContent = '暂无结果'; container.appendChild(p); return;
     }
     job.results.forEach(r => {
-      const line = document.createElement('div');
-      line.textContent = `${r.label || r.id}: ${r.status}`;
-      container.appendChild(line);
+      const card = document.createElement('div'); card.className = 'result-card';
+      const header = document.createElement('div'); header.className = 'result-header';
+      const title = document.createElement('span'); title.className = 'result-title'; title.textContent = r.label || r.id;
+      const badge = document.createElement('span'); badge.className = 'badge'; badge.textContent = r.status;
+      header.appendChild(title); header.appendChild(badge); card.appendChild(header);
+
+      const body = document.createElement('div'); body.className = 'result-body';
+      // Meta line
+      const elapsed = (r.output && typeof r.output.elapsed_ms === 'number') ? r.output.elapsed_ms : (typeof r.elapsedMs === 'number' ? r.elapsedMs : null);
+      const meta = document.createElement('div');
+      meta.textContent = (elapsed != null) ? `耗时: ${formatMs(elapsed)}` : '耗时: (未知)';
+      body.appendChild(meta);
+
+      if (r.error && r.error.message) {
+        const err = document.createElement('pre'); err.textContent = r.error.message; body.appendChild(err);
+        if (r.error.stdout) { const pre = document.createElement('pre'); pre.textContent = r.error.stdout; body.appendChild(pre); }
+        if (r.error.stderr) { const pre = document.createElement('pre'); pre.textContent = r.error.stderr; body.appendChild(pre); }
+      } else if (r.output) {
+        const details = document.createElement('div');
+        const mc = (typeof r.output.match_count === 'number') ? r.output.match_count : null;
+        const raw = (typeof r.output.raw === 'string') ? r.output.raw : '';
+        const p1 = document.createElement('div'); p1.textContent = mc != null ? `匹配次数: ${mc}` : '匹配次数: (未知)'; details.appendChild(p1);
+        const pre = document.createElement('pre'); pre.textContent = raw; details.appendChild(pre);
+        body.appendChild(details);
+      } else {
+        const em = document.createElement('em'); em.textContent = '无输出'; body.appendChild(em);
+      }
+
+      if (Array.isArray(r.logs) && r.logs.length > 0) {
+        const logsBox = document.createElement('details');
+        const sum = document.createElement('summary'); sum.textContent = '查看日志'; logsBox.appendChild(sum);
+        r.logs.forEach(l => { const pre = document.createElement('pre'); pre.textContent = `${l.stream || 'log'}:\n${l.content || ''}`; logsBox.appendChild(pre); });
+        body.appendChild(logsBox);
+      }
+
+      card.appendChild(body);
+      container.appendChild(card);
     });
+  }
+
+  function formatMs(ms) {
+    const v = Number(ms);
+    if (!Number.isFinite(v) || v < 0) return '(未知)';
+    if (v < 1) return `${(v * 1000).toFixed(2)} µs`;
+    if (v < 1000) return `${v.toFixed(3)} ms`;
+    if (v < 60_000) return `${(v/1000).toFixed(2)} s`;
+    const m = Math.floor(v/60_000); const s = ((v%60_000)/1000).toFixed(1);
+    return `${m} min ${s}s`;
   }
 
   function renderAttackSummary() {
