@@ -46,13 +46,14 @@ async function runWithRunexec({
   const pythonBin = process.env.PYTHON_BIN || 'python3';
 
   const ra = [];
-  // Prefer non-container mode if cgroups are not available (Docker Desktop/Win)
-  // This still allows setting CPU affinity via sched_setaffinity.
-  ra.push('--no-container');
+  // Prefer container mode. Allow override via env.
+  const noContainer = process.env.RUNEXEC_NO_CONTAINER === '1';
+  if (noContainer) {
+    ra.push('--no-container');
+  }
   // Container-friendly directory model (harmless in no-container mode)
   ra.push('--read-only-dir', '/');
   ra.push('--hidden-dir', '/run');
-  ra.push('--hidden-dir', '/tmp');
   ra.push('--hidden-dir', '/home');
   ra.push('--full-access-dir', '/tmp');
   ra.push('--full-access-dir', '/app');

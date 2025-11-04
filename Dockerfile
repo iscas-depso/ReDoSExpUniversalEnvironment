@@ -166,6 +166,8 @@ COPY engines/srm/ /app/engines/srm/
 COPY package.json package-lock.json /app/
 COPY public/ /app/public/
 COPY server/ /app/server/
+COPY init.sh /init.sh
+RUN chmod +x /init.sh
 COPY benchexec/ /app/benchexec/
 
 # Change ownership to developer
@@ -183,5 +185,6 @@ WORKDIR /app
 RUN npm ci --omit=dev
 
 EXPOSE 8080
-
+USER root
+ENTRYPOINT ["/init.sh"]
 CMD ["npm", "start"]
