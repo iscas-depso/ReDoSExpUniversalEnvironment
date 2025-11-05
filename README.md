@@ -109,6 +109,14 @@ docker run --rm -p 8080:8080 -v /tmp:/tmp redos-test
 The dashboard lets you run detection tools in parallel, pick a generated payload, and then benchmark it against the selected engines with live progress updates.
 To sanity-check the UI workflow without hitting real binaries, run `npm run test:e2e`; this launches a Playwright test suite backed by mocked tool/engine runners.
 
+##### 资源限制与 API（Resource Limits & API）
+
+- 界面可为“检测工具/引擎验证”分别设定：运行时间（秒）、核心数、内存（MB）。
+- API：
+  - `POST /api/jobs/tools`：接受 `regex`, `tools[]`，可选 `timeoutSeconds`, `cpuCores`, `memoryMB`
+  - `POST /api/jobs/engines`：接受 `regex`, `engines[]`, `attack{prefix,infix,suffix,repeat_times}`, 可选 `matchMode`, `repeatOverride`, `maxAttackLength`, 以及 `timeoutSeconds`, `cpuCores`, `memoryMB`
+- 容器内通过 BenchExec `runexec` 施加限制。请确保 cgroups v2 子树 controller 已在容器中启用（详见 DEPLOYMENT.md 的“Runexec & cgroups v2（容器模式）”）。
+
 ### 项目结构
 
 ```

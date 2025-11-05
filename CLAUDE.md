@@ -137,6 +137,14 @@ make test
 - Handle failures gracefully: backend should surface errors without crashing, and UI should keep users informed.
 - Optimize for clarity: show attack previews, execution durations, and log snippets to help analysts triage findings quickly.
 
+### Verification Workflow (Chrome DevTools)
+
+- After EVERY change (UI/Backend), open the dashboard in Chrome and validate end‑to‑end behaviour:
+  - Static assets (styles.css/main.js) return 200, no stale cache issues.
+  - Submit tools run: confirm SSE updates, result cards render with output or error/logs.
+  - Pick a tool result via “用于验证”, submit engines run: confirm each engine transitions RUNNING→COMPLETED/FAILED and cards show elapsed/match_count/raw/logs.
+  - Long lines in cards must wrap (no overflow); resource-limit inputs must be honoured (time/cores/memory) by backend.
+
 ## Working Directory
 
 Unless otherwise specified, operate from `/root/Refactoring/ReDoSExpUniversalEnvironment/` (the designated “main” development directory). Keep this path in mind for all tooling, scripts, and documentation updates. The older snapshot at `/root/Refactoring/old/ReDoSExpUniversalEnvironment/` remains a reference point for build scripts and configurations.

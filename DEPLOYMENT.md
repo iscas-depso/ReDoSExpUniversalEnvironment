@@ -971,6 +971,76 @@ jobs:
 
 ## 附录
 
+---
+
+## Runexec & cgroups v2（容器模式）
+
+为在容器中可靠施加时间/内存/核心限制，本项目使用 BenchExec `runexec` 并在容器启动时启用 cgroups v2 子树控制器。
+
+1) 镜像构建
+
+本仓库的 `Dockerfile` 已包含：
+
+- 复制 `benchexec/` 至 `/app/benchexec`（供 `bin/runexec` 使用）。
+- 复制 `init.sh` 到容器根目录并设为 `ENTRYPOINT`：
+  - `init.sh` 会创建 `/sys/fs/cgroup/init` 与 `/sys/fs/cgroup/benchexec`，并把所有 `cgroup.controllers` 中的控制器写入它们对应的 `cgroup.subtree_control`，使子树可用。
+- 服务器端默认走 runexec 的容器模式（可通过 `RUNEXEC_NO_CONTAINER=1` 切回非容器模式，仅用于应急）。
+
+2) 运行容器（Docker）
+
+为了简化验证，使用：
+
+```bash
+docker run -d --name redos-web \
+  --privileged --cap-drop=all \
+  -p 8080:8080 \
+  -v /tmp:/tmp \
+  redos-test
+```
+
+说明：
+- `--privileged --cap-drop=all` 是 BenchExec 文档推荐的简化方式（生产更推荐 Podman rootless）。
+- 如果你要热替换前端静态资源，可额外挂载 `-v $(pwd)/public:/app/public`。
+
+3) 验证 cgroups 子树是否启用
+
+进入容器：
+
+```bash
+docker exec -it redos-web sh -lc 'cat /sys/fs/cgroup/cgroup.controllers; echo "---"; cat /sys/fs/cgroup/benchexec/cgroup.subtree_control'
+```
+
+若输出包含 `cpu memory cpuset io pids ...` 等，表示 controller 已启用。
+
+4) 目录隔离参数注意事项
+
+runexec 的目录参数不可对同一路径同时指定多种模式。项目内封装已避免 `/tmp` 被重复声明（保留 `--full-access-dir /tmp`）。若你在外部脚本中调用 runexec，请避免同时对 `/tmp` 使用 `--hidden-dir` 与 `--full-access-dir`。
+
+5) 非容器模式（不推荐）
+
+设置 `RUNEXEC_NO_CONTAINER=1` 环境变量会启用 runexec 的非容器模式，仅用于 Docker Desktop/某些宿主上暂时绕过 cgroup 限制的场景。此模式下不保证时间/内存限制能可靠生效。
+
+---
+
+## Web 界面与 API 资源限制
+
+- 工具与引擎面板都提供运行时间（秒）、核心数、内存（MB）三个输入；留空则用默认值或不限制。
+- API：
+  - `POST /api/jobs/tools`：`{ regex, tools[], timeoutSeconds?, cpuCores?, memoryMB? }`
+  - `POST /api/jobs/engines`：`{ regex, engines[], attack{prefix,infix,suffix,repeat_times}, matchMode?, repeatOverride?, maxAttackLength?, timeoutSeconds?, cpuCores?, memoryMB? }`
+- 任务状态与结果通过 SSE：`GET /api/jobs/:id/stream` 持续推送给前端。
+
+---
+
+## 开发核验要点（Chrome DevTools）
+
+- 每次修改后务必用 Chrome DevTools 验证：
+  - 静态资源加载：`styles.css` / `main.js` 返回 `200`；
+  - `POST /api/jobs/tools` / `POST /api/jobs/engines` 的请求体是否包含资源限制字段；
+  - `GET /api/jobs/:id/stream` 是否持续推送；
+  - 页面卡片能否显示状态、耗时、匹配次数、原始输出以及错误和日志；
+  - 长文本（错误行）能自动换行不溢出。
+
 ### A. 项目文件结构
 
 ```

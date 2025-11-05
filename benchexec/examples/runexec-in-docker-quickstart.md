@@ -155,3 +155,26 @@ docker run --rm --privileged --cap-drop=all -v "$PWD":/work -w /work \
 - `doc/runexec.md`（runexec 基本使用）
 - `doc/benchexec-in-container.md`（在容器内运行 BenchExec 的背景与 Podman 建议）
 
+
+## 附：与本项目集成的补充说明
+
+- 本项目在容器中通过入口脚本 init.sh 启用 cgroups v2 子树控制器，并默认使用 runexec 的“容器模式”。
+- 目录隔离：避免对同一路径设置多种模式（例如同时对 /tmp 使用 --hidden-dir 与 --full-access-dir 会报错）。项目内封装仅为 /tmp 设置 --full-access-dir，并隐藏 /run 与 /home，根目录只读：
+
+`
+--read-only-dir / \
+--hidden-dir /run --hidden-dir /home \
+--full-access-dir /tmp --full-access-dir /app
+`
+
+- 运行本项目容器（Docker）建议命令：
+
+`
+docker run -d --name redos-web \
+  --privileged --cap-drop=all \
+  -p 8080:8080 \
+  -v /tmp:/tmp \
+  redos-test
+`
+
+- 在 UI 中可为“检测工具/引擎验证”分别设置运行时间（秒）、核心数、内存（MB），服务端经由 runexec 施加限制。请先按本文和 doc/benchexec-in-container.md 要求确认 cgroups v2 的子树控制器已启用。
