@@ -10,11 +10,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
 
 #################### 代理设置 ####################
-# ① 如果你想在 docker build 时临时改地址，只需要
+# 如果你想在 docker build 时临时改地址，可使用：
 #    docker build --build-arg PROXY=http://其他地址:端口 .
 ARG PROXY=http://192.168.1.34:7890
 
-# ② 一次性写全大小写两套环境变量，兼容所有程序
+# 一次性写全大小写两套环境变量，兼容所有程序
 ENV \
     http_proxy=${PROXY} \
     https_proxy=${PROXY} \
@@ -22,10 +22,8 @@ ENV \
     HTTP_PROXY=${PROXY} \
     HTTPS_PROXY=${PROXY} \
     FTP_PROXY=${PROXY} \
-    # 如果你的 7890 端口同时提供 SOCKS5，可以顺带写上：
     all_proxy=socks5h://192.168.1.34:7890 \
     ALL_PROXY=socks5h://192.168.1.34:7890 \
-    # 避免本机回环走代理
     no_proxy=localhost,127.0.0.1,::1 \
     NO_PROXY=localhost,127.0.0.1,::1
 
@@ -170,6 +168,11 @@ COPY init.sh /init.sh
 RUN chmod +x /init.sh
 COPY benchexec/ /app/benchexec/
 
+# Ensure Node.js binaries are available system-wide for engines without relying on NVM in /home
+RUN ln -sf /home/developer/.nvm/versions/node/v14.21.3/bin/node /usr/local/bin/node14 \
+ && ln -sf /home/developer/.nvm/versions/node/v21.7.3/bin/node /usr/local/bin/node21 \
+ && ln -sf /home/developer/.nvm/versions/node/v21.7.3/bin/node /usr/local/bin/node || true
+
 # Change ownership to developer
 RUN chown -R developer:developer /app
 
@@ -188,3 +191,4 @@ EXPOSE 8080
 USER root
 ENTRYPOINT ["/init.sh"]
 CMD ["npm", "start"]
+

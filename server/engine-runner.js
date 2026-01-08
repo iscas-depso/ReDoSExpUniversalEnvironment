@@ -19,7 +19,8 @@ function clampLog(data) {
   if (text.length <= LOG_LIMIT) {
     return text;
   }
-  return `${text.slice(0, LOG_LIMIT)}…`;
+  // Use ASCII ellipsis to avoid encoding issues inside containers
+  return `${text.slice(0, LOG_LIMIT)}...`;
 }
 
 function encodeRegex(regex) {
@@ -149,7 +150,9 @@ async function executeEngine(engineId, payloadPath, regexBase64, matchMode, time
       cmd: binaryPath,
       args: [regexBase64, payloadPath, String(matchMode)],
       cwd: path.dirname(binaryPath),
-      env: {},
+      env: {
+        PATH: `${process.env.PATH || ''}:/usr/local/bin:/home/developer/.nvm/versions/node/v21.7.3/bin:/home/developer/.nvm/versions/node/v14.21.3/bin`
+      },
       outputLogPath: programOutputPath,
       timelimitSeconds: timeoutMs ? Math.floor(timeoutMs / 1000) : undefined,
       walltimelimitSeconds: timeoutMs ? Math.floor(timeoutMs / 1000) : undefined,
@@ -289,3 +292,4 @@ module.exports = {
   runEnginesJob,
   buildAttackPayload
 };
+

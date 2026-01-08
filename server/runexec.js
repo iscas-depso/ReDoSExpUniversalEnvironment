@@ -1,4 +1,4 @@
-const fs = require('fs/promises');
+﻿const fs = require('fs/promises');
 const os = require('os');
 const path = require('path');
 const util = require('util');
@@ -54,7 +54,7 @@ async function runWithRunexec({
   // Container-friendly directory model (harmless in no-container mode)
   ra.push('--read-only-dir', '/');
   ra.push('--hidden-dir', '/run');
-  ra.push('--hidden-dir', '/home');
+  
   ra.push('--full-access-dir', '/tmp');
   ra.push('--full-access-dir', '/app');
   if (outputLogPath) {
@@ -91,3 +91,4 @@ async function runWithRunexec({
 module.exports = {
   runWithRunexec
 };
+
