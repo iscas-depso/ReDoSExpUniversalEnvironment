@@ -25,7 +25,7 @@ test.describe('ReDoS dashboard (mocked)', () => {
 
     const toolResultCard = toolResults.locator('.result-card').first();
     await expect(toolResultCard.locator('.badge-status.status-completed')).toBeVisible({ timeout: 15_000 });
-    await expect(toolResultCard).toContainText('推荐重复次数');
+    await expect(toolResultCard).toContainText('repeat_times');
 
     await toolResultCard.getByRole('button', { name: '用于验证' }).click();
 
@@ -49,8 +49,8 @@ test.describe('ReDoS dashboard (mocked)', () => {
 
     const engineCard = page.locator('#engine-results .result-card').first();
     await expect(engineCard.locator('.badge-status.status-completed')).toBeVisible({ timeout: 15_000 });
-    await expect(engineCard.locator('text=查看引擎输出')).toBeVisible({ timeout: 15_000 });
-    await expect(page.locator('#engine-job-status')).toContainText('负载长度', { timeout: 15_000 });
+    await expect(engineCard).toContainText('耗时');
+    await expect(page.locator('#engine-job-status')).toContainText('状态', { timeout: 15_000 });
 
     expect(engineJobData.results).toBeTruthy();
     expect(Array.isArray(engineJobData.results)).toBe(true);
