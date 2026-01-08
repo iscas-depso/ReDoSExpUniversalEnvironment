@@ -163,9 +163,9 @@ def main():
     base64_regex = sys.argv[1]
     output_file_path = sys.argv[2]
 
-    ftime_ms = 5000 # Maximum milliseconds to spend fuzzing
-    ptime_ms = 5000 # Maximum milliseconds to spend pumping
-    binary_search = False # Whether to use binary search to find the limit
+    ftime_ms = 60000  # Maximum milliseconds to spend fuzzing (60 seconds)
+    ptime_ms = 30000  # Maximum milliseconds to spend pumping (30 seconds)
+    binary_search = False
     
     # Get the directory where this script is located
     script_dir = Path(__file__).parent
@@ -208,8 +208,8 @@ def main():
         witness, witness_score = asyncio.run(run_fuzzer(
             str(fuzzer_binary), 
             base64_regex, 
-            "",  # Default empty flags
-            ftime_ms=5000,  # 4 minutes fuzzing
+            "",
+            ftime_ms=ftime_ms,
             length=200,
             width=1
         ))
@@ -231,7 +231,7 @@ def main():
                 bwitness = decode_witness_one_byte(witness)
                 
                 # Run pump analysis to get attack string structure
-                deadline = time.time() * 1000 + 5000  # 4 minutes for pumping
+                deadline = time.time() * 1000 + ptime_ms
                 
                 report = pump.get_pump_report(
                     regex_bytes,

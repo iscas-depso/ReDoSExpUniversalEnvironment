@@ -1,5 +1,9 @@
 const { randomUUID } = require('crypto');
 
+const JOB_TTL_MS = 30 * 60 * 1000;
+const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
+const MAX_JOBS = 1000;
+
 function nowIso() {
   return new Date().toISOString();
 }
@@ -10,8 +14,54 @@ function cloneWithoutListeners(job) {
 }
 
 class JobManager {
-  constructor() {
+  constructor(options = {}) {
     this.jobs = new Map();
+    this.jobTtlMs = options.jobTtlMs || JOB_TTL_MS;
+    this.maxJobs = options.maxJobs || MAX_JOBS;
+    this.cleanupInterval = null;
+    
+    if (options.enableCleanup !== false) {
+      this.startCleanup();
+    }
+  }
+
+  startCleanup() {
+    if (this.cleanupInterval) return;
+    this.cleanupInterval = setInterval(() => this.cleanup(), CLEANUP_INTERVAL_MS);
+    this.cleanupInterval.unref();
+  }
+
+  stopCleanup() {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+  }
+
+  cleanup() {
+    const now = Date.now();
+    const terminalStatuses = ['completed', 'completed_with_errors', 'failed', 'cancelled'];
+    
+    for (const [id, job] of this.jobs) {
+      if (!terminalStatuses.includes(job.status)) continue;
+      if (job.listeners && job.listeners.size > 0) continue;
+      
+      const updatedAt = new Date(job.updatedAt).getTime();
+      if (now - updatedAt > this.jobTtlMs) {
+        this.jobs.delete(id);
+      }
+    }
+    
+    if (this.jobs.size > this.maxJobs) {
+      const sorted = [...this.jobs.entries()]
+        .filter(([, j]) => terminalStatuses.includes(j.status) && (!j.listeners || j.listeners.size === 0))
+        .sort((a, b) => new Date(a[1].updatedAt) - new Date(b[1].updatedAt));
+      
+      const toRemove = this.jobs.size - this.maxJobs;
+      for (let i = 0; i < Math.min(toRemove, sorted.length); i++) {
+        this.jobs.delete(sorted[i][0]);
+      }
+    }
   }
 
   createJob({ type, items = [], request = {}, metadata = {} }) {

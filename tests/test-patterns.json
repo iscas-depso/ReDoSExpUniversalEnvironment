@@ -1,0 +1,264 @@
+{
+  "description": "Comprehensive ReDoS test patterns for tool and engine validation",
+  "version": "1.0.0",
+  "patterns": {
+    "exponential": {
+      "description": "Exponential backtracking patterns (classic ReDoS)",
+      "cases": [
+        {
+          "id": "exp-nested-plus",
+          "regex": "(a+)+",
+          "base64": "KGErKSs=",
+          "expectedRedos": true,
+          "category": "nested-quantifier",
+          "attackPrefix": "",
+          "attackInfix": "a",
+          "attackSuffix": "!",
+          "notes": "Classic nested quantifier pattern"
+        },
+        {
+          "id": "exp-nested-plus-suffix",
+          "regex": "(a+)+b",
+          "base64": "KGErKSti",
+          "expectedRedos": true,
+          "category": "nested-quantifier",
+          "attackPrefix": "",
+          "attackInfix": "a",
+          "attackSuffix": "",
+          "notes": "Nested quantifier with non-matching suffix"
+        },
+        {
+          "id": "exp-nested-star-plus",
+          "regex": "(a*)+",
+          "base64": "KGEqKSs=",
+          "expectedRedos": true,
+          "category": "nested-quantifier",
+          "notes": "Star inside plus"
+        },
+        {
+          "id": "exp-nested-plus-star",
+          "regex": "(a+)*",
+          "base64": "KGErKSo=",
+          "expectedRedos": true,
+          "category": "nested-quantifier",
+          "notes": "Plus inside star"
+        },
+        {
+          "id": "exp-alternation-overlap",
+          "regex": "(a|a)+",
+          "base64": "KGF8YSkr",
+          "expectedRedos": true,
+          "category": "overlapping-alternation",
+          "notes": "Identical alternatives with quantifier"
+        },
+        {
+          "id": "exp-alternation-prefix",
+          "regex": "(a|ab)+",
+          "base64": "KGF8YWIpKw==",
+          "expectedRedos": true,
+          "category": "overlapping-alternation",
+          "notes": "One alternative is prefix of another"
+        },
+        {
+          "id": "exp-anchored-nested",
+          "regex": "^(a+)+$",
+          "base64": "XihhKykrJA==",
+          "expectedRedos": true,
+          "category": "nested-quantifier",
+          "notes": "Anchored nested quantifier"
+        },
+        {
+          "id": "exp-char-class-nested",
+          "regex": "([a-zA-Z]+)*",
+          "base64": "KFthLXpBLVpdKykq",
+          "expectedRedos": true,
+          "category": "nested-quantifier",
+          "notes": "Character class with nested quantifiers"
+        },
+        {
+          "id": "exp-word-nested",
+          "regex": "(\\w+)+",
+          "base64": "KFx3Kykr",
+          "expectedRedos": true,
+          "category": "nested-quantifier",
+          "notes": "Word character class nested"
+        },
+        {
+          "id": "exp-digit-nested",
+          "regex": "(\\d+)+",
+          "base64": "KFxkKykr",
+          "expectedRedos": true,
+          "category": "nested-quantifier",
+          "notes": "Digit class nested"
+        }
+      ]
+    },
+    "polynomial": {
+      "description": "Polynomial backtracking patterns (slower but still problematic)",
+      "cases": [
+        {
+          "id": "poly-overlapping-quantifiers",
+          "regex": "a*a*a*a*b",
+          "base64": "YSphKmEqYSpi",
+          "expectedRedos": true,
+          "category": "overlapping-quantifiers",
+          "notes": "Multiple overlapping quantifiers"
+        },
+        {
+          "id": "poly-optional-overlap",
+          "regex": "(a?){100}b",
+          "base64": "KGE/KXsxMDB9Yg==",
+          "expectedRedos": true,
+          "category": "bounded-quantifier",
+          "notes": "Many optional matches"
+        },
+        {
+          "id": "poly-dot-star-prefix",
+          "regex": ".*.*=.*",
+          "base64": "LiouKj0uKg==",
+          "expectedRedos": true,
+          "category": "overlapping-quantifiers",
+          "notes": "Multiple greedy wildcards"
+        }
+      ]
+    },
+    "safe": {
+      "description": "Safe patterns that should NOT be flagged as ReDoS",
+      "cases": [
+        {
+          "id": "safe-literal",
+          "regex": "hello",
+          "base64": "aGVsbG8=",
+          "expectedRedos": false,
+          "category": "literal",
+          "notes": "Simple literal string"
+        },
+        {
+          "id": "safe-simple-class",
+          "regex": "[a-z]+",
+          "base64": "W2Etel0r",
+          "expectedRedos": false,
+          "category": "simple-quantifier",
+          "notes": "Single quantifier on character class"
+        },
+        {
+          "id": "safe-anchored-literal",
+          "regex": "^abc$",
+          "base64": "XmFiYyQ=",
+          "expectedRedos": false,
+          "category": "anchored",
+          "notes": "Anchored literal"
+        },
+        {
+          "id": "safe-atomic-like",
+          "regex": "(?:ab)+",
+          "base64": "KD86YWIpKw==",
+          "expectedRedos": false,
+          "category": "non-capturing",
+          "notes": "Non-capturing group with simple content"
+        },
+        {
+          "id": "safe-email-simple",
+          "regex": "\\w+@\\w+\\.\\w+",
+          "base64": "XHcrQFx3K1wuXHcr",
+          "expectedRedos": false,
+          "category": "practical",
+          "notes": "Simple email pattern"
+        },
+        {
+          "id": "safe-digits-only",
+          "regex": "^\\d{1,10}$",
+          "base64": "XlxkezEsMTB9JA==",
+          "expectedRedos": false,
+          "category": "bounded",
+          "notes": "Bounded digit repetition"
+        }
+      ]
+    },
+    "edgeCases": {
+      "description": "Edge cases and unusual patterns",
+      "cases": [
+        {
+          "id": "edge-empty",
+          "regex": "",
+          "base64": "",
+          "expectedRedos": false,
+          "category": "empty",
+          "notes": "Empty regex"
+        },
+        {
+          "id": "edge-single-char",
+          "regex": "a",
+          "base64": "YQ==",
+          "expectedRedos": false,
+          "category": "minimal",
+          "notes": "Single character"
+        },
+        {
+          "id": "edge-backref",
+          "regex": "(a+)\\1+",
+          "base64": "KGErKVwxKw==",
+          "expectedRedos": true,
+          "category": "backreference",
+          "notes": "Backreference with quantifier"
+        },
+        {
+          "id": "edge-lookahead",
+          "regex": "(?=a+)a+b",
+          "base64": "KD89YSspYSti",
+          "expectedRedos": false,
+          "category": "lookahead",
+          "notes": "Lookahead pattern"
+        },
+        {
+          "id": "edge-unicode",
+          "regex": "(\\p{L}+)+",
+          "base64": "KFxwe0x9Kykr",
+          "expectedRedos": true,
+          "category": "unicode",
+          "notes": "Unicode property with nested quantifier"
+        }
+      ]
+    },
+    "realWorld": {
+      "description": "Real-world vulnerable patterns from CVEs and security advisories",
+      "cases": [
+        {
+          "id": "rw-email-evil",
+          "regex": "^([a-zA-Z0-9])(([-.]|[_]+)?([a-zA-Z0-9]+))*(@){1}[a-z0-9]+[.]{1}(([a-z]{2,3})|([a-z]{2,3}[.]{1}[a-z]{2,3}))$",
+          "base64": "XihbYS16QS1aMC05XSkoKFstLl18W19dKyk/KFthLXpBLVowLTldKykpKihAKXsxfVthLXowLTldK1suXXsxfSgoW2Etel17MiwzfSl8KFthLXpdezIsM31bLl17MX1bYS16XXsyLDN9KSkk",
+          "expectedRedos": true,
+          "category": "email-validation",
+          "notes": "Vulnerable email validation pattern"
+        },
+        {
+          "id": "rw-url-parser",
+          "regex": "^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?",
+          "base64": "XigoW146Lz8jXSspOik/KC8vKFteLz8jXSopKT8oW14/I10qKShcPyhbXiNdKikpPygjKC4qKSk/",
+          "expectedRedos": false,
+          "category": "url-parsing",
+          "notes": "RFC 3986 URL parser (should be safe)"
+        },
+        {
+          "id": "rw-html-tag-evil",
+          "regex": "<([a-z]+)([^>]*)>(.*?)</\\1>",
+          "base64": "PChbYS16XSspKFtePl0qKT4oLio/KTwvXDE+",
+          "expectedRedos": true,
+          "category": "html-parsing",
+          "notes": "HTML tag matching with backreference"
+        }
+      ]
+    }
+  },
+  "engineBehavior": {
+    "description": "Expected behavior differences across regex engines",
+    "immuneEngines": ["re2", "rust", "go", "hyperscan", "csharp_nonbacktracking"],
+    "vulnerableEngines": ["python", "java8", "java11", "nodejs14", "nodejs21", "perl", "php", "ruby", "c", "cpp", "csharp"],
+    "notes": "Immune engines use linear-time algorithms that prevent exponential backtracking"
+  },
+  "attackGeneration": {
+    "defaultRepeatCount": 10000,
+    "maxPayloadLength": 500000,
+    "minRepeatForDetection": 25
+  }
+}

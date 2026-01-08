@@ -248,7 +248,7 @@
       const card = document.createElement('div'); card.className = 'result-card';
       const header = document.createElement('div'); header.className = 'result-header';
       const title = document.createElement('span'); title.className = 'result-title'; title.textContent = r.label || r.id;
-      const badge = document.createElement('span'); badge.className = 'badge'; badge.textContent = r.status;
+      const badge = document.createElement('span'); badge.className = 'badge badge-status status-' + r.status; badge.textContent = r.status;
       header.appendChild(title); header.appendChild(badge); card.appendChild(header);
       const body = document.createElement('div'); body.className = 'result-body';
       if (r.error && r.error.message) {
@@ -282,7 +282,7 @@
       const card = document.createElement('div'); card.className = 'result-card';
       const header = document.createElement('div'); header.className = 'result-header';
       const title = document.createElement('span'); title.className = 'result-title'; title.textContent = r.label || r.id;
-      const badge = document.createElement('span'); badge.className = 'badge'; badge.textContent = r.status;
+      const badge = document.createElement('span'); badge.className = 'badge badge-status status-' + r.status; badge.textContent = r.status;
       header.appendChild(title); header.appendChild(badge); card.appendChild(header);
 
       const body = document.createElement('div'); body.className = 'result-body';
@@ -334,5 +334,9 @@
     if (!state.attackSelection) { box.textContent = '未选择工具结果'; return; }
     const t = state.attackSelection;
     const p = document.createElement('p'); p.textContent = `来源工具: ${t.toolLabel}`; box.appendChild(p);
+  }
+
+  if (typeof window !== 'undefined') {
+    window.__REDOS_STATE__ = state;
   }
 })();

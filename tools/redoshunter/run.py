@@ -82,9 +82,8 @@ def run_redoshunter(regex, timeout=1200):
                 redoshunter_output = json.load(f)
             return parse_redoshunter_output(redoshunter_output, elapsed_ms)
         else:
-            # No ReDoS detected or error occurred
             return {
-                "elapsed_ms": str(elapsed_ms),
+                "elapsed_ms": elapsed_ms,
                 "is_redos": False,
                 "error": result.stderr,
                 "stdout": result.stdout
@@ -92,13 +91,13 @@ def run_redoshunter(regex, timeout=1200):
             
     except subprocess.TimeoutExpired:
         return {
-            "elapsed_ms": str(timeout * 1000),
+            "elapsed_ms": timeout * 1000,
             "is_redos": False,
             "error": "Timeout"
         }
     except Exception as e:
         return {
-            "elapsed_ms": "0",
+            "elapsed_ms": 0,
             "is_redos": False,
             "error": str(e)
         }
@@ -113,12 +112,12 @@ def run_redoshunter(regex, timeout=1200):
 def parse_redoshunter_output(redoshunter_data, elapsed_ms):
     """Parse ReDoSHunter output and convert to project format"""
     result = {
-        "elapsed_ms": str(elapsed_ms),
+        "elapsed_ms": elapsed_ms,  # Must be a number per contract
         "is_redos": False,
         "prefix": "",
         "infix": "",
         "suffix": "",
-        "repeat_times": "-1"
+        "repeat_times": -1  # Must be a number per contract
     }
     
     try:
@@ -134,9 +133,8 @@ def parse_redoshunter_output(redoshunter_data, elapsed_ms):
                     result["infix"] = encode_to_base64(attack.get('infix', ''))
                     result["suffix"] = encode_to_base64(attack.get('suffix', ''))
                     
-                    # Get actual repeat times from ReDoSHunter
                     repeat_times = attack.get('repeatTimes', -1)
-                    result["repeat_times"] = str(repeat_times)
+                    result["repeat_times"] = int(repeat_times) if repeat_times != -1 else -1
                     
                     break
     except Exception as e:
@@ -165,14 +163,13 @@ def main():
             json.dump(result, f, indent=2)
             
     except Exception as e:
-        # On any error, output a non-ReDoS result with error details
         error_result = {
-            "elapsed_ms": "0",
+            "elapsed_ms": 0,
             "is_redos": False,
             "prefix": "",
             "infix": "",
             "suffix": "",
-            "repeat_times": "-1",
+            "repeat_times": -1,
             "error": str(e)
         }
         
