@@ -44,8 +44,7 @@
     attackFullText: el('attack-full-text'),
     attackPrefix: el('attack-prefix'),
     attackInfix: el('attack-infix'),
-    attackSuffix: el('attack-suffix'),
-    attackRepeat: el('attack-repeat')
+    attackSuffix: el('attack-suffix')
   };
 
   document.addEventListener('DOMContentLoaded', init);
@@ -147,7 +146,6 @@
     if (E.attackInfix) E.attackInfix.addEventListener('input', updateButtons);
     if (E.attackPrefix) E.attackPrefix.addEventListener('input', updateButtons);
     if (E.attackSuffix) E.attackSuffix.addEventListener('input', updateButtons);
-    if (E.attackRepeat) E.attackRepeat.addEventListener('input', updateButtons);
   }
 
   function switchInputMode(mode) {
@@ -227,7 +225,11 @@
       const prefix = E.attackPrefix?.value || '';
       const infix = E.attackInfix?.value || '';
       const suffix = E.attackSuffix?.value || '';
-      const repeat = num(E.attackRepeat?.value) || 100;
+      const maxLen = num(E.maxAttackLength?.value) || 1024;
+      const prefixLen = prefix.length;
+      const infixLen = infix.length;
+      const suffixLen = suffix.length;
+      const repeat = infixLen > 0 ? Math.max(1, Math.floor((maxLen - prefixLen - suffixLen) / infixLen)) : 1;
       return {
         attack: {
           prefix: toBase64(prefix),

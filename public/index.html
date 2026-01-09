@@ -93,7 +93,7 @@
       </div>
       <div id="manual-input-full" class="form-group manual-input-section" style="display:none;">
         <label for="attack-full-text">完整攻击文本</label>
-        <textarea id="attack-full-text" placeholder="直接输入要测试的完整攻击字符串" rows="3"></textarea>
+        <textarea id="attack-full-text" placeholder="直接输入要测试的完整攻击字符串" rows="3" style="width:100%;"></textarea>
         <p class="help-text">输入原始文本，系统会自动进行 Base64 编码传输。</p>
       </div>
       <div id="manual-input-pattern" class="manual-input-section" style="display:none;">
@@ -110,12 +110,8 @@
             <label for="attack-suffix">后缀 (suffix)</label>
             <input id="attack-suffix" type="text" placeholder="可选">
           </div>
-          <div class="form-group">
-            <label for="attack-repeat">重复次数 (N)</label>
-            <input id="attack-repeat" type="number" min="1" value="100" placeholder="100">
-          </div>
         </div>
-        <p class="help-text">格式：prefix + infix × N + suffix，输入原始文本，系统会自动进行 Base64 编码传输。</p>
+        <p class="help-text">格式：prefix + infix × N + suffix，重复次数由"最大攻击串长度"自动计算。</p>
       </div>
       <div class="form-grid">
         <div class="form-group">
