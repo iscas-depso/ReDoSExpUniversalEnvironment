@@ -249,7 +249,14 @@
       const header = document.createElement('div'); header.className = 'result-header';
       const title = document.createElement('span'); title.className = 'result-title'; title.textContent = r.label || r.id;
       const badge = document.createElement('span'); badge.className = 'badge badge-status status-' + r.status; badge.textContent = r.status;
-      header.appendChild(title); header.appendChild(badge); card.appendChild(header);
+      header.appendChild(title); header.appendChild(badge);
+      if (r.output && typeof r.output.is_redos === 'boolean') {
+        const redosBadge = document.createElement('span');
+        redosBadge.className = r.output.is_redos ? 'badge badge-redos-true' : 'badge badge-redos-false';
+        redosBadge.textContent = r.output.is_redos ? 'ReDoS' : 'Safe';
+        header.appendChild(redosBadge);
+      }
+      card.appendChild(header);
       const body = document.createElement('div'); body.className = 'result-body';
       if (r.error && r.error.message) {
         const pre = document.createElement('pre'); pre.textContent = r.error.message; body.appendChild(pre);
@@ -286,9 +293,11 @@
       header.appendChild(title); header.appendChild(badge); card.appendChild(header);
 
       const body = document.createElement('div'); body.className = 'result-body';
-      // Meta line
       const elapsed = (r.output && typeof r.output.elapsed_ms === 'number') ? r.output.elapsed_ms : (typeof r.elapsedMs === 'number' ? r.elapsedMs : null);
       const meta = document.createElement('div');
+      if (elapsed != null && elapsed > 1000) {
+        meta.className = 'time-warning';
+      }
       meta.textContent = (elapsed != null) ? `耗时: ${formatMs(elapsed)}` : '耗时: (未知)';
       body.appendChild(meta);
 
@@ -297,12 +306,8 @@
         if (r.error.stdout) { const pre = document.createElement('pre'); pre.textContent = r.error.stdout; body.appendChild(pre); }
         if (r.error.stderr) { const pre = document.createElement('pre'); pre.textContent = r.error.stderr; body.appendChild(pre); }
       } else if (r.output) {
-        const details = document.createElement('div');
         const mc = (typeof r.output.match_count === 'number') ? r.output.match_count : null;
-        const raw = (typeof r.output.raw === 'string') ? r.output.raw : '';
-        const p1 = document.createElement('div'); p1.textContent = mc != null ? `匹配次数: ${mc}` : '匹配次数: (未知)'; details.appendChild(p1);
-        const pre = document.createElement('pre'); pre.textContent = raw; details.appendChild(pre);
-        body.appendChild(details);
+        const p1 = document.createElement('div'); p1.textContent = mc != null ? `匹配次数: ${mc}` : '匹配次数: (未知)'; body.appendChild(p1);
       } else {
         const em = document.createElement('em'); em.textContent = '无输出'; body.appendChild(em);
       }

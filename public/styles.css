@@ -384,6 +384,27 @@ button:disabled {
   background: var(--danger);
 }
 
+/* ReDoS result badges */
+.badge-redos-true {
+  background: var(--danger);
+  color: #fff;
+}
+
+.badge-redos-false {
+  background: var(--success);
+  color: #fff;
+}
+
+/* Time warning for slow results (>1s) */
+.time-warning {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.time-warning::after {
+  content: " ⚠";
+}
+
 .attack-summary {
   border: 1px solid #dbeafe;
   border-radius: 12px;
