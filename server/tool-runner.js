@@ -125,7 +125,7 @@ async function executeTool(toolId, regexBase64, timeoutMs, { cpuAllocator, cpuCo
 }
 
 async function runToolsJob(jobManager, job, { regex, toolIds, timeoutMs, cpuAllocator, cpuCores, memoryMB }) {
-  const effectiveTimeout = timeoutMs || DEFAULT_OPTIONS.toolTimeoutMs;
+  const effectiveTimeout = timeoutMs || undefined;
   const regexBase64 = encodeRegex(regex);
 
   jobManager.updateJob(job, { status: 'running' });

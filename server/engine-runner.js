@@ -222,7 +222,7 @@ async function runEnginesJob(
     return;
   }
 
-  const effectiveTimeout = timeoutMs || DEFAULT_OPTIONS.engineTimeoutMs;
+  const effectiveTimeout = timeoutMs || undefined;
   const options = {
     repeatOverride,
     maxRepeatTimes: maxRepeatTimes || DEFAULT_OPTIONS.maxRepeatTimes,

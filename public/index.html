@@ -54,17 +54,17 @@
       <div class="form-grid">
         <div class="form-group">
           <label for="tools-timeout">运行时间 (秒)</label>
-          <input id="tools-timeout" type="number" min="1" placeholder="默认">
-          <p class="help-text">不填则使用系统默认超时。</p>
+          <input id="tools-timeout" type="number" min="1" placeholder="不限时" value="60">
+          <p class="help-text">不填则不限时。</p>
         </div>
         <div class="form-group">
           <label for="tools-cores">核心数</label>
-          <input id="tools-cores" type="number" min="1" placeholder="不限">
+          <input id="tools-cores" type="number" min="1" placeholder="不限" value="1">
           <p class="help-text">仅指定使用几个核心，具体绑核由后端自动分配。</p>
         </div>
         <div class="form-group">
           <label for="tools-memory">内存限制 (MB)</label>
-          <input id="tools-memory" type="number" min="1" placeholder="不限">
+          <input id="tools-memory" type="number" min="1" placeholder="不限" value="4096">
           <p class="help-text">不填则不限制内存。</p>
         </div>
       </div>
@@ -130,17 +130,17 @@
         </div>
         <div class="form-group">
           <label for="engines-timeout">运行时间 (秒)</label>
-          <input id="engines-timeout" type="number" min="1" placeholder="默认" value="10">
-          <p class="help-text">不填则使用系统默认超时。</p>
+          <input id="engines-timeout" type="number" min="1" placeholder="不限时" value="10">
+          <p class="help-text">不填则不限时。</p>
         </div>
         <div class="form-group">
           <label for="engines-cores">核心数</label>
-          <input id="engines-cores" type="number" min="1" placeholder="不限">
+          <input id="engines-cores" type="number" min="1" placeholder="不限" value="1">
           <p class="help-text">仅指定使用几个核心，具体绑核由后端自动分配。</p>
         </div>
         <div class="form-group">
           <label for="engines-memory">内存限制 (MB)</label>
-          <input id="engines-memory" type="number" min="1" placeholder="不限">
+          <input id="engines-memory" type="number" min="1" placeholder="不限" value="4096">
           <p class="help-text">不填则不限制内存。</p>
         </div>
       </div>
