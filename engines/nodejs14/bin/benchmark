@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 # Node.js 14 Benchmark Wrapper (prefer absolute node path, fallback to nvm, then PATH)
 set -euo pipefail
 export PATH="/usr/local/bin:/home/developer/.nvm/versions/node/v21.7.3/bin:/home/developer/.nvm/versions/node/v14.21.3/bin:$PATH"
@@ -26,5 +26,3 @@ if [ -f "$NVM_DIR/nvm.sh" ]; then
 fi
 
 exec node "$SCRIPT_DIR/benchmark.js" "$@"
-
-

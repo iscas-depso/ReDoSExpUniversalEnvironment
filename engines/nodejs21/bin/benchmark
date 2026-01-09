@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 # Node.js 21 Benchmark Wrapper with V8 Non-Backtracking RegExp Engine
 set -euo pipefail
 export PATH="/usr/local/bin:/home/developer/.nvm/versions/node/v21.7.3/bin:/home/developer/.nvm/versions/node/v14.21.3/bin:$PATH"
@@ -27,5 +27,3 @@ if [ -f "$NVM_DIR/nvm.sh" ]; then
 fi
 
 exec node "${NODE_FLAGS[@]}" "$SCRIPT_DIR/benchmark.js" "$@"
-
-
