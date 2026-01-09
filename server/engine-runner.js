@@ -47,6 +47,22 @@ function parseRepeat(value) {
 }
 
 function buildAttackPayload(attack, options) {
+  if (attack?.fullText) {
+    const attackText = decodeBase64(attack.fullText);
+    const maxAttackLength = Math.max(64, options.maxAttackLength || DEFAULT_OPTIONS.maxAttackLength);
+    const truncated = attackText.length > maxAttackLength;
+    const finalText = truncated ? attackText.slice(0, maxAttackLength) : attackText;
+    return {
+      attackText: finalText,
+      payloadInfo: {
+        mode: 'fullText',
+        originalLength: attackText.length,
+        truncated,
+        payloadLength: finalText.length
+      }
+    };
+  }
+
   const prefix = decodeBase64(attack?.prefix);
   const infix = decodeBase64(attack?.infix);
   const suffix = decodeBase64(attack?.suffix);

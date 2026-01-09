@@ -332,9 +332,13 @@
       const p = document.createElement('p'); p.textContent = '暂无结果'; container.appendChild(p); return;
     }
     const sorted = [...job.results].sort((a, b) => {
-      const aRedos = a.output?.is_redos === true ? 1 : 0;
-      const bRedos = b.output?.is_redos === true ? 1 : 0;
-      return bRedos - aRedos;
+      const statusOrder = { running: 0, failed: 2, completed: 3 };
+      const aSpecial = a.output?.is_redos === true ? -1 : 0;
+      const bSpecial = b.output?.is_redos === true ? -1 : 0;
+      if (aSpecial !== bSpecial) return aSpecial - bSpecial;
+      const aOrder = statusOrder[a.status] ?? 1;
+      const bOrder = statusOrder[b.status] ?? 1;
+      return aOrder - bOrder;
     });
     sorted.forEach(r => {
       const card = document.createElement('div'); card.className = 'result-card';
@@ -402,9 +406,13 @@
     }
     const getElapsed = r => (r.output && typeof r.output.elapsed_ms === 'number') ? r.output.elapsed_ms : (typeof r.elapsedMs === 'number' ? r.elapsedMs : 0);
     const sorted = [...job.results].sort((a, b) => {
-      const aOver = getElapsed(a) > 1000 ? 1 : 0;
-      const bOver = getElapsed(b) > 1000 ? 1 : 0;
-      if (bOver !== aOver) return bOver - aOver;
+      const statusOrder = { running: 0, failed: 2, completed: 3 };
+      const aSpecial = getElapsed(a) > 1000 ? -1 : 0;
+      const bSpecial = getElapsed(b) > 1000 ? -1 : 0;
+      if (aSpecial !== bSpecial) return aSpecial - bSpecial;
+      const aOrder = statusOrder[a.status] ?? 1;
+      const bOrder = statusOrder[b.status] ?? 1;
+      if (aOrder !== bOrder) return aOrder - bOrder;
       return getElapsed(b) - getElapsed(a);
     });
     sorted.forEach(r => {
