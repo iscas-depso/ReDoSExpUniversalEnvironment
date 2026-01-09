@@ -2,8 +2,10 @@
 # BASE IMAGE AND ENVIRONMENT CONFIGURATION
 # =============================================================================
 
-# Use Ubuntu 22.04 as base image
-FROM ubuntu:22.04
+# Use Ubuntu 22.04 as base image (use China mirror if DockerHub is blocked)
+# To use mirror: docker build --build-arg BASE_IMAGE=docker.1ms.run/library/ubuntu:22.04 .
+ARG BASE_IMAGE=ubuntu:22.04
+FROM ${BASE_IMAGE}
 
 # Set environment variables to avoid interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
