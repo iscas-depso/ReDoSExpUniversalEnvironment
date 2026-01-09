@@ -93,8 +93,8 @@ COPY tools/regexploit/ /app/tools/regexploit/
 # Install regexploit (Python package)
 RUN cd /app/tools/regexploit/src && python3 -m pip install -e . --no-deps
 
-# Install Python dependencies for regulator tool
-RUN python3 -m pip install --no-cache-dir colored numpy scipy scikit-learn
+# Install Python dependencies for regulator tool and BenchExec for resource limits
+RUN python3 -m pip install --no-cache-dir colored numpy scipy scikit-learn benchexec
 
 # Copy regexstatic tool (pre-built JAR and dependencies)
 COPY tools/regexstatic/ /app/tools/regexstatic/
@@ -150,6 +150,9 @@ COPY engines/hyperscan/ /app/engines/hyperscan/
 # Copy Node.js engines (scripts)
 COPY engines/nodejs14/ /app/engines/nodejs14/
 COPY engines/nodejs21/ /app/engines/nodejs21/
+
+# Remove UTF-8 BOM from nodejs benchmark scripts (prevents "not found" errors on Linux)
+RUN sed -i '1s/^\xEF\xBB\xBF//' /app/engines/nodejs14/bin/benchmark /app/engines/nodejs21/bin/benchmark 2>/dev/null || true
 
 # Copy Java engines (pre-compiled bytecode)
 COPY engines/java8/ /app/engines/java8/
