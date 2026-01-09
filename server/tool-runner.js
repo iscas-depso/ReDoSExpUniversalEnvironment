@@ -55,8 +55,7 @@ async function executeTool(toolId, regexBase64, timeoutMs, { cpuAllocator, cpuCo
       allocated = await cpuAllocator.acquire(cpuCores);
     }
 
-    // Prefer runexec wrapper for limits if available
-    const useRunexec = true;
+    const useRunexec = process.env.DISABLE_RUNEXEC !== '1';
     if (useRunexec) {
       const r = await runWithRunexec({
         cmd: file,

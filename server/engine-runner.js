@@ -142,27 +142,42 @@ async function executeEngine(engineId, payloadPath, regexBase64, matchMode, time
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), `redos-engine-${engineId}-`));
   const programOutputPath = path.join(tempDir, 'output.log');
   let allocated = null;
+  const useRunexec = process.env.DISABLE_RUNEXEC !== '1';
   try {
     if (cpuAllocator && Number.isFinite(cpuCores) && cpuCores > 0) {
       allocated = await cpuAllocator.acquire(cpuCores);
     }
-    await runWithRunexec({
-      cmd: binaryPath,
-      args: [regexBase64, payloadPath, String(matchMode)],
-      cwd: path.dirname(binaryPath),
-      env: {
-        PATH: `${process.env.PATH || ''}:/usr/local/bin:/home/developer/.nvm/versions/node/v21.7.3/bin:/home/developer/.nvm/versions/node/v14.21.3/bin`
-      },
-      outputLogPath: programOutputPath,
-      timelimitSeconds: timeoutMs ? Math.floor(timeoutMs / 1000) : undefined,
-      walltimelimitSeconds: timeoutMs ? Math.floor(timeoutMs / 1000) : undefined,
-      memoryMB,
-      cores: allocated?.cores
-    });
-    let stdout = '';
-    try { stdout = await fs.readFile(programOutputPath, 'utf8'); } catch {}
-    const stderr = '';
-    return { stdout, stderr };
+    if (useRunexec) {
+      await runWithRunexec({
+        cmd: binaryPath,
+        args: [regexBase64, payloadPath, String(matchMode)],
+        cwd: path.dirname(binaryPath),
+        env: {
+          PATH: `${process.env.PATH || ''}:/usr/local/bin:/home/developer/.nvm/versions/node/v21.7.3/bin:/home/developer/.nvm/versions/node/v14.21.3/bin`
+        },
+        outputLogPath: programOutputPath,
+        timelimitSeconds: timeoutMs ? Math.floor(timeoutMs / 1000) : undefined,
+        walltimelimitSeconds: timeoutMs ? Math.floor(timeoutMs / 1000) : undefined,
+        memoryMB,
+        cores: allocated?.cores
+      });
+      let stdout = '';
+      try { stdout = await fs.readFile(programOutputPath, 'utf8'); } catch {}
+      const stderr = '';
+      return { stdout, stderr };
+    } else {
+      const execOptions = {
+        cwd: path.dirname(binaryPath),
+        env: {
+          ...process.env,
+          PATH: `${process.env.PATH || ''}:/usr/local/bin:/home/developer/.nvm/versions/node/v21.7.3/bin:/home/developer/.nvm/versions/node/v14.21.3/bin`
+        },
+        timeout: timeoutMs,
+        maxBuffer: 20 * 1024 * 1024
+      };
+      const result = await execFile(binaryPath, [regexBase64, payloadPath, String(matchMode)], execOptions);
+      return { stdout: result.stdout || '', stderr: result.stderr || '' };
+    }
   } finally {
     try { allocated?.release(); } catch {}
     await fs.rm(tempDir, { recursive: true, force: true });
