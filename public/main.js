@@ -7,7 +7,8 @@
     selectedEngines: new Set(),
     currentToolJob: null,
     currentEngineJob: null,
-    events: { tools: null, engines: null }
+    events: { tools: null, engines: null },
+    attackInputMode: 'tool'
   };
 
   const el = id => document.getElementById(id);
@@ -34,7 +35,17 @@
     matchMode: el('match-mode'),
     repeatOverride: el('repeat-override'),
     maxAttackLength: el('max-attack-length'),
-    attackSummary: el('attack-summary')
+    attackSummary: el('attack-summary'),
+    modeTool: el('mode-tool'),
+    modeFull: el('mode-full'),
+    modePattern: el('mode-pattern'),
+    manualInputFull: el('manual-input-full'),
+    manualInputPattern: el('manual-input-pattern'),
+    attackFullText: el('attack-full-text'),
+    attackPrefix: el('attack-prefix'),
+    attackInfix: el('attack-infix'),
+    attackSuffix: el('attack-suffix'),
+    attackRepeat: el('attack-repeat')
   };
 
   document.addEventListener('DOMContentLoaded', init);
@@ -129,6 +140,25 @@
     if (E.regex) E.regex.addEventListener('input', updateButtons);
     if (E.runTools) E.runTools.addEventListener('click', onRunTools);
     if (E.runEngines) E.runEngines.addEventListener('click', onRunEngines);
+    if (E.modeTool) E.modeTool.addEventListener('click', () => switchInputMode('tool'));
+    if (E.modeFull) E.modeFull.addEventListener('click', () => switchInputMode('full'));
+    if (E.modePattern) E.modePattern.addEventListener('click', () => switchInputMode('pattern'));
+    if (E.attackFullText) E.attackFullText.addEventListener('input', updateButtons);
+    if (E.attackInfix) E.attackInfix.addEventListener('input', updateButtons);
+    if (E.attackPrefix) E.attackPrefix.addEventListener('input', updateButtons);
+    if (E.attackSuffix) E.attackSuffix.addEventListener('input', updateButtons);
+    if (E.attackRepeat) E.attackRepeat.addEventListener('input', updateButtons);
+  }
+
+  function switchInputMode(mode) {
+    state.attackInputMode = mode;
+    [E.modeTool, E.modeFull, E.modePattern].forEach(btn => btn?.classList.remove('active'));
+    if (mode === 'tool') E.modeTool?.classList.add('active');
+    else if (mode === 'full') E.modeFull?.classList.add('active');
+    else if (mode === 'pattern') E.modePattern?.classList.add('active');
+    if (E.manualInputFull) E.manualInputFull.style.display = mode === 'full' ? 'block' : 'none';
+    if (E.manualInputPattern) E.manualInputPattern.style.display = mode === 'pattern' ? 'block' : 'none';
+    updateButtons();
   }
 
   function toggleAll(type, checked) {
@@ -148,10 +178,68 @@
   function updateButtons() {
     const regexFilled = !!(E.regex && E.regex.value.trim());
     if (E.runTools) E.runTools.disabled = !(regexFilled && state.selectedTools.size > 0);
-    if (E.runEngines) E.runEngines.disabled = !(state.attackSelection && state.selectedEngines.size > 0);
+    let attackReady = false;
+    if (state.attackInputMode === 'tool') {
+      attackReady = !!state.attackSelection;
+    } else if (state.attackInputMode === 'full') {
+      attackReady = !!(E.attackFullText && E.attackFullText.value.trim());
+    } else if (state.attackInputMode === 'pattern') {
+      attackReady = !!(E.attackInfix && E.attackInfix.value.trim());
+    }
+    if (E.runEngines) E.runEngines.disabled = !(attackReady && state.selectedEngines.size > 0);
   }
 
   function num(v) { const n = Number(v); return Number.isFinite(n) && n > 0 ? n : undefined; }
+
+  function toBase64(str) {
+    try {
+      return btoa(unescape(encodeURIComponent(str)));
+    } catch {
+      return btoa(str);
+    }
+  }
+
+  function fromBase64(b64) {
+    try {
+      return decodeURIComponent(escape(atob(b64)));
+    } catch {
+      try { return atob(b64); } catch { return b64; }
+    }
+  }
+
+  function buildAttackPayload() {
+    if (state.attackInputMode === 'tool' && state.attackSelection) {
+      return {
+        attack: state.attackSelection.attack,
+        attackSource: {
+          toolId: state.attackSelection.toolId,
+          toolLabel: state.attackSelection.toolLabel,
+          toolJobId: state.attackSelection.jobId
+        }
+      };
+    } else if (state.attackInputMode === 'full') {
+      const text = (E.attackFullText?.value || '').trim();
+      return {
+        attack: { fullText: toBase64(text) },
+        attackSource: { mode: 'manual-full' }
+      };
+    } else if (state.attackInputMode === 'pattern') {
+      const prefix = E.attackPrefix?.value || '';
+      const infix = E.attackInfix?.value || '';
+      const suffix = E.attackSuffix?.value || '';
+      const repeat = num(E.attackRepeat?.value) || 100;
+      return {
+        attack: {
+          prefix: toBase64(prefix),
+          infix: toBase64(infix),
+          suffix: toBase64(suffix),
+          repeat_times: repeat
+        },
+        attackSource: { mode: 'manual-pattern' }
+      };
+    }
+    return { attack: null, attackSource: {} };
+  }
 
   async function onRunTools() {
     const regex = (E.regex?.value || '').trim();
@@ -182,6 +270,7 @@
     if (!regex || engines.length === 0) return;
     setStatus('engines', '提交中...');
     try {
+      const payload = buildAttackPayload();
       const body = {
         regex,
         engines,
@@ -191,12 +280,8 @@
         timeoutSeconds: num(E.enginesTimeout?.value),
         cpuCores: num(E.enginesCores?.value),
         memoryMB: num(E.enginesMemory?.value),
-        attack: (state.attackSelection && state.attackSelection.attack) || null,
-        attackSource: state.attackSelection ? {
-          toolId: state.attackSelection.toolId,
-          toolLabel: state.attackSelection.toolLabel,
-          toolJobId: state.attackSelection.jobId
-        } : {}
+        attack: payload.attack,
+        attackSource: payload.attackSource
       };
       const res = await fetch('/api/jobs/engines', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -244,8 +329,14 @@
     if (!job || !Array.isArray(job.results) || job.results.length === 0) {
       const p = document.createElement('p'); p.textContent = '暂无结果'; container.appendChild(p); return;
     }
-    job.results.forEach(r => {
+    const sorted = [...job.results].sort((a, b) => {
+      const aRedos = a.output?.is_redos === true ? 1 : 0;
+      const bRedos = b.output?.is_redos === true ? 1 : 0;
+      return bRedos - aRedos;
+    });
+    sorted.forEach(r => {
       const card = document.createElement('div'); card.className = 'result-card';
+      if (r.output?.is_redos === true) card.classList.add('redos-highlight');
       const header = document.createElement('div'); header.className = 'result-header';
       const title = document.createElement('span'); title.className = 'result-title'; title.textContent = r.label || r.id;
       const badge = document.createElement('span'); badge.className = 'badge badge-status status-' + r.status; badge.textContent = r.status;
@@ -262,11 +353,33 @@
         const pre = document.createElement('pre'); pre.textContent = r.error.message; body.appendChild(pre);
       } else if (r.output) {
         const pre = document.createElement('pre'); pre.textContent = JSON.stringify(r.output, null, 2); body.appendChild(pre);
-        // 提供“用于验证”按钮（当输出看起来像攻击结果时）
         if (typeof r.output === 'object' && ('prefix' in r.output || 'infix' in r.output || 'suffix' in r.output)) {
+          const decodedBox = document.createElement('div'); decodedBox.className = 'decoded-box';
+          const items = [
+            { label: 'Prefix', value: r.output.prefix },
+            { label: 'Infix', value: r.output.infix },
+            { label: 'Suffix', value: r.output.suffix }
+          ];
+          items.forEach(item => {
+            const div = document.createElement('div'); div.className = 'decoded-item';
+            const strong = document.createElement('strong'); strong.textContent = item.label;
+            const code = document.createElement('code');
+            code.textContent = item.value ? fromBase64(item.value) : '(空)';
+            div.appendChild(strong); div.appendChild(code);
+            decodedBox.appendChild(div);
+          });
+          if (typeof r.output.repeat_times === 'number') {
+            const div = document.createElement('div'); div.className = 'decoded-item';
+            const strong = document.createElement('strong'); strong.textContent = 'Repeat';
+            const code = document.createElement('code'); code.textContent = r.output.repeat_times;
+            div.appendChild(strong); div.appendChild(code);
+            decodedBox.appendChild(div);
+          }
+          body.appendChild(decodedBox);
           const btn = document.createElement('button'); btn.textContent = '用于验证'; btn.className = 'small';
           btn.addEventListener('click', () => {
             state.attackSelection = { attack: r.output, toolId: r.id, toolLabel: r.label || r.id, jobId: job.id };
+            switchInputMode('tool');
             renderAttackSummary(); updateButtons();
           });
           body.appendChild(btn);
@@ -285,20 +398,28 @@
     if (!job || !Array.isArray(job.results) || job.results.length === 0) {
       const p = document.createElement('p'); p.textContent = '暂无结果'; container.appendChild(p); return;
     }
-    job.results.forEach(r => {
+    const getElapsed = r => (r.output && typeof r.output.elapsed_ms === 'number') ? r.output.elapsed_ms : (typeof r.elapsedMs === 'number' ? r.elapsedMs : 0);
+    const sorted = [...job.results].sort((a, b) => {
+      const aOver = getElapsed(a) > 1000 ? 1 : 0;
+      const bOver = getElapsed(b) > 1000 ? 1 : 0;
+      if (bOver !== aOver) return bOver - aOver;
+      return getElapsed(b) - getElapsed(a);
+    });
+    sorted.forEach(r => {
       const card = document.createElement('div'); card.className = 'result-card';
+      const elapsed = getElapsed(r);
+      if (elapsed > 1000) card.classList.add('slow-highlight');
       const header = document.createElement('div'); header.className = 'result-header';
       const title = document.createElement('span'); title.className = 'result-title'; title.textContent = r.label || r.id;
       const badge = document.createElement('span'); badge.className = 'badge badge-status status-' + r.status; badge.textContent = r.status;
       header.appendChild(title); header.appendChild(badge); card.appendChild(header);
 
       const body = document.createElement('div'); body.className = 'result-body';
-      const elapsed = (r.output && typeof r.output.elapsed_ms === 'number') ? r.output.elapsed_ms : (typeof r.elapsedMs === 'number' ? r.elapsedMs : null);
       const meta = document.createElement('div');
-      if (elapsed != null && elapsed > 1000) {
+      if (elapsed > 1000) {
         meta.className = 'time-warning';
       }
-      meta.textContent = (elapsed != null) ? `耗时: ${formatMs(elapsed)}` : '耗时: (未知)';
+      meta.textContent = elapsed ? `耗时: ${formatMs(elapsed)}` : '耗时: (未知)';
       body.appendChild(meta);
 
       if (r.error && r.error.message) {
