@@ -16,8 +16,8 @@ TOOLS=(
 )
 
 IMAGE="redos-test"
-# DATASET="/app/expr/data/test.jsonl"
-DATASET="/app/expr/data/lookahead_fse19_fullmatch.jsonl"
+DATASET="/app/expr/data/test.jsonl"
+# DATASET="/app/expr/data/lookahead_fse19_fullmatch.jsonl"
 
 for toolsname in "${TOOLS[@]}"; do
   echo "========================================"

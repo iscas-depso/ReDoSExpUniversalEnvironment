@@ -60,13 +60,11 @@ def init_cpu_pool():
 
 def get_cpu():
     """Acquire a CPU index (P operation). Blocks if no CPU is available."""
-    init_cpu_pool()
     return _cpu_pool.get()
 
 
 def return_cpu(cpu_id):
     """Release a CPU index back to the pool (V operation)."""
-    init_cpu_pool()
     _cpu_pool.put(cpu_id)
 
 
@@ -238,6 +236,8 @@ def main():
     force_fullmatch = args.fullmatch
     use_runexec = args.runexec
     memory_limit = args.memlimit
+
+    init_cpu_pool()
 
     for filename in args.files:
         process_file(filename)
