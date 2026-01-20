@@ -54,7 +54,7 @@ async function runWithRunexec({
   // Container-friendly directory model (harmless in no-container mode)
   ra.push('--read-only-dir', '/');
   ra.push('--hidden-dir', '/run');
-  
+
   ra.push('--full-access-dir', '/tmp');
   ra.push('--full-access-dir', '/app');
   if (outputLogPath) {

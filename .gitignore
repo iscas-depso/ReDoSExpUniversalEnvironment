@@ -6,3 +6,4 @@ npm-debug.log*
 package-lock-backup.json
 tools/redoshunter/.idea
 
+.venv

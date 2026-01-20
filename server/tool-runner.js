@@ -22,8 +22,23 @@ function clampLog(data) {
   return `${text.slice(0, LOG_LIMIT)}…`;
 }
 
-function encodeRegex(regex) {
-  return Buffer.from(regex, 'utf8').toString('base64');
+function encodeRegex(regexJson) {
+  let obj, pattern;
+  try {
+    obj = JSON.parse(regexJson);
+    //从pattern或者input中获取pattern
+    if (typeof obj.pattern === 'string') {
+      pattern = obj.pattern;
+    } else if (typeof obj.input === 'string') {
+      pattern = obj.input;
+    } else {
+      throw new Error('pattern 或 input 字段不存在或不是字符串');
+    }
+  } catch (e) {
+    return Buffer.from(regexJson, 'utf8').toString('base64');
+  }
+
+  return Buffer.from(pattern, 'utf8').toString('base64');
 }
 
 function prepResult(jobManager, job, toolId, statusUpdates = {}) {
@@ -111,7 +126,7 @@ async function executeTool(toolId, regexBase64, timeoutMs, { cpuAllocator, cpuCo
       durationMs: Date.now() - start
     });
   } finally {
-    try { allocated?.release(); } catch {}
+    try { allocated?.release(); } catch { }
     await fs.rm(tempDir, { recursive: true, force: true });
   }
 

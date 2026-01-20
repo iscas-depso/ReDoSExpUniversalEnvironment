@@ -98,6 +98,30 @@ const TOOL_DEFINITIONS = {
         options: { cwd: path.join(TOOLS_ROOT, 'rengar') }
       };
     }
+  },
+  recheck: {
+    id: 'recheck',
+    label: 'Recheck',
+    description: 'Fuzzing detector (Java 21)',
+    buildCommand(regexBase64, outputPath) {
+      return {
+        file: PYTHON_BIN,
+        args: [path.join(TOOLS_ROOT, 'recheck', 'run.py'), regexBase64, outputPath],
+        options: { cwd: path.join(TOOLS_ROOT, 'recheck') }
+      };
+    }
+  },
+  ere: {
+    id: 'ere',
+    label: 'ERE',
+    description: 'ERE detector (Rust)',
+    buildCommand(regexBase64, outputPath) {
+      return {
+        file: PYTHON_BIN,
+        args: [path.join(TOOLS_ROOT, 'ere', 'run.py'), regexBase64, outputPath],
+        options: { cwd: path.join(TOOLS_ROOT, 'ere') }
+      };
+    }
   }
 };
 

@@ -1,0 +1,13 @@
+services:
+  redos-test:
+    build:
+      context: .
+      # 如果你想用 buildx 多平台构建，可以加下面一行：
+      # platforms: linux/amd64
+    image: redos-test
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/tmp:/tmp"
+    privileged: true
+    restart: "no" # 对应 --rm，容器停止后不重启
