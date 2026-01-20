@@ -179,6 +179,10 @@ COPY init.sh /init.sh
 RUN chmod +x /init.sh
 COPY benchexec/ /app/benchexec/
 
+COPY expr/ /app/expr/
+
+RUN python3 -m pip install --no-cache-dir tqdm
+
 # Ensure Node.js binaries are available system-wide for engines without relying on NVM in /home
 RUN ln -f /home/developer/.nvm/versions/node/v14.21.3/bin/node /usr/local/bin/node14 \
     && ln -f /home/developer/.nvm/versions/node/v21.7.3/bin/node /usr/local/bin/node21 \
