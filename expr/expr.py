@@ -119,7 +119,7 @@ def run_command(args):
     ]
     if use_runexec:
         cmds = [
-            "runexec",
+            "/usr/local/bin/runexec",
             "--read-only-dir",
             "/",
             "--hidden-dir",
@@ -132,14 +132,17 @@ def run_command(args):
             str(cpu),
             "--memlimit",
             str(memory_limit * 1024 * 1024),
-            "--",
             *cmds,
         ]
     try:
         # 把cmds组合在一起
         cmds = " ".join(cmds)
         result = subprocess.run(
-            cmds, shell=True, capture_output=True, text=True, timeout=timeout_seconds
+            cmds,
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
         )
 
         json_output(

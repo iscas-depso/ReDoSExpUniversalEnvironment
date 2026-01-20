@@ -98,6 +98,8 @@ RUN cd /app/tools/regexploit/src && python3 -m pip install -e . --no-deps
 # Install Python dependencies for regulator tool and BenchExec for resource limits
 RUN python3 -m pip install --no-cache-dir colored numpy scipy scikit-learn benchexec
 
+RUN python3 -m pip install --no-cache-dir tqdm
+
 # Copy regexstatic tool (pre-built JAR and dependencies)
 COPY tools/regexstatic/ /app/tools/regexstatic/
 
@@ -175,13 +177,21 @@ COPY engines/srm/ /app/engines/srm/
 COPY package.json package-lock.json /app/
 COPY public/ /app/public/
 COPY server/ /app/server/
+# =============================================================================
+# CONTAINER RUNTIME CONFIGURATION
+# =============================================================================
+
+WORKDIR /app
+
+# Install node dependencies for the web service
+RUN npm ci --omit=dev
+
+
 COPY init.sh /init.sh
 RUN chmod +x /init.sh
 COPY benchexec/ /app/benchexec/
 
 COPY expr/ /app/expr/
-
-RUN python3 -m pip install --no-cache-dir tqdm
 
 # Ensure Node.js binaries are available system-wide for engines without relying on NVM in /home
 RUN ln -f /home/developer/.nvm/versions/node/v14.21.3/bin/node /usr/local/bin/node14 \
@@ -193,14 +203,7 @@ RUN chown -R developer:developer /app
 
 USER developer
 
-# =============================================================================
-# CONTAINER RUNTIME CONFIGURATION
-# =============================================================================
-
 WORKDIR /app
-
-# Install node dependencies for the web service
-RUN npm ci --omit=dev
 
 EXPOSE 8080
 USER root
