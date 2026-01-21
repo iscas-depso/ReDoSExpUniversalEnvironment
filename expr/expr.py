@@ -130,6 +130,7 @@ def run_command(args):
             str(cpu),
             "--memlimit",
             str(memory_limit * 1024 * 1024),
+            "--",
             *cmds,
         ]
     try:
@@ -159,7 +160,8 @@ def run_command(args):
             file=filename,
             line=idx,
             input=pattern,
-            stdout="timeout",
+            output="timeout",
+            stdout="",
             stderr=str(e),
             return_code=None,
             timeout=True,
@@ -169,8 +171,9 @@ def run_command(args):
             file=filename,
             line=idx,
             input=pattern,
-            stdout="",
-            stderr=str(e),
+            output=str(e),
+            stdout=result.stdout,
+            stderr=result.stderr,
             return_code=None,
             timeout=False,
         )
@@ -204,7 +207,7 @@ def process_file(filename):
 
 
 def main():
-    global cmd, force_fullmatch, timeout_seconds, use_runexec, CPU_COUNT
+    global cmd, force_fullmatch, timeout_seconds, use_runexec, memory_limit, CPU_COUNT
 
     parser = argparse.ArgumentParser(description="Process ReDoS experiment files.")
     parser.add_argument("files", nargs="+", help="Input files to process")
@@ -218,7 +221,10 @@ def main():
         "--cpus", type=int, default=4, help="Number of processes to use (default: 4)"
     )
     parser.add_argument(
-        "--memlimit", type=int, default=1024, help="Memory limit in MB (default: 1024)"
+        "--memlimit",
+        type=int,
+        default=2097152,
+        help="Memory limit in MB (default: 2097152)",
     )
     parser.add_argument(
         "--fullmatch",

@@ -191,7 +191,7 @@ COPY init.sh /init.sh
 RUN chmod +x /init.sh
 COPY benchexec/ /app/benchexec/
 
-COPY expr/ /app/expr/
+# COPY expr/ /app/expr/
 
 # Ensure Node.js binaries are available system-wide for engines without relying on NVM in /home
 RUN ln -f /home/developer/.nvm/versions/node/v14.21.3/bin/node /usr/local/bin/node14 \
