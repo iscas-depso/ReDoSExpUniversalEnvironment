@@ -16,8 +16,9 @@ TOOLS=(
 
 # 引擎名列表
 ENGINES=(
-    python
-#   nodejs14
+    java8
+    # python
+    # nodejs14
 )
 
 

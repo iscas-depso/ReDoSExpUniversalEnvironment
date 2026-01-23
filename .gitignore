@@ -7,3 +7,5 @@ package-lock-backup.json
 tools/redoshunter/.idea
 
 .venv
+.vscode
+.metals

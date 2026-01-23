@@ -184,7 +184,7 @@ COPY server/ /app/server/
 WORKDIR /app
 
 # Install node dependencies for the web service
-RUN npm ci --omit=dev
+# RUN npm ci --omit=dev
 
 
 COPY init.sh /init.sh
@@ -208,5 +208,5 @@ WORKDIR /app
 EXPOSE 8080
 USER root
 ENTRYPOINT ["/init.sh"]
-CMD ["npm", "start"]
-
+# CMD ["npm", "start"]
+CMD ["tail", "-f", "/dev/null"]
