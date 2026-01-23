@@ -210,7 +210,6 @@ def run_command(args):
         )
         # 把cmds组合在一起
         cmds = " ".join(cmds)
-        print(cmds, file=sys.stderr)
         result = subprocess.run(
             cmds,
             shell=True,
