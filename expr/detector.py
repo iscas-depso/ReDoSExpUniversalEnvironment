@@ -313,7 +313,7 @@ def main():
     # Update global variables
     cmd = args.cmd
     timeout_seconds = args.timeout
-    CPU_COUNT = args.cpus
+    CPU_COUNT = min(args.cpus, os.cpu_count() or 1)
     force_fullmatch = args.fullmatch
     use_runexec = args.runexec
     memory_limit = args.memlimit

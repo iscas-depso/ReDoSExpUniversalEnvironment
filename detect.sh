@@ -16,7 +16,8 @@ TOOLS=(
 
 # 引擎名列表
 ENGINES=(
-  nodejs14
+    python
+#   nodejs14
 )
 
 
@@ -41,7 +42,7 @@ for engine in "${ENGINES[@]}"; do
         python3 /app/expr/detector.py \
         --runexec \
         --timeout 5 \
-        --cpus 1 \
+        --cpus 64 \
         --memlimit 10240 \
         --attack-size 100 \
         --fullmatch \
