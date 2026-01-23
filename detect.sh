@@ -4,8 +4,8 @@ set -euo pipefail
 
 # 工具名列表（按顺序执行）
 TOOLS=(
-  ere
   recheck
+  ere
   redoshunter
   rengar
   rescue
@@ -32,11 +32,12 @@ for engine in "${ENGINES[@]}"; do
         -v /tmp:/tmp \
         -v ./expr:/app/expr \
         "${IMAGE}" \
-        /init.sh python3 /app/expr/expr.py \
+        python3 /app/expr/detector.py \
         --runexec \
         --timeout 5 \
         --cpus 64 \
         --memlimit 10240 \
+        --attack-size 100 \
         --fullmatch \
         --cmd "/app/engine/${engine}/bin/benchmark" \
         "${DATASETDIR}/1_expr_${toolsname}.json" \
