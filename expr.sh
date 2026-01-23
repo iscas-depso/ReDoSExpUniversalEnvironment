@@ -20,12 +20,18 @@ IMAGE="redos-test"
 DATASET="/app/expr/data/lookahead_fse19_fullmatch.jsonl"
 # DATASET="/app/expr/data/tmp.jsonl"
 
+EXTRA_DOCKER_ARGS=()
+if [[ "$*" == *"--cgroupv1"* ]]; then
+    EXTRA_DOCKER_ARGS=("--cgroupns=host" "-v" "/sys/fs/cgroup:/sys/fs/cgroup:rw")
+fi
+
 for toolsname in "${TOOLS[@]}"; do
   echo "========================================"
   echo "Running tool: ${toolsname}"
   echo "========================================"
 
   docker run --rm --privileged \
+    "${EXTRA_DOCKER_ARGS[@]}" \
     -v /tmp:/tmp \
     -v ./expr:/app/expr \
     "${IMAGE}" \
