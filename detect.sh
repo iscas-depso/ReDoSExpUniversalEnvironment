@@ -34,7 +34,7 @@ for engine in "${ENGINES[@]}"; do
     echo "========================================"
 
     docker run --rm --privileged \
-        ${EXTRA_DOCKER_ARGS[@]} \
+        "${EXTRA_DOCKER_ARGS[@]}" \
         -v /tmp:/tmp \
         -v ./expr:/app/expr \
         "${IMAGE}" \
@@ -47,7 +47,7 @@ for engine in "${ENGINES[@]}"; do
         --fullmatch \
         --cmd "/app/engines/${engine}/bin/benchmark" \
         "${DATASETDIR}/1_expr_${toolsname}.json" \
-        > ./expr/1_detect_${engine}_${toolsname}.json"
+        > "./expr/1_detect_${engine}_${toolsname}.json"
 
     echo "Finished: ${engine}_${toolsname}"
     done
