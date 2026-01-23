@@ -29,7 +29,7 @@ for toolsname in "${TOOLS[@]}"; do
     -v /tmp:/tmp \
     -v ./expr:/app/expr \
     "${IMAGE}" \
-    /init.sh python3 /app/expr/expr.py \
+    python3 /app/expr/expr.py \
       --runexec \
       --timeout 60 \
       --cpus 20 \
