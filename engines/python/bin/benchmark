@@ -41,7 +41,7 @@ def measure(data, pattern, full_match, output_file):
 
     elapsed = (time.perf_counter() - start_time) * 1000  # Convert to milliseconds
 
-    res = json.dumps({"time": elapsed, "count": count})
+    res = json.dumps({"time": elapsed, "is_match": count})
     with open(output_file, "w") as f:
         f.write(res)
 
