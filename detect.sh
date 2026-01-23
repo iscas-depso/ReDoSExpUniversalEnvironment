@@ -34,20 +34,20 @@ for engine in "${ENGINES[@]}"; do
     echo "========================================"
 
     docker run --rm --privileged \
-        "${EXTRA_DOCKER_ARGS[@]}" \
+        ${EXTRA_DOCKER_ARGS[@]} \
         -v /tmp:/tmp \
         -v ./expr:/app/expr \
         "${IMAGE}" \
         python3 /app/expr/detector.py \
         --runexec \
         --timeout 5 \
-        --cpus 64 \
+        --cpus 1 \
         --memlimit 10240 \
         --attack-size 100 \
         --fullmatch \
         --cmd "/app/engines/${engine}/bin/benchmark" \
         "${DATASETDIR}/1_expr_${toolsname}.json" \
-        > "${DATASETDIR}/1_detect_${engine}_${toolsname}.json"
+        > ./expr/1_detect_${engine}_${toolsname}.json"
 
     echo "Finished: ${engine}_${toolsname}"
     done
