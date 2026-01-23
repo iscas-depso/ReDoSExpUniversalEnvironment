@@ -26,7 +26,7 @@ if [[ "$*" == *"--cgroupv1"* ]]; then
 fi
 
 IMAGE="redos-test"
-DATASETDIR="/app/expr/"
+DATASETDIR="/app/expr"
 for engine in "${ENGINES[@]}"; do
     for toolsname in "${TOOLS[@]}"; do
     echo "========================================"
