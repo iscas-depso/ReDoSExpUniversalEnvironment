@@ -10,31 +10,33 @@ const { performance } = require('perf_hooks');
 
 function main() {
     // Check command line arguments
-    if (process.argv.length !== 5) {
-        console.error(`Usage: node ${process.argv[1]} <base64_regex> <filename> <match_mode>`);
+    if (process.argv.length !== 6) {
+        console.error(`Usage: node ${process.argv[1]} <base64_regex> <filename> <match_mode> <output_file>`);
         console.error('  base64_regex: Base64-encoded regular expression');
         console.error('  filename: Path to the file containing text to match');
         console.error('  match_mode: 1 for full match, 0 for partial match');
+        console.error('  output_file: Path to the file to write results');
         process.exit(1);
     }
 
     const base64Regex = process.argv[2];
     const filename = process.argv[3];
     const matchModeStr = process.argv[4];
+    const outputFile = process.argv[5];
 
     try {
         // Decode the base64 regex
         const regex = decodeBase64(base64Regex);
-        
+
         // Parse match mode
         const matchMode = parseMatchMode(matchModeStr);
-        
+
         // Read file content
         const data = readFileContent(filename);
-        
+
         // Measure and output results
-        measurePerformance(data, regex, matchMode === 1);
-        
+        measurePerformance(data, regex, matchMode === 1, outputFile);
+
     } catch (error) {
         console.error('Error:', error.message);
         process.exit(1);
@@ -46,13 +48,13 @@ function decodeBase64(base64String) {
         if (!base64String || base64String.length === 0) {
             throw new Error('Base64 string cannot be empty');
         }
-        
+
         const decoded = Buffer.from(base64String, 'base64').toString('utf8');
-        
+
         if (decoded.length === 0) {
             throw new Error('Decoded regex cannot be empty');
         }
-        
+
         return decoded;
     } catch (error) {
         throw new Error(`Failed to decode base64 regex: ${error.message}`);
@@ -69,15 +71,15 @@ function readFileContent(filename) {
 
 function parseMatchMode(matchModeStr) {
     const matchMode = parseInt(matchModeStr, 10);
-    
+
     if (isNaN(matchMode) || (matchMode !== 0 && matchMode !== 1)) {
         throw new Error('match_mode must be 0 or 1');
     }
-    
+
     return matchMode;
 }
 
-function measurePerformance(data, patternStr, fullMatch) {
+function measurePerformance(data, patternStr, fullMatch, outputFile) {
     const startTime = performance.now();
 
     try {
@@ -99,8 +101,12 @@ function measurePerformance(data, patternStr, fullMatch) {
         const endTime = performance.now();
         const elapsedMs = endTime - startTime;
 
-        // Output with high precision formatting
-        console.log(`${elapsedMs.toFixed(6)} - ${count}`);
+        // Output with high precision formatting in JSON
+        const result = {
+            time: parseFloat(elapsedMs.toFixed(6)),
+            is_match: count
+        };
+        fs.writeFileSync(outputFile, JSON.stringify(result));
 
     } catch (error) {
         throw new Error(`Failed to compile regex: ${error.message}`);

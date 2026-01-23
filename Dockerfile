@@ -98,7 +98,7 @@ RUN cd /app/tools/regexploit/src && python3 -m pip install -e . --no-deps
 # Install Python dependencies for regulator tool and BenchExec for resource limits
 RUN python3 -m pip install --no-cache-dir colored numpy scipy scikit-learn benchexec
 
-RUN python3 -m pip install --no-cache-dir tqdm
+RUN python3 -m pip install --no-cache-dir tqdm psutil
 
 # Copy regexstatic tool (pre-built JAR and dependencies)
 COPY tools/regexstatic/ /app/tools/regexstatic/
