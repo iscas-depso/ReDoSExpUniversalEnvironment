@@ -93,7 +93,7 @@ def get_cpu():
         # Check specific CPU core usage
         # We use a short interval to get a current usage reading
         if psutil.cpu_percent(interval=0.5, percpu=True)[cpu_id] >= 30:
-            time.sleep(random.randint(5, 10))
+            time.sleep(1)
             continue
 
         break
