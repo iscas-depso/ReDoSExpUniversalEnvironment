@@ -44,7 +44,7 @@ def main():
 
         # Write output to file
         with open(output_file_path, "w") as f:
-            json.dump(output_json, f, indent=2)
+            json.dump([output_json], f, indent=2)
 
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
@@ -52,9 +52,9 @@ def main():
         end_time = time.time()
         elapsed_ms = int((end_time - start_time) * 1000)
         # In case of error, return a safe default but preserve elapsed_ms
-        output_json = {"elapsed_ms": elapsed_ms, "is_redos": False}
+        output_jsons = [{"elapsed_ms": elapsed_ms, "is_redos": False, "error": str(e)}]
         with open(output_file_path, "w") as f:
-            json.dump(output_json, f, indent=2)
+            json.dump(output_jsons, f, indent=2)
 
 
 def analyze_regex(pattern, cpu_core=None):

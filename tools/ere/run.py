@@ -38,7 +38,7 @@ def main():
         # Record start time
         start_time = time.time()
 
-        cmds = [str(exec_path)]
+        cmds = [str(exec_path), "-a"]
         if cpu_core:
             cmds = ["taskset", "-c", str(cpu_core), *cmds]
 
@@ -57,48 +57,60 @@ def main():
 
         # Parse the Java program output
         if result.returncode != 0:
-            output_json = {
-                "elapsed_ms": elapsed_ms,
-                "is_redos": False,
-                "error": result.stderr,
-            }
-        else:
-            try:
-                java_output = json.loads(result.stdout)
-                print("java_output", java_output)
-                output_json = convert_java_output_to_contract(java_output, elapsed_ms)
-            except json.JSONDecodeError:
-                # If JSON parsing fails, treat as not ReDoS
-                output_json = {
+            output_jsons = [
+                {
                     "elapsed_ms": elapsed_ms,
                     "is_redos": False,
                     "error": result.stderr,
-                    "stdout": result.stdout,
                 }
+            ]
+        else:
+            try:
+                output_jsons = []
+                for line in result.stdout.strip().split("\n"):
+                    if not line.strip():
+                        continue
+                    java_output = json.loads(line)
+                    res = convert_java_output_to_contract(java_output, elapsed_ms)
+                    output_jsons.append(res)
+            except json.JSONDecodeError:
+                # If JSON parsing fails, treat as not ReDoS
+                output_jsons = [
+                    {
+                        "elapsed_ms": elapsed_ms,
+                        "is_redos": False,
+                        "error": result.stderr,
+                        "stdout": result.stdout,
+                    }
+                ]
 
         # Write output to file
         with open(output_file_path, "w") as f:
-            json.dump(output_json, f, indent=2)
+            json.dump(output_jsons, f, indent=2)
 
     except subprocess.TimeoutExpired:
-        output_json = {
-            "elapsed_ms": 600000,  # 10 minutes timeout
-            "is_redos": False,
-            "error": "Timeout",
-            "stdout": result.stdout,
-        }
+        output_jsons = [
+            {
+                "elapsed_ms": 600000,  # 10 minutes timeout
+                "is_redos": False,
+                "error": "Timeout",
+                "stdout": result.stdout,
+            }
+        ]
         with open(output_file_path, "w") as f:
-            json.dump(output_json, f, indent=2)
+            json.dump(output_jsons, f, indent=2)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
-        output_json = {
-            "elapsed_ms": 0,
-            "is_redos": False,
-            "error": str(e),
-            "stdout": result.stdout,
-        }
+        output_jsons = [
+            {
+                "elapsed_ms": 0,
+                "is_redos": False,
+                "error": str(e),
+                "stdout": result.stdout,
+            }
+        ]
         with open(output_file_path, "w") as f:
-            json.dump(output_json, f, indent=2)
+            json.dump(output_jsons, f, indent=2)
 
 
 def convert_java_output_to_contract(java_output, elapsed_ms):

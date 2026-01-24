@@ -163,18 +163,20 @@ def main():
 
         # Write output
         with open(output_file, "w") as f:
-            json.dump(result, f, indent=2)
+            json.dump([result], f, indent=2)
 
     except Exception as e:
-        error_result = {
-            "elapsed_ms": 0,
-            "is_redos": False,
-            "prefix": "",
-            "infix": "",
-            "suffix": "",
-            "repeat_times": -1,
-            "error": str(e),
-        }
+        error_result = [
+            {
+                "elapsed_ms": 0,
+                "is_redos": False,
+                "prefix": "",
+                "infix": "",
+                "suffix": "",
+                "repeat_times": -1,
+                "error": str(e),
+            }
+        ]
 
         try:
             with open(output_file, "w") as f:

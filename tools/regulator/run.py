@@ -201,12 +201,14 @@ def main():
     if not fuzzer_binary.exists():
         print(f"Error: Regulator fuzzer not found at {fuzzer_binary}", file=sys.stderr)
         # Return not ReDoS if fuzzer is not available
-        output_json = {
-            "elapsed_ms": 0,
-            "is_redos": False,
-        }
+        output_jsons = [
+            {
+                "elapsed_ms": 0,
+                "is_redos": False,
+            }
+        ]
         with open(output_file_path, "w") as f:
-            json.dump(output_json, f, indent=2)
+            json.dump(output_jsons, f, indent=2)
         return
 
     try:
@@ -219,9 +221,9 @@ def main():
             regex_str = regex_bytes.decode("utf-8")
         except Exception as e:
             print(f"Error decoding base64 regex: {e}", file=sys.stderr)
-            output_json = {"elapsed_ms": 0, "is_redos": False, "error": str(e)}
+            output_jsons = [{"elapsed_ms": 0, "is_redos": False, "error": str(e)}]
             with open(output_file_path, "w") as f:
-                json.dump(output_json, f, indent=2)
+                json.dump(output_jsons, f, indent=2)
             return
 
         # Set up pump module fuzzer binary
@@ -344,13 +346,13 @@ def main():
 
         # Write output to file
         with open(output_file_path, "w") as f:
-            json.dump(output_json, f, indent=2)
+            json.dump([output_json], f, indent=2)
 
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
-        output_json = {"elapsed_ms": 0, "is_redos": False, "error": str(e)}
+        output_jsons = [{"elapsed_ms": 0, "is_redos": False, "error": str(e)}]
         with open(output_file_path, "w") as f:
-            json.dump(output_json, f, indent=2)
+            json.dump(output_jsons, f, indent=2)
 
 
 if __name__ == "__main__":
