@@ -60,7 +60,9 @@ def load_tool_results(directory):
                         output_json = json.loads(data["output"])
                         is_redos = output_json.get("is_redos", False)
                     else:
-                        is_redos = data.get("timeout", False)
+                        is_redos = data.get(
+                            "timeout", False
+                        ) or "terminationreason=" in data.get("stdout", "")
 
                     tool_data[key] = is_redos
                     raw_data[key] = line_content

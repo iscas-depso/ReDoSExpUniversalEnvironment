@@ -173,28 +173,29 @@ def run_command(args):
         )
         return
     pattern = obj["input"]
-    attack = {}
+    attacks = []
     try:
-        attack = json.loads(obj["output"])
-        attack["pattern"] = pattern
-        if (
-            "is_redos" not in attack
-            or not attack["is_redos"]
-            or "prefix" not in attack
-            or "suffix" not in attack
-            or "infix" not in attack
-        ):
-            json_output(
-                file=filename,
-                line=idx,
-                input=None,
-                output="",
-                stdout="",
-                stderr="input is not a valid attack",
-                return_code=None,
-                timeout=False,
-            )
-            return
+        attacks = json.loads(obj["output"])
+        for attack in attacks:
+            attack["pattern"] = pattern
+            if (
+                "is_redos" not in attack
+                or not attack["is_redos"]
+                or "prefix" not in attack
+                or "suffix" not in attack
+                or "infix" not in attack
+            ):
+                json_output(
+                    file=filename,
+                    line=idx,
+                    input=None,
+                    output="",
+                    stdout="",
+                    stderr="input is not a valid attack",
+                    return_code=None,
+                    timeout=False,
+                )
+                return
     except json.JSONDecodeError as e:
         json_output(
             file=filename,
@@ -218,91 +219,94 @@ def run_command(args):
             return_code=None,
             timeout=False,
         )
-
-    tmp_path = Path(f"/tmp/{uuid.uuid4()}.txt")  # Linux / macOS
-    tmp_input_path = Path(f"/tmp/{uuid.uuid4()}.txt")  # Linux / macOS
-    cpu = get_cpu()
-    cmds = [
-        cmd,
-        base64.b64encode(pattern.encode("utf-8")).decode("utf-8"),
-        str(tmp_input_path),
-        str(int(force_fullmatch)),
-        str(tmp_path),
-    ]
-    if use_runexec:
+        return
+    for attack in attacks:
+        tmp_path = Path(f"/tmp/{uuid.uuid4()}.txt")  # Linux / macOS
+        tmp_input_path = Path(f"/tmp/{uuid.uuid4()}.txt")  # Linux / macOS
+        cpu = get_cpu()
         cmds = [
-            "/usr/local/bin/runexec",
-            "--read-only-dir",
-            "/",
-            "--hidden-dir",
-            "/run",
-            "--full-access-dir",
-            "/tmp",
-            "--full-access-dir",
-            "/app",
-            "--cores",
-            str(cpu),
-            "--memlimit",
-            str(memory_limit * 1024 * 1024),
-            "--softtimelimit",
-            str(timeout_seconds),
-            "--timelimit",
-            str(timeout_seconds * 2),
-            "--output",
-            "/dev/null",
-            *cmds,
+            cmd,
+            base64.b64encode(pattern.encode("utf-8")).decode("utf-8"),
+            str(tmp_input_path),
+            str(int(force_fullmatch)),
+            str(tmp_path),
         ]
-    try:
-        tmp_input_path.write_text(
-            build_string(attack["prefix"], attack["infix"], attack["suffix"]),
-            encoding="utf-8",
-        )
-        # 把cmds组合在一起
-        cmds = " ".join(cmds)
-        result = subprocess.run(
-            cmds,
-            shell=True,
-            capture_output=True,
-            text=True,
-            timeout=timeout_seconds * 10,
-        )
+        if use_runexec:
+            cmds = [
+                "/usr/local/bin/runexec",
+                "--read-only-dir",
+                "/",
+                "--hidden-dir",
+                "/run",
+                "--full-access-dir",
+                "/tmp",
+                "--full-access-dir",
+                "/app",
+                "--cores",
+                str(cpu),
+                "--memlimit",
+                str(memory_limit * 1024 * 1024),
+                "--softtimelimit",
+                str(timeout_seconds),
+                "--timelimit",
+                str(timeout_seconds * 2),
+                "--output",
+                "/dev/null",
+                *cmds,
+            ]
+        try:
+            tmp_input_path.write_text(
+                build_string(attack["prefix"], attack["infix"], attack["suffix"]),
+                encoding="utf-8",
+            )
+            # 把cmds组合在一起
+            cmds = " ".join(cmds)
+            result = subprocess.run(
+                cmds,
+                shell=True,
+                capture_output=True,
+                text=True,
+                timeout=timeout_seconds * 10,
+            )
 
-        json_output(
-            file=filename,
-            line=idx,
-            input=attack,
-            output=Path(tmp_path).read_text(),
-            stdout=result.stdout,
-            stderr=result.stderr,
-            return_code=result.returncode,
-            timeout=False,
-        )
+            json_output(
+                file=filename,
+                line=idx,
+                input=attack,
+                output=Path(tmp_path).read_text(),
+                stdout=result.stdout,
+                stderr=result.stderr,
+                return_code=result.returncode,
+                timeout=False,
+            )
 
-    except subprocess.TimeoutExpired as e:
-        json_output(
-            file=filename,
-            line=idx,
-            input=attack,
-            stdout="timeout",
-            stderr=str(e),
-            return_code=None,
-            timeout=True,
-        )
-    except Exception as e:
-        json_output(
-            file=filename,
-            line=idx,
-            input=attack,
-            output=str(e),
-            stdout=result.stdout,
-            stderr=result.stderr,
-            return_code=result.returncode,
-            timeout=False,
-        )
-    finally:
-        return_cpu(cpu)
-        tmp_path.unlink(missing_ok=True)
-        tmp_input_path.unlink(missing_ok=True)
+        except subprocess.TimeoutExpired as e:
+            json_output(
+                file=filename,
+                line=idx,
+                input=attack,
+                stdout="timeout",
+                stderr=str(e),
+                return_code=None,
+                timeout=True,
+            )
+            return
+        except Exception as e:
+            json_output(
+                file=filename,
+                line=idx,
+                input=attack,
+                output=str(e),
+                stdout=result.stdout,
+                stderr=result.stderr,
+                return_code=result.returncode,
+                timeout=False,
+            )
+            return
+        finally:
+            return_cpu(cpu)
+            tmp_path.unlink(missing_ok=True)
+            tmp_input_path.unlink(missing_ok=True)
 
 
 def process_file(filename):

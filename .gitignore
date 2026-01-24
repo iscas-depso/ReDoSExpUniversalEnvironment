@@ -10,3 +10,4 @@ tools/redoshunter/.idea
 .vscode
 .metals
 1_*.json
+*.pdf
