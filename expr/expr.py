@@ -9,7 +9,10 @@ import base64
 import uuid
 from pathlib import Path
 import multiprocessing.pool
-
+import os
+import psutil
+import time
+import random
 
 # cmd = "./target/release/ere"
 # cmd = "./recheck --format json"
@@ -60,7 +63,11 @@ def init_cpu_pool():
 
 def get_cpu():
     """Acquire a CPU index (P operation). Blocks if no CPU is available."""
-    return _cpu_pool.get()
+    cpu_id = _cpu_pool.get()
+
+    while psutil.virtual_memory().percent >= 80:
+        time.sleep(random.randint(10, 30))
+    return cpu_id
 
 
 def return_cpu(cpu_id):

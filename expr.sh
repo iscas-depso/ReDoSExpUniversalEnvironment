@@ -4,14 +4,15 @@ set -euo pipefail
 
 # 工具名列表（按顺序执行）
 TOOLS=(
+  revealer
   # ere
-  recheck
-  redoshunter
-  rengar
-  rescue
-  regexploit
-  regexstatic
-  regulator
+  # recheck
+  # redoshunter
+  # rengar
+  # rescue
+  # regexploit
+  # regexstatic
+  # regulator
   # 在这里继续添加
 )
 
@@ -32,14 +33,14 @@ for toolsname in "${TOOLS[@]}"; do
 
   docker run --rm --privileged \
     "${EXTRA_DOCKER_ARGS[@]}" \
-    -v /tmp:/tmp \
+    --tmpfs /tmp:rw \
     -v ./expr:/app/expr \
     "${IMAGE}" \
     python3 /app/expr/expr.py \
       --runexec \
       --timeout 60 \
-      --cpus 20 \
-      --memlimit 1024 \
+      --cpus 64 \
+      --memlimit 10240 \
       --cmd "python3 /app/tools/${toolsname}/run.py" \
       "${DATASET}" \
     > "1_expr_${toolsname}.json"

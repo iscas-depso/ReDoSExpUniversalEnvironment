@@ -111,6 +111,18 @@ const TOOL_DEFINITIONS = {
       };
     }
   },
+  revealer: {
+    id: 'revealer',
+    label: 'Revealer',
+    description: 'Revealer (Java 8)',
+    buildCommand(regexBase64, outputPath) {
+      return {
+        file: PYTHON_BIN,
+        args: [path.join(TOOLS_ROOT, 'revealer', 'run.py'), regexBase64, outputPath],
+        options: { cwd: path.join(TOOLS_ROOT, 'revealer') }
+      };
+    }
+  },
   ere: {
     id: 'ere',
     label: 'ERE',
