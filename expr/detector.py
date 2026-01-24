@@ -252,6 +252,7 @@ def run_command(args):
                 str(timeout_seconds * 2),
                 "--output",
                 "/dev/null",
+                "--",
                 *cmds,
             ]
         try:
