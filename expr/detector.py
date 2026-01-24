@@ -284,7 +284,7 @@ def run_command(args):
             json_output(
                 file=filename,
                 line=idx,
-                input=attack,
+                input=attacks,
                 stdout="timeout",
                 stderr=str(e),
                 return_code=None,
@@ -295,7 +295,7 @@ def run_command(args):
             json_output(
                 file=filename,
                 line=idx,
-                input=attack,
+                input=attacks,
                 output=str(e),
                 stdout=result.stdout,
                 stderr=result.stderr,
