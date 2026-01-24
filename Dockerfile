@@ -88,6 +88,11 @@ ENV PATH="$NVM_DIR/versions/node/v21.7.3/bin:$PATH"
 
 USER root
 WORKDIR /app
+# Copy web interface assets and server
+COPY package.json package-lock.json /app/
+
+# Install node dependencies for the web service
+RUN npm ci --omit=dev
 
 # Copy regexploit tool
 COPY tools/regexploit/ /app/tools/regexploit/
@@ -120,6 +125,9 @@ COPY tools/redoshunter/ /app/tools/redoshunter/
 
 # Copy regulator tool (pre-built V8-based fuzzer)
 COPY tools/regulator/ /app/tools/regulator/
+
+# Copy revealer tool (pre-built fat JAR, requires Java 8)
+COPY tools/revealer/ /app/tools/revealer/
 
 # Copy Python engine (pre-built)
 COPY engines/python/ /app/engines/python/
@@ -174,18 +182,11 @@ COPY engines/csharp_nonbacktracking/ /app/engines/csharp_nonbacktracking/
 COPY engines/srm/ /app/engines/srm/
 
 # Copy web interface assets and server
-COPY package.json package-lock.json /app/
 COPY public/ /app/public/
 COPY server/ /app/server/
 # =============================================================================
 # CONTAINER RUNTIME CONFIGURATION
 # =============================================================================
-
-WORKDIR /app
-
-# Install node dependencies for the web service
-# RUN npm ci --omit=dev
-
 
 COPY init.sh /init.sh
 RUN chmod +x /init.sh
@@ -208,5 +209,5 @@ WORKDIR /app
 EXPOSE 8080
 USER root
 ENTRYPOINT ["/init.sh"]
-# CMD ["npm", "start"]
-CMD ["tail", "-f", "/dev/null"]
+CMD ["npm", "start"]
+# CMD ["tail", "-f", "/dev/null"]
