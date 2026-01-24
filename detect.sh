@@ -16,6 +16,8 @@ TOOLS=(
 
 # 引擎名列表
 ENGINES=(
+    c
+    perl
     csharp
     java11
     python

@@ -18,7 +18,7 @@ sub read_file {
 }
 
 sub measure {
-    my ($data, $pattern, $full_match) = @_;
+    my ($data, $pattern, $full_match, $output_file) = @_;
     
     my $start = gettimeofday();
     
@@ -36,19 +36,23 @@ sub measure {
     
     my $elapsed = (gettimeofday() - $start) * 1000;  # Convert to milliseconds
     
-    printf("%.6f - %d\n", $elapsed, $count);
+    my $res = sprintf("{\"time\": %.6f, \"is_match\": %d}", $elapsed, $count);
+    open my $ofh, '>', $output_file or die "Error: Cannot open output file $output_file: $!\n";
+    print $ofh $res;
+    close $ofh;
 }
 
 # Main program
-if (@ARGV != 3) {
-    print "Usage: $0 <base64_regex> <filename> <match_mode>\n";
+if (@ARGV != 4) {
+    print "Usage: $0 <base64_regex> <filename> <match_mode> <output_file>\n";
     print "  base64_regex: Base64-encoded regular expression\n";
     print "  filename: Path to the file containing text to match\n";
     print "  match_mode: 1 for full match, 0 for partial match\n";
+    print "  output_file: Path to the file to write results\n";
     exit 1;
 }
 
-my ($base64_regex, $filename, $match_mode) = @ARGV;
+my ($base64_regex, $filename, $match_mode, $output_file) = @ARGV;
 
 # Decode the base64 regex
 my $regex;
@@ -68,4 +72,4 @@ if ($match_mode ne '0' && $match_mode ne '1') {
 my $data = read_file($filename);
 
 # Measure and output results
-measure($data, $regex, $match_mode);
+measure($data, $regex, $match_mode == 1, $output_file);

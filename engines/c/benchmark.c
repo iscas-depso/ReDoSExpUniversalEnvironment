@@ -68,7 +68,7 @@ char *read_file(char *filename)
   return data;
 }
 
-void measure(char *data, char *pattern, int full_match)
+void measure(char *data, char *pattern, int full_match, const char *output_file)
 {
   int count = 0;
   double elapsed;
@@ -119,7 +119,13 @@ void measure(char *data, char *pattern, int full_match)
   clock_gettime(CLOCK_MONOTONIC, &end);
   elapsed = ((end.tv_sec - start.tv_sec) * 1e9 + end.tv_nsec - start.tv_nsec) / 1e6;
 
-  printf("%.6f - %d\n", elapsed, count);
+  FILE *fp = fopen(output_file, "w");
+  if (fp == NULL) {
+    fprintf(stderr, "Error: Cannot open output file %s\n", output_file);
+    exit(1);
+  }
+  fprintf(fp, "{\"time\": %.6f, \"is_match\": %d}", elapsed, count);
+  fclose(fp);
 
   pcre2_match_data_free(match_data);
   pcre2_code_free(re);
@@ -127,11 +133,12 @@ void measure(char *data, char *pattern, int full_match)
 
 int main(int argc, char **argv)
 {
-  if (argc != 4) {
-    printf("Usage: %s <base64_regex> <filename> <match_mode>\n", argv[0]);
+  if (argc != 5) {
+    printf("Usage: %s <base64_regex> <filename> <match_mode> <output_file>\n", argv[0]);
     printf("  base64_regex: Base64-encoded regular expression\n");
     printf("  filename: Path to the file containing text to match\n");
     printf("  match_mode: 1 for full match, 0 for partial match\n");
+    printf("  output_file: Path to the file to write results\n");
     exit(1);
   }
 
@@ -154,7 +161,7 @@ int main(int argc, char **argv)
   }
 
   // Measure and output results
-  measure(data, regex, match_mode);
+  measure(data, regex, match_mode, argv[4]);
 
   // Clean up
   free(data);
