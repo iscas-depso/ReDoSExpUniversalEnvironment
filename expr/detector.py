@@ -213,6 +213,8 @@ def run_command(args):
             str(cpu),
             "--memlimit",
             str(memory_limit * 1024 * 1024),
+            "--walltimelimit",
+            str(timeout_seconds + 3),
             *cmds,
         ]
     try:
