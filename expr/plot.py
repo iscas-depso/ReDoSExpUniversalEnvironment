@@ -4,6 +4,7 @@ import glob
 import pandas as pd
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+import sys
 
 TOOLS = [
     "rengar",
@@ -11,9 +12,10 @@ TOOLS = [
     "ere",
     "rescue",
     "recheck",
-    # "regulator",
-    # "regexstatic",
+    "revealer",
     "redoshunter",
+    # "regexstatic",
+    # "regulator",
 ]
 
 
@@ -29,18 +31,23 @@ def load_tool_results(directory):
 
     # 存储结果的嵌套字典: {tool_name: {(file, line): is_redos}}
     all_results = {}
+    # 存储原始行内容的字典: {tool_name: {(file, line): raw_line}}
+    all_raw_data = {}
 
     for file_path in tqdm(files, desc="Loading results"):
         filename = os.path.basename(file_path)
+        is_expr = "expr" in filename
         tool_name = next(
             (tool for tool in TOOLS if tool in filename),
             "unknown_tool",
         )
 
         tool_data = {}
+        raw_data = {}
         with open(file_path, "r", encoding="utf-8") as f:
             for line_content in f:
-                if not line_content.strip():
+                line_content = line_content.strip()
+                if not line_content:
                     continue
                 is_redos = False
                 try:
@@ -48,21 +55,27 @@ def load_tool_results(directory):
                     # 唯一标识符
                     key = (data["file"], data["line"])
 
-                    # 解析 output 字段（它是字符串形式的 JSON）
-                    output_json = json.loads(data["output"])
-                    is_redos = output_json.get("is_redos", False)
+                    if is_expr:
+                        # 解析 output 字段（它是字符串形式的 JSON）
+                        output_json = json.loads(data["output"])
+                        is_redos = output_json.get("is_redos", False)
+                    else:
+                        is_redos = data.get("timeout", False)
+
+                    tool_data[key] = is_redos
+                    raw_data[key] = line_content
                 except (json.JSONDecodeError, KeyError) as e:
                     pass
-                tool_data[key] = is_redos
 
         all_results[tool_name] = tool_data
+        all_raw_data[tool_name] = raw_data
 
     for tool_name, tool_data in all_results.items():
         total = len(tool_data)
         redos_count = sum(tool_data.values())
-        print(f"{tool_name}: {total}/{redos_count}")
+        print(f"{tool_name}: {total}/{redos_count}", file=sys.stderr)
 
-    return all_results
+    return all_results, all_raw_data
 
 
 def process_and_plot(all_results, our_tool="ere"):
@@ -139,6 +152,19 @@ def process_and_plot(all_results, our_tool="ere"):
 
     df.plot(kind="bar", stacked=True, ax=ax, color=colors, edgecolor="gray", width=0.7)
 
+    # 在柱状图中添加具体数值标签
+    for container in ax.containers:
+        # 根据百分比和总数反推具体个数，如果数值大于 0 则显示
+        labels = [
+            (
+                f"{int(round(v.get_height() * total_vuln_count / 100))}"
+                if v.get_height() > 0
+                else ""
+            )
+            for v in container
+        ]
+        ax.bar_label(container, labels=labels, label_type="center", fontsize=9)
+
     # 设置样式
     ax.set_ylabel("Percentage of Total Vulnerabilities (%)", fontsize=12)
     ax.set_xlabel("Comparison with Other Tools", fontsize=12)
@@ -164,6 +190,34 @@ def process_and_plot(all_results, our_tool="ere"):
     plt.show()
 
 
+def print_missed_cases(all_results, all_raw_data, our_tool="ere"):
+    """
+    输出所有我们的工具没有发现，但其他工具发现了的数据
+    """
+    if our_tool not in all_results:
+        print(f"Error: Our tool '{our_tool}' results not found!")
+        return
+
+    our_data = all_results[our_tool]
+
+    # 1. 找出所有工具发现的所有漏洞的并集
+    all_vulnerable_keys = set()
+    for tool_name, tool_data in all_results.items():
+        for key, is_redos in tool_data.items():
+            if is_redos:
+                all_vulnerable_keys.add(key)
+
+    # 2. 检查哪些是我们的工具漏掉的
+    for key in sorted(all_vulnerable_keys):
+        res_ours = our_data.get(key, False)
+        if not res_ours:
+            # 找出一个发现了该漏洞的其他工具，并输出其原始数据
+            for tool_name, tool_data in all_results.items():
+                if tool_name != our_tool and tool_data.get(key, False):
+                    print(all_raw_data[tool_name][key])
+                    break
+
+
 def main():
     import argparse
 
@@ -176,12 +230,27 @@ def main():
         default=".",
         help="Path to the directory containing JSONL files (default: current directory)",
     )
+    parser.add_argument(
+        "--tool",
+        "-t",
+        default="ere",
+        help="The name of our tool to compare with others (default: ere)",
+    )
+    parser.add_argument(
+        "--show-missed",
+        "-s",
+        action="store_true",
+        help="Print cases where our tool failed but others succeeded",
+    )
     args = parser.parse_args()
     current_dir = args.directory
-    results = load_tool_results(current_dir)
+    results, raw_data = load_tool_results(current_dir)
 
     if results:
-        process_and_plot(results, our_tool="ere")
+        if args.show_missed:
+            print_missed_cases(results, raw_data, our_tool=args.tool)
+        else:
+            process_and_plot(results, our_tool=args.tool)
     else:
         print("No valid JSONL files found.")
 
