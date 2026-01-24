@@ -172,6 +172,7 @@ async function executeEngine(engineId, payloadPath, regexBase64, matchMode, time
   const { binaryPath } = definition;
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), `redos-engine-${engineId}-`));
   const programOutputPath = path.join(tempDir, 'output.log');
+  const outputJsonPath = path.join(tempDir, 'output.json');
   let allocated = null;
   const useRunexec = process.env.DISABLE_RUNEXEC !== '1';
   try {
@@ -181,7 +182,7 @@ async function executeEngine(engineId, payloadPath, regexBase64, matchMode, time
     if (useRunexec) {
       await runWithRunexec({
         cmd: binaryPath,
-        args: [regexBase64, payloadPath, String(matchMode)],
+        args: [regexBase64, payloadPath, String(matchMode), outputJsonPath],
         cwd: path.dirname(binaryPath),
         env: {
           PATH: `${process.env.PATH || ''}:/usr/local/bin:/home/developer/.nvm/versions/node/v21.7.3/bin:/home/developer/.nvm/versions/node/v14.21.3/bin`
@@ -206,7 +207,7 @@ async function executeEngine(engineId, payloadPath, regexBase64, matchMode, time
         timeout: timeoutMs,
         maxBuffer: 20 * 1024 * 1024
       };
-      const result = await execFile(binaryPath, [regexBase64, payloadPath, String(matchMode)], execOptions);
+      const result = await execFile(binaryPath, [regexBase64, payloadPath, String(matchMode), outputJsonPath], execOptions);
       return { stdout: result.stdout || '', stderr: result.stderr || '' };
     }
   } finally {

@@ -12,7 +12,7 @@ TOOLS = [
     "rescue",
     "recheck",
     # "regulator",
-    "regexstatic",
+    # "regexstatic",
     "redoshunter",
 ]
 
@@ -69,6 +69,20 @@ def process_and_plot(all_results, our_tool="ere"):
         print(f"Error: Our tool '{our_tool}' results not found!")
         return
 
+    # 1. 找出所有工具发现的所有漏洞的并集 (Totals)
+    all_vulnerable_keys = set()
+    for tool_name, tool_data in all_results.items():
+        for key, is_redos in tool_data.items():
+            if is_redos:
+                all_vulnerable_keys.add(key)
+
+    total_vuln_count = len(all_vulnerable_keys)
+    if total_vuln_count == 0:
+        print("No vulnerabilities found by any tool.")
+        return
+
+    print(f"Total vulnerable keys across all tools: {total_vuln_count}")
+
     our_data = all_results[our_tool]
     other_tools = [t for t in all_results.keys() if t != our_tool]
 
@@ -77,14 +91,12 @@ def process_and_plot(all_results, our_tool="ere"):
     for other in tqdm(other_tools, desc="Processing comparison"):
         other_data = all_results[other]
 
-        # 获取两方都测试过的所有用例的并集
-        all_keys = set(our_data.keys()) | set(other_data.keys())
-
         only_ours = 0
         common = 0
         only_other = 0
+        neither = 0
 
-        for key in all_keys:
+        for key in all_vulnerable_keys:
             res_ours = our_data.get(key, False)
             res_other = other_data.get(key, False)
 
@@ -94,48 +106,52 @@ def process_and_plot(all_results, our_tool="ere"):
                 only_ours += 1
             elif not res_ours and res_other:
                 only_other += 1
+            else:
+                neither += 1
 
-        total = only_ours + common + only_other
-
-        if total > 0:
-            # 计算百分比
-            plot_data.append(
-                {
-                    "Tool": other,
-                    "Only Other": (only_other / total) * 100,
-                    "Common": (common / total) * 100,
-                    "Only Ours": (only_ours / total) * 100,
-                }
-            )
+        # 录入数据，注意顺序对应颜色
+        plot_data.append(
+            {
+                "Tool": other,
+                "Other Tools Found": (neither / total_vuln_count) * 100,
+                "Only Other Tool": (only_other / total_vuln_count) * 100,
+                "Both Found": (common / total_vuln_count) * 100,
+                "Only Ours Found": (only_ours / total_vuln_count) * 100,
+            }
+        )
 
     # 转换为 DataFrame
     df = pd.DataFrame(plot_data)
-    # 按 "Only Ours" 比例排序，让图表更有序
-    df = df.sort_values(by="Only Ours", ascending=False)
+    # 按 "Only Ours Found" 比例排序
+    df = df.sort_values(by="Only Ours Found", ascending=False)
     df.set_index("Tool", inplace=True)
 
     # 绘图
     fig, ax = plt.subplots(figsize=(10, 6))
 
-    # 颜色配置（参考论文风格：浅红、浅黄、浅蓝）
-    colors = ["#f8cecc", "#fff2cc", "#dae8fc"]
+    # 颜色配置：
+    # 蓝色 (#dae8fc) - Only Ours
+    # 黄色 (#fff2cc) - Common
+    # 红色 (#f8cecc) - Only Other
+    # 浅灰色 (#eeeeee) - Neither (Other Tools Found)
+    colors = ["#eeeeee", "#f8cecc", "#fff2cc", "#dae8fc"]
 
     df.plot(kind="bar", stacked=True, ax=ax, color=colors, edgecolor="gray", width=0.7)
 
     # 设置样式
-    ax.set_ylabel("Percentage of Vulnerabilities Found (%)", fontsize=12)
+    ax.set_ylabel("Percentage of Total Vulnerabilities (%)", fontsize=12)
     ax.set_xlabel("Comparison with Other Tools", fontsize=12)
     ax.set_ylim(0, 100)
     ax.yaxis.grid(True, linestyle="--", alpha=0.7)
 
-    # 调整图例
+    # 调整图例 (从上到下对应 stack 顺序)
     handles, labels = ax.get_legend_handles_labels()
     ax.legend(
         handles[::-1],
         labels[::-1],
         loc="upper center",
         bbox_to_anchor=(0.5, 1.15),
-        ncol=3,
+        ncol=4,
     )
 
     plt.xticks(rotation=45)
