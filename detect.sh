@@ -11,14 +11,16 @@ TOOLS=(
   rescue
   regexploit
   regexstatic
-  regulator
+#   regulator
 )
 
 # 引擎名列表
 ENGINES=(
+    csharp
+    java11
+    python
+    nodejs14
     java8
-    # python
-    # nodejs14
 )
 
 
@@ -37,7 +39,7 @@ for engine in "${ENGINES[@]}"; do
 
     docker run --rm --privileged \
         "${EXTRA_DOCKER_ARGS[@]}" \
-        -v /tmp:/tmp \
+        --tmpfs /tmp:rw \
         -v ./expr:/app/expr \
         "${IMAGE}" \
         python3 /app/expr/detector.py \
