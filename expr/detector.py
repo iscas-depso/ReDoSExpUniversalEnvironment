@@ -84,8 +84,20 @@ def get_cpu():
     """Acquire a CPU index (P operation). Blocks if no CPU is available."""
     cpu_id = _cpu_pool.get()
 
-    while psutil.virtual_memory().percent >= 80:
-        time.sleep(random.randint(10, 30))
+    while True:
+        # Check overall memory usage
+        if psutil.virtual_memory().percent >= 80:
+            time.sleep(random.randint(10, 30))
+            continue
+
+        # Check specific CPU core usage
+        # We use a short interval to get a current usage reading
+        if psutil.cpu_percent(interval=0.5, percpu=True)[cpu_id] >= 30:
+            time.sleep(random.randint(5, 10))
+            continue
+
+        break
+
     return cpu_id
 
 
