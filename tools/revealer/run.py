@@ -14,12 +14,16 @@ from pathlib import Path
 
 
 def main():
-    if len(sys.argv) != 3:
-        print("Usage: python run.py <base64_regex> <output_file_path>", file=sys.stderr)
+    if len(sys.argv) != 4:
+        print(
+            "Usage: python run.py <base64_regex> <output_file_path> <cpu_core>",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     base64_regex = sys.argv[1]
     output_file_path = sys.argv[2]
+    cpu_core = sys.argv[3]
 
     # Get the directory where this script is located
     script_dir = Path(__file__).parent
@@ -34,9 +38,13 @@ def main():
         # Record start time
         start_time = time.time()
 
+        cmds = ["/usr/lib/jvm/java-8-openjdk-amd64/bin/java", "-jar", str(jar_path)]
+        if cpu_core:
+            cmds = ["taskset", "-c", str(cpu_core), *cmds]
+
         # Call the modified Java program with ID parameter and enable-preview flag
         result = subprocess.run(
-            ["/usr/lib/jvm/java-8-openjdk-amd64/bin/java", "-jar", str(jar_path)],
+            cmds,
             input=raw_regex,
             capture_output=True,
             text=True,

@@ -14,7 +14,7 @@ from pathlib import Path
 
 
 def main():
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 4:
         print(
             "Usage: python run.py <base64_regex> <output_file_path> <cpu_core>",
             file=sys.stderr,
