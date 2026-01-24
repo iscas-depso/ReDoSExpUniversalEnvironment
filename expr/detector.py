@@ -14,6 +14,7 @@ import os
 import psutil
 import time
 import random
+import threading
 
 # cmd = "./target/release/ere"
 # cmd = "./recheck --format json"
@@ -32,6 +33,33 @@ _json_output_lock = multiprocessing.Lock()
 _cpu_manager = None
 _cpu_pool = None
 _cpu_lock = multiprocessing.Lock()
+
+# Global shared resource metrics for multi-process access
+_mem_usage = multiprocessing.Value("f", 0.0)
+_cpu_usage = multiprocessing.Array(
+    "f", os.cpu_count() or 1
+)  # Supporting up to 512 cores
+
+
+def _monitor_resources():
+    """Background thread to update resource usage metrics periodically."""
+    # Initial call to psutil to start the interval tracking
+    psutil.cpu_percent(percpu=True)
+    while True:
+        try:
+            # Update memory usage (relatively fast)
+            _mem_usage.value = psutil.virtual_memory().percent
+
+            # Update CPU usage for all cores (slow because of interval)
+            # This blocking call happens once for all processes to share
+            usages = psutil.cpu_percent(interval=0.5, percpu=True)
+            for i, usage in enumerate(usages):
+                if i < 512:
+                    _cpu_usage[i] = usage
+        except Exception:
+            # Prevent the monitor thread from dying on unexpected errors
+            pass
+        time.sleep(0.1)
 
 
 def build_string(prefix: str, infix: str, suffix: str, encoding="utf-8") -> str:
@@ -79,21 +107,24 @@ def init_cpu_pool():
                 for i in range(CPU_COUNT):
                     _cpu_pool.put(i)
 
+                # Start the background resource monitor
+                t = threading.Thread(target=_monitor_resources, daemon=True)
+                t.start()
+
 
 def get_cpu():
     """Acquire a CPU index (P operation). Blocks if no CPU is available."""
     cpu_id = _cpu_pool.get()
 
     while True:
-        # Check overall memory usage
-        if psutil.virtual_memory().percent >= 80:
+        # Check overall memory usage from shared value (maintained by monitor thread)
+        if _mem_usage.value >= 80:
             time.sleep(random.randint(10, 30))
             continue
 
-        # Check specific CPU core usage
-        # We use a short interval to get a current usage reading
-        if psutil.cpu_percent(interval=0.5, percpu=True)[cpu_id] >= 30:
-            time.sleep(1)
+        # Check specific CPU core usage from shared array (maintained by monitor thread)
+        if _cpu_usage[cpu_id] >= 30:
+            time.sleep(0.5)
             continue
 
         break
