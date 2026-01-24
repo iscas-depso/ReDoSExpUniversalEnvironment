@@ -21,20 +21,21 @@ def load_tool_results(directory):
     """
     扫描目录并加载所有工具的检测结果
     """
-    # 查找符合 1_expr_*.json 模式的文件
     files = [
         f
-        for f in glob.glob(os.path.join(directory, "1_expr_*.json"))
-        if os.path.basename(f).replace("1_expr_", "").replace(".json", "") in TOOLS
+        for f in glob.glob(os.path.join(directory, "*.json"))
+        if any(tool in os.path.basename(f) for tool in TOOLS)
     ]
 
     # 存储结果的嵌套字典: {tool_name: {(file, line): is_redos}}
     all_results = {}
 
     for file_path in tqdm(files, desc="Loading results"):
-        # 提取工具名，例如从 '1_expr_ere.json' 提取 'ere'
         filename = os.path.basename(file_path)
-        tool_name = filename.replace("1_expr_", "").replace(".json", "")
+        tool_name = next(
+            (tool for tool in TOOLS if tool in filename),
+            "unknown_tool",
+        )
 
         tool_data = {}
         with open(file_path, "r", encoding="utf-8") as f:

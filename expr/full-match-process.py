@@ -1,7 +1,7 @@
 import json
 
-input_file = "./data/lookahead_fse19.jsonl"  # 原始 jsonl 文件
-output_file = "./data/lookahead_fse19_fullmatch.jsonl"  # 输出文件
+input_file = "./expr/data/csrru.jsonl"  # 原始 jsonl 文件
+output_file = "./expr/data/csrru_fullmatch.jsonl"  # 输出文件
 
 with open(input_file, "r", encoding="utf-8") as f_in, open(
     output_file, "w", encoding="utf-8"
