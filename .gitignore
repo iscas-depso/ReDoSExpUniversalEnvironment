@@ -9,3 +9,4 @@ tools/redoshunter/.idea
 .venv
 .vscode
 .metals
+1_*.json
