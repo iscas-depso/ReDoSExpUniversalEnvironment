@@ -270,16 +270,18 @@ def run_command(args):
                 timeout=timeout_seconds * 10,
             )
 
-            json_output(
-                file=filename,
-                line=idx,
-                input=attack,
-                output=Path(tmp_path).read_text(),
-                stdout=result.stdout,
-                stderr=result.stderr,
-                return_code=result.returncode,
-                timeout=False,
-            )
+            # 如果是最后一个attack，才输出
+            if attack == attacks[-1]:
+                json_output(
+                    file=filename,
+                    line=idx,
+                    input=attack,
+                    output=Path(tmp_path).read_text(),
+                    stdout=result.stdout,
+                    stderr=result.stderr,
+                    return_code=result.returncode,
+                    timeout=False,
+                )
 
         except subprocess.TimeoutExpired as e:
             json_output(
