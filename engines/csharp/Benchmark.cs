@@ -9,13 +9,14 @@ class Benchmark
 {
     static void Main(string[] args)
     {
-        if (args.Length != 3)
+        if (args.Length != 4)
         {
-            Console.WriteLine("Usage: {0} <base64_regex> <filename> <match_mode>", 
+            Console.WriteLine("Usage: {0} <base64_regex> <filename> <match_mode> <output_file>", 
                 System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
             Console.WriteLine("  base64_regex: Base64-encoded regular expression");
             Console.WriteLine("  filename: Path to the file containing text to match");
             Console.WriteLine("  match_mode: 1 for full match, 0 for partial match");
+            Console.WriteLine("  output_file: Path to the file to write results");
             Environment.Exit(1);
         }
 
@@ -43,8 +44,11 @@ class Benchmark
             Environment.Exit(1);
         }
 
+        // Output file
+        string outputFile = args[3];
+
         // Measure and output results
-        Measure(data, regex, matchMode);
+        Measure(data, regex, matchMode, outputFile);
     }
 
     static string DecodeBase64(string base64String)
@@ -74,7 +78,7 @@ class Benchmark
         }
     }
 
-    static void Measure(string data, string pattern, int fullMatch)
+    static void Measure(string data, string pattern, int fullMatch, string outputFile)
     {
         Stopwatch stopwatch = Stopwatch.StartNew();
         int count = 0;
@@ -105,6 +109,7 @@ class Benchmark
         stopwatch.Stop();
         
         double elapsedMs = stopwatch.Elapsed.TotalMilliseconds;
-        Console.WriteLine("{0:F6} - {1}", elapsedMs, count);
+        string result = string.Format(CultureInfo.InvariantCulture, "{{\"time\": {0:F6}, \"is_match\": {1}}}", elapsedMs, count);
+        File.WriteAllText(outputFile, result);
     }
 }

@@ -9,12 +9,13 @@ import java.util.regex.Pattern;
 
 public final class Benchmark {
     public static void main(String... args) throws IOException {
-        if (args.length != 3) {
-            System.out.printf("Usage: java %s <base64_regex> <filename> <match_mode>%n", 
+        if (args.length != 4) {
+            System.out.printf("Usage: java %s <base64_regex> <filename> <match_mode> <output_file>%n", 
                              Benchmark.class.getSimpleName());
             System.out.println("  base64_regex: Base64-encoded regular expression");
             System.out.println("  filename: Path to the file containing text to match");
             System.out.println("  match_mode: 1 for full match, 0 for partial match");
+            System.out.println("  output_file: Path to the file to write results");
             System.exit(1);
         }
 
@@ -28,8 +29,11 @@ public final class Benchmark {
             // Parse match mode
             var matchMode = parseMatchMode(args[2]);
             
+            // Output file
+            var outputFile = args[3];
+            
             // Measure and output results
-            measure(data, regex, matchMode == 1);
+            measure(data, regex, matchMode == 1, outputFile);
             
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
@@ -67,7 +71,7 @@ public final class Benchmark {
         }
     }
 
-    private static void measure(String data, String patternStr, boolean fullMatch) {
+    private static void measure(String data, String patternStr, boolean fullMatch, String outputFile) {
         var startTime = Instant.now();
 
         try {
@@ -94,7 +98,8 @@ public final class Benchmark {
             var duration = Duration.between(startTime, endTime);
             var elapsedMs = duration.toNanos() / 1_000_000.0;
 
-            System.out.printf("%.6f - %d%n", elapsedMs, count);
+            var result = String.format(java.util.Locale.US, "{\"time\": %.6f, \"is_match\": %d}", elapsedMs, count);
+            Files.writeString(Path.of(outputFile), result);
 
         } catch (Exception e) {
             System.err.println("Error: Failed to compile regex: " + e.getMessage());
