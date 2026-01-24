@@ -213,8 +213,14 @@ def run_command(args):
             str(cpu),
             "--memlimit",
             str(memory_limit * 1024 * 1024),
+            "--timelimit",
+            str(timeout_seconds),
+            "--softtimelimit",
+            str(timeout_seconds * 2),
             "--walltimelimit",
-            str(timeout_seconds + 3),
+            str(timeout_seconds * 5),
+            "--output",
+            "/dev/null",
             *cmds,
         ]
     try:
@@ -229,7 +235,7 @@ def run_command(args):
             shell=True,
             capture_output=True,
             text=True,
-            timeout=timeout_seconds,
+            timeout=timeout_seconds * 10,
         )
 
         json_output(
