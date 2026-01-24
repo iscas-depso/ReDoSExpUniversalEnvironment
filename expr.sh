@@ -20,7 +20,6 @@ IMAGE="redos-test"
 # DATASET="/app/expr/data/test.jsonl"
 DATASET="/app/expr/data/lookahead_fse19_fullmatch.jsonl"
 # DATASET="/app/expr/data/tmp.jsonl"
-
 EXTRA_DOCKER_ARGS=()
 if [[ "$*" == *"--cgroupv1"* ]]; then
     EXTRA_DOCKER_ARGS=("--cgroupns=host" "-v" "/sys/fs/cgroup:/sys/fs/cgroup:rw")
@@ -43,7 +42,7 @@ for toolsname in "${TOOLS[@]}"; do
       --memlimit 10240 \
       --cmd "python3 /app/tools/${toolsname}/run.py" \
       "${DATASET}" \
-    > "1_expr_${toolsname}.json"
+    > "./expr/1_expr_${toolsname}.json"
 
   echo "Finished: ${toolsname}"
 done
