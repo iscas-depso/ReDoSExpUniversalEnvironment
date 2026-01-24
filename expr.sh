@@ -4,8 +4,8 @@ set -euo pipefail
 
 # 工具名列表（按顺序执行）
 TOOLS=(
-  revealer
-  # ere
+  # revealer
+  ere
   # recheck
   # redoshunter
   # rengar
@@ -38,7 +38,7 @@ for toolsname in "${TOOLS[@]}"; do
     python3 /app/expr/expr.py \
       --runexec \
       --timeout 60 \
-      --cpus 64 \
+      --cpus 20 \
       --memlimit 10240 \
       --cmd "python3 /app/tools/${toolsname}/run.py" \
       "${DATASET}" \
