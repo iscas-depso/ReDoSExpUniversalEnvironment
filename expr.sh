@@ -37,7 +37,7 @@ for toolsname in "${TOOLS[@]}"; do
     "${IMAGE}" \
     python3 /app/expr/expr.py \
       --runexec \
-      --timeout 60 \
+      --timeout 600 \
       --cpus 20 \
       --memlimit 10240 \
       --cmd "python3 /app/tools/${toolsname}/run.py" \
