@@ -25,6 +25,7 @@ timeout_seconds = 5
 use_runexec = False
 CPU_COUNT = 4
 memory_limit = 1024
+enable_cpu_monitor = True
 
 _json_output_lock = multiprocessing.Lock()
 
@@ -38,6 +39,8 @@ _cpu_usage = multiprocessing.Array(
     "f", os.cpu_count() or 1
 )  # Supporting up to 512 cores
 
+memory_shortage = False
+
 
 def _monitor_resources():
     """Background thread to update resource usage metrics periodically."""
@@ -47,12 +50,18 @@ def _monitor_resources():
         try:
             # Update memory usage (relatively fast)
             _mem_usage.value = psutil.virtual_memory().percent
+            if not memory_shortage and _mem_usage.value >= 80:
+                memory_shortage = True
+                print("Memory shortage detected!")
+            elif memory_shortage and _mem_usage.value < 80:
+                memory_shortage = False
+                print("Memory shortage cleared!")
 
-            # Update CPU usage for all cores (slow because of interval)
-            # This blocking call happens once for all processes to share
-            usages = psutil.cpu_percent(interval=0.5, percpu=True)
-            for i, usage in enumerate(usages):
-                if i < 512:
+            if enable_cpu_monitor:
+                # Update CPU usage for all cores (slow because of interval)
+                # This blocking call happens once for all processes to share
+                usages = psutil.cpu_percent(interval=0.5, percpu=True)
+                for i, usage in enumerate(usages):
                     _cpu_usage[i] = usage
         except Exception:
             # Prevent the monitor thread from dying on unexpected errors
@@ -104,10 +113,13 @@ def get_cpu():
             continue
 
         # Check specific CPU core usage from shared array (maintained by monitor thread)
-        # if _cpu_usage[cpu_id] >= 30:
-        #     time.sleep(0.5)
-        #     continue
-
+        if enable_cpu_monitor and _cpu_usage[cpu_id] >= 10:
+            time.sleep(0.5)
+            wait_count += 1
+            if wait_count >= 20:
+                _cpu_pool.put(cpu_id)
+                return get_cpu()
+            continue
         break
 
     return cpu_id
@@ -289,6 +301,9 @@ def main():
         help="Force forcing ^(?:...)$ around patterns",
     )
     parser.add_argument("--runexec", action="store_true", help="Run using runexec")
+    parser.add_argument(
+        "--enable-cpu-monitor", action="store_true", help="Enable CPU monitor"
+    )
 
     args = parser.parse_args()
 
@@ -299,6 +314,7 @@ def main():
     force_fullmatch = args.fullmatch
     use_runexec = args.runexec
     memory_limit = args.memlimit
+    enable_cpu_monitor = args.enable_cpu_monitor
 
     init_cpu_pool()
 

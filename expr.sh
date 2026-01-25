@@ -40,9 +40,10 @@ for toolsname in "${TOOLS[@]}"; do
       --timeout 600 \
       --cpus 20 \
       --memlimit 10240 \
+      --enable-cpu-monitor \
       --cmd "python3 /app/tools/${toolsname}/run.py" \
       "${DATASET}" \
-    > "./expr/1_expr_${toolsname}.json"
+    > "./expr/tmp/1_expr_${toolsname}.json"
 
   echo "Finished: ${toolsname}"
 done
