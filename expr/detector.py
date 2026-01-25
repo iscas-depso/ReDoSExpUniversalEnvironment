@@ -123,9 +123,9 @@ def get_cpu():
             continue
 
         # Check specific CPU core usage from shared array (maintained by monitor thread)
-        if _cpu_usage[cpu_id] >= 30:
-            time.sleep(0.5)
-            continue
+        # if _cpu_usage[cpu_id] >= 30:
+        #     time.sleep(0.5)
+        #     continue
 
         break
 
