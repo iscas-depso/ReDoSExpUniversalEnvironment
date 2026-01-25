@@ -290,7 +290,7 @@ def run_command(args):
                 json_output(
                     file=filename,
                     line=idx,
-                    input=attack,
+                    input=attacks,
                     output=Path(tmp_path).read_text(),
                     stdout=result.stdout,
                     stderr=result.stderr,
