@@ -27,6 +27,7 @@ use_runexec = False
 CPU_COUNT = 4
 memory_limit = 1024
 attack_size = 100
+enable_cpu_monitor = True
 
 _json_output_lock = multiprocessing.Lock()
 
@@ -58,12 +59,13 @@ def _monitor_resources():
                 memory_shortage = False
                 print("Memory shortage cleared!")
 
-            # Update CPU usage for all cores (slow because of interval)
-            # This blocking call happens once for all processes to share
-            # usages = psutil.cpu_percent(interval=0.5, percpu=True)
-            # for i, usage in enumerate(usages):
-            #     if i < 512:
-            #         _cpu_usage[i] = usage
+            if enable_cpu_monitor:
+                # Update CPU usage for all cores (slow because of interval)
+                # This blocking call happens once for all processes to share
+                usages = psutil.cpu_percent(interval=0.5, percpu=True)
+                for i, usage in enumerate(usages):
+                    _cpu_usage[i] = usage
+
         except Exception:
             # Prevent the monitor thread from dying on unexpected errors
             pass
@@ -124,6 +126,8 @@ def get_cpu():
     """Acquire a CPU index (P operation). Blocks if no CPU is available."""
     cpu_id = _cpu_pool.get()
 
+    wait_count = 0
+
     while True:
         # Check overall memory usage from shared value (maintained by monitor thread)
         if _mem_usage.value >= 80:
@@ -131,10 +135,13 @@ def get_cpu():
             continue
 
         # Check specific CPU core usage from shared array (maintained by monitor thread)
-        # if _cpu_usage[cpu_id] >= 30:
-        #     time.sleep(0.5)
-        #     continue
-
+        if enable_cpu_monitor and _cpu_usage[cpu_id] >= 10:
+            time.sleep(0.5)
+            wait_count += 1
+            if wait_count >= 20:
+                _cpu_pool.put(cpu_id)
+                return get_cpu()
+            continue
         break
 
     return cpu_id
@@ -348,7 +355,7 @@ def process_file(filename):
 
 
 def main():
-    global cmd, force_fullmatch, timeout_seconds, use_runexec, memory_limit, attack_size, CPU_COUNT
+    global cmd, force_fullmatch, timeout_seconds, use_runexec, memory_limit, attack_size, CPU_COUNT, enable_cpu_monitor
 
     parser = argparse.ArgumentParser(description="Process ReDoS experiment files.")
     parser.add_argument("files", nargs="+", help="Input files to process")
@@ -371,6 +378,9 @@ def main():
         "--fullmatch", action="store_true", help="Use fullmatch mode in engine"
     )
     parser.add_argument("--runexec", action="store_true", help="Run using runexec")
+    parser.add_argument(
+        "--enable-cpu-monitor", action="store_true", help="Enable CPU monitor"
+    )
 
     args = parser.parse_args()
 
@@ -382,6 +392,7 @@ def main():
     use_runexec = args.runexec
     memory_limit = args.memlimit
     attack_size = args.attack_size
+    enable_cpu_monitor = args.enable_cpu_monitor
 
     init_cpu_pool()
 
