@@ -111,34 +111,38 @@
     </div>
   </header>
   <main class="layout">
-    <section class="panel" id="base64-panel">
-      <div class="panel-header">
-        <h2>辅助工具：Base64 转换</h2>
-        <p>快速对文本进行 Base64 编码或从 Base64 解码，方便查看结果或构造 Payload。</p>
-      </div>
-      <div class="form-group">
-        <label for="base64-input">输入内容</label>
-        <textarea id="base64-input" placeholder="输入原始文本以编码，或输入 Base64 字符串以解码..." rows="4"></textarea>
-      </div>
-      <div class="form-group" style="flex-direction: row; align-items: center; gap: 8px; margin-bottom: 8px;">
-        <input type="checkbox" id="base64-ascii" style="width: auto; margin: 0;">
-        <label for="base64-ascii" style="font-weight: normal; font-size: 14px; cursor: pointer;">强制纯 ASCII 模式 (Unicode 转
-          \uXXXX)</label>
-      </div>
-      <div class="panel-actions" style="justify-content: flex-start; gap: 12px;">
-        <button id="base64-encode" class="primary">进行编码 (Encode)</button>
-        <button id="base64-decode" class="ghost">进行解码 (Decode)</button>
-        <button id="base64-clear" class="ghost">清空</button>
-      </div>
-      <div class="form-group">
-        <label for="base64-output">转换结果</label>
-        <div style="position: relative;">
-          <textarea id="base64-output" placeholder="结果将显示在这里..." rows="4" readonly></textarea>
-          <button id="base64-copy" class="small ghost"
-            style="position: absolute; right: 8px; top: 8px; border-radius: 6px; padding: 4px 8px;">复制</button>
+    <details class="panel" id="base64-panel">
+      <summary class="panel-header">
+        <div>
+          <h2>辅助工具：Base64 转换</h2>
+          <p>快速对文本进行 Base64 编码或从 Base64 解码，方便查看结果或构造 Payload。</p>
+        </div>
+      </summary>
+      <div class="panel-content">
+        <div class="form-group">
+          <label for="base64-input">输入内容</label>
+          <textarea id="base64-input" placeholder="输入原始文本以编码，或输入 Base64 字符串以解码..." rows="4"></textarea>
+        </div>
+        <div class="form-group" style="flex-direction: row; align-items: center; gap: 8px; margin-bottom: 8px;">
+          <input type="checkbox" id="base64-ascii" style="width: auto; margin: 0;">
+          <label for="base64-ascii" style="font-weight: normal; font-size: 14px; cursor: pointer;">强制纯 ASCII 模式 (Unicode 转
+            \uXXXX)</label>
+        </div>
+        <div class="panel-actions" style="justify-content: flex-start; gap: 12px;">
+          <button id="base64-encode" class="primary">进行编码 (Encode)</button>
+          <button id="base64-decode" class="ghost">进行解码 (Decode)</button>
+          <button id="base64-clear" class="ghost">清空</button>
+        </div>
+        <div class="form-group">
+          <label for="base64-output">转换结果</label>
+          <div style="position: relative;">
+            <textarea id="base64-output" placeholder="结果将显示在这里..." rows="4" readonly></textarea>
+            <button id="base64-copy" class="small ghost"
+              style="position: absolute; right: 8px; top: 8px; border-radius: 6px; padding: 4px 8px;">复制</button>
+          </div>
         </div>
       </div>
-    </section>
+    </details>
 
     <section class="panel" id="tools-panel">
       <div class="panel-header">
@@ -159,12 +163,34 @@
             <button id="show-history" class="ghost small" type="button">📜 历史记录</button>
           </div>
         </div>
-        <textarea id="regex-input" placeholder="示例：^(a+)+$" rows="4"></textarea>
-        <!-- Regex Actions Bar: Replaces the simple help text -->
-        <div id="regex-quick-actions" class="regex-actions-bar" style="display:none">
-          <div class="regex-preview-text regex" id="regex-preview-content"></div>
+        <div class="regex-input-wrapper">
+          <textarea id="regex-input" placeholder="示例：^(a+)+$" rows="4"></textarea>
         </div>
-        <p class="help-text" style="margin-top:4px;">输入原始正则表达式，后端会自动进行 Base64 编码。</p>
+        <!-- Regex Actions Bar: Replaces the simple help text -->
+        <div id="regex-quick-actions" class="regex-actions-bar" style="display:none; flex-direction: column; align-items: stretch;">
+          <div style="display: flex; gap: 8px; width: 100%;">
+            <div class="regex-preview-text regex" id="regex-preview-content" style="flex: 1; min-width: 0;"></div>
+            <div id="regex-nav-buttons" class="regex-nav-buttons-preview" style="display: none; flex-direction: row; gap: 4px; justify-content: flex-start;">
+              <button type="button" id="regex-prev" class="nav-btn" title="Previous Regex">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              </button>
+              <button type="button" id="regex-next" class="nav-btn" title="Next Regex">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
+            </div>
+          </div>
+          <div id="regex-counter-container" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; border-top: 1px solid #e2e8f0; padding-top: 8px;">
+            <p class="help-text" style="margin:0; font-size: 0.8em; color: #888; flex: 1;">输入原始正则表达式，后端会自动进行 Base64 编码。</p>
+            <div id="regex-jump-to-wrapper" style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 0.85em; color: #64748b;">Jump to:</span>
+              <div class="regex-pagination">
+                <input type="number" id="regex-index-input" class="regex-index-input" min="1" value="1">
+                <span class="regex-total-sep">/</span>
+                <span id="regex-total-count" class="regex-total-count">1</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="selection-group">
         <div class="selection-header">
@@ -201,6 +227,18 @@
       </details>
 
       <div id="tool-job-status" class="job-status"></div>
+      
+      <div class="result-view-options" style="display: flex; gap: 16px; margin-bottom: 8px; align-items: center; justify-content: flex-end;">
+        <label style="font-size: 14px; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;">
+          <input type="checkbox" id="auto-collapse-unpinned" checked>
+          自动折叠未置顶项
+        </label>
+        <label style="font-size: 14px; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;">
+          <input type="checkbox" id="always-expand-redos" checked>
+          始终展开 ReDoS 结果
+        </label>
+      </div>
+
       <div id="tool-results" class="results-container"></div>
     </section>
 

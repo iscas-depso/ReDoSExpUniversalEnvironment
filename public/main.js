@@ -6,15 +6,25 @@ const state = {
     meta: null,
     selectedTools: new Set(),
     selectedEngines: new Set(),
+    pinnedToolIds: [], // Changed from Set to Array to support ordering
+    autoCollapseUnpinned: true,
+    alwaysExpandRedos: true,
+    autoLocked: false,
     currentToolJob: null,
     currentEngineJob: null,
     events: { tools: null, engines: null },
-    attackInputMode: 'tool'
+    attackInputMode: 'tool',
+    regexList: [],
+    regexIndex: 0
   };
 
   const el = id => document.getElementById(id);
   const E = {
     regex: el('regex-input'),
+    regexPrev: el('regex-prev'),
+    regexNext: el('regex-next'),
+    regexCounter: el('regex-counter'),
+    regexNavControls: el('regex-nav-controls'),
     toolsList: el('tools-list'),
     enginesList: el('engines-list'),
     runTools: el('run-tools'),
@@ -32,6 +42,8 @@ const state = {
     toolStatus: el('tool-job-status'),
     engineStatus: el('engine-job-status'),
     toolResults: el('tool-results'),
+    autoCollapseUnpinned: el('auto-collapse-unpinned'),
+    alwaysExpandRedos: el('always-expand-redos'),
     engineResults: el('engine-results'),
     matchMode: el('match-mode'),
     repeatOverride: el('repeat-override'),
@@ -64,7 +76,11 @@ const state = {
     regexPreviewContent: el('regex-preview-content'),
     enableHighlight: el('enable-regex-highlight'),
     copyRegexBtn: el('copy-regex-btn'),
-    copyB64Btn: el('copy-b64-btn')
+    copyB64Btn: el('copy-b64-btn'),
+    regexNavButtons: el('regex-nav-buttons'),
+    regexIndexInput: el('regex-index-input'),
+    regexTotalCount: el('regex-total-count'),
+    regexJumpToWrapper: el('regex-jump-to-wrapper')
   };
 
   document.addEventListener('DOMContentLoaded', init);
@@ -157,6 +173,32 @@ const state = {
     if (E.enginesClear) E.enginesClear.addEventListener('click', () => toggleAll('engines', false));
     if (E.regex) E.regex.addEventListener('input', updateButtons);
     if (E.enableHighlight) E.enableHighlight.addEventListener('change', updateButtons);
+    
+    if (E.regexPrev) E.regexPrev.addEventListener('click', () => {
+      if (state.regexIndex > 0) {
+        state.regexIndex--;
+        // Don't re-parse, just update UI
+        updateUIForRegex();
+      }
+    });
+    if (E.regexNext) E.regexNext.addEventListener('click', () => {
+      if (state.regexIndex < state.regexList.length - 1) {
+        state.regexIndex++;
+        updateUIForRegex();
+      }
+    });
+
+    if (E.regexIndexInput) {
+      E.regexIndexInput.addEventListener('change', () => {
+        let val = parseInt(E.regexIndexInput.value, 10);
+        if (isNaN(val)) val = 1;
+        if (val < 1) val = 1;
+        if (state.regexList.length > 0 && val > state.regexList.length) val = state.regexList.length;
+        state.regexIndex = Math.max(0, val - 1);
+        updateUIForRegex();
+      });
+    }
+
     bindQuickActions(); // Call binding logic
     if (E.runTools) E.runTools.addEventListener('click', onRunTools);
     if (E.runEngines) E.runEngines.addEventListener('click', onRunEngines);
@@ -251,17 +293,33 @@ const state = {
   function bindQuickActions() {
     if (E.copyRegexBtn) {
       E.copyRegexBtn.addEventListener('click', () => {
-        if (E.regex && E.regex.value) {
-          const val = extractRegexPattern(E.regex.value);
+        const regex = state.regexList[state.regexIndex];
+        if (regex) {
+          const val = extractRegexPattern(regex);
           navigator.clipboard.writeText(val);
           tempBtnText(E.copyRegexBtn, '✅ 已复制');
         }
       });
     }
+    
+    if (E.autoCollapseUnpinned) {
+      E.autoCollapseUnpinned.addEventListener('change', () => {
+        state.autoCollapseUnpinned = E.autoCollapseUnpinned.checked;
+        renderToolResults();
+      });
+    }
+    if (E.alwaysExpandRedos) {
+      E.alwaysExpandRedos.addEventListener('change', () => {
+        state.alwaysExpandRedos = E.alwaysExpandRedos.checked;
+        renderToolResults();
+      });
+    }
+
     if (E.copyB64Btn) {
       E.copyB64Btn.addEventListener('click', () => {
-        if (E.regex && E.regex.value) {
-          const val = extractRegexPattern(E.regex.value);
+        const regex = state.regexList[state.regexIndex];
+        if (regex) {
+          const val = extractRegexPattern(regex);
           navigator.clipboard.writeText(toBase64(val));
           tempBtnText(E.copyB64Btn, '✅ Base64');
         }
@@ -333,14 +391,71 @@ const state = {
   }
 
   function updateButtons() {
-    const regexVal = E.regex ? E.regex.value.trim() : '';
-    const regexFilled = !!regexVal;
+    parseRegexInput();
+    updateUIForRegex();
+  }
+
+  function parseRegexInput() {
+    const rawInput = E.regex ? E.regex.value : '';
+    const trimmedInput = rawInput.trim();
+    if (!trimmedInput) {
+      state.regexList = [];
+      state.regexIndex = 0;
+      return;
+    }
+
+    const lines = rawInput.split(/\r?\n/).filter(line => line.trim() !== '');
+    let newList = [];
+    let isJsonl = false;
+
+    if (lines.length > 1) {
+      const allJson = lines.every(line => {
+        try {
+          JSON.parse(line);
+          return true;
+        } catch {
+          return false;
+        }
+      });
+      if (allJson) {
+        isJsonl = true;
+        newList = lines;
+      }
+    }
+
+    if (!isJsonl) {
+      newList = [trimmedInput];
+    }
+    
+    state.regexList = newList;
+    if (state.regexIndex >= state.regexList.length) {
+      state.regexIndex = Math.max(0, state.regexList.length - 1);
+    }
+  }
+
+  function updateUIForRegex() {
+    const regexFilled = state.regexList.length > 0;
+    const currentRegexRaw = regexFilled ? state.regexList[state.regexIndex] : '';
 
     // Update Regex Quick Actions Display
     if (E.regexQuickActions && E.regexPreviewContent) {
       if (regexFilled) {
-        E.regexQuickActions.style.display = 'flex'; // Flex to align items
-        const parsedPattern = extractRegexPattern(regexVal);
+        E.regexQuickActions.style.display = 'flex';
+        
+        const hasMultiple = state.regexList.length > 1;
+        
+        if (E.regexNavButtons) E.regexNavButtons.style.display = hasMultiple ? 'flex' : 'none';
+        
+        if (E.regexJumpToWrapper) E.regexJumpToWrapper.style.display = hasMultiple ? 'flex' : 'none';
+
+        if (hasMultiple) {
+             if (E.regexIndexInput) E.regexIndexInput.value = state.regexIndex + 1;
+             if (E.regexTotalCount) E.regexTotalCount.textContent = state.regexList.length;
+             if (E.regexPrev) E.regexPrev.disabled = state.regexIndex <= 0;
+             if (E.regexNext) E.regexNext.disabled = state.regexIndex >= state.regexList.length - 1;
+        }
+
+        const parsedPattern = extractRegexPattern(currentRegexRaw);
         try {
           if (E.enableHighlight && E.enableHighlight.checked) {
             E.regexPreviewContent.innerHTML = colorizePattern(parsedPattern);
@@ -350,7 +465,7 @@ const state = {
         } catch (e) {
           E.regexPreviewContent.textContent = parsedPattern;
         }
-        E.regexPreviewContent.title = parsedPattern; // Tooltip for full text
+        E.regexPreviewContent.title = parsedPattern;
       } else {
         E.regexQuickActions.style.display = 'none';
       }
@@ -360,6 +475,7 @@ const state = {
     if (E.copyB64Btn) E.copyB64Btn.style.display = regexFilled ? 'inline-block' : 'none';
 
     if (E.runTools) E.runTools.disabled = !(regexFilled && state.selectedTools.size > 0);
+    
     let attackReady = false;
     if (state.attackInputMode === 'tool') {
       attackReady = !!state.attackSelection;
@@ -474,7 +590,7 @@ const state = {
   }
 
   async function onRunTools() {
-    const regex = (E.regex?.value || '').trim();
+    const regex = state.regexList[state.regexIndex] || '';
     const tools = Array.from(state.selectedTools);
     if (!regex || tools.length === 0) return;
     setStatus('tools', '提交中...');
@@ -497,7 +613,7 @@ const state = {
   }
 
   async function onRunEngines() {
-    const regex = (E.regex?.value || '').trim();
+    const regex = state.regexList[state.regexIndex] || '';
     const engines = Array.from(state.selectedEngines);
     if (!regex || engines.length === 0) return;
     setStatus('engines', '提交中...');
@@ -555,6 +671,21 @@ const state = {
     if (el) el.textContent = text;
   }
 
+  function getVerifiableAttack(r) {
+    if (!r.output) return null;
+    let list = Array.isArray(r.output) ? r.output : [r.output];
+    if (Array.isArray(r.output)) {
+      const redos = r.output.filter(x => x && x.is_redos);
+      if (redos.length > 0) list = redos;
+    }
+    list = list.filter(x => x);
+    const candidate = list[0];
+    if (candidate && typeof candidate === 'object' && ('prefix' in candidate || 'infix' in candidate || 'suffix' in candidate)) {
+      return candidate;
+    }
+    return null;
+  }
+
   function renderToolResults() {
     const container = E.toolResults; if (!container) return;
     const job = state.currentToolJob; container.innerHTML = '';
@@ -562,6 +693,16 @@ const state = {
       const p = document.createElement('p'); p.textContent = '暂无结果'; container.appendChild(p); return;
     }
     const sorted = [...job.results].sort((a, b) => {
+      const aPinIndex = state.pinnedToolIds.indexOf(a.id);
+      const bPinIndex = state.pinnedToolIds.indexOf(b.id);
+      
+      const aPinned = aPinIndex !== -1;
+      const bPinned = bPinIndex !== -1;
+
+      if (aPinned && bPinned) return aPinIndex - bPinIndex;
+      if (aPinned) return -1;
+      if (bPinned) return 1;
+
       const statusOrder = { running: 0, failed: 2, completed: 3 };
       const aIsRedos = Array.isArray(a.output) ? a.output.some(x => x.is_redos) : a.output?.is_redos === true;
       const bIsRedos = Array.isArray(b.output) ? b.output.some(x => x.is_redos) : b.output?.is_redos === true;
@@ -573,19 +714,96 @@ const state = {
       return aOrder - bOrder;
     });
 
-    sorted.forEach(r => {
+    // Auto-lock logic: Select the top-ranked result that is completed and verifiable
+    const topVerifiable = sorted.find(r => r.status === 'completed' && getVerifiableAttack(r));
+    const selectionValid = state.attackSelection && state.attackSelection.jobId === job.id;
+
+    if (!selectionValid) {
+      if (topVerifiable) {
+        const attack = getVerifiableAttack(topVerifiable);
+        state.attackSelection = { attack, toolId: topVerifiable.id, toolLabel: topVerifiable.label || topVerifiable.id, jobId: job.id };
+        state.autoLocked = true;
+        switchInputMode('tool');
+        renderAttackSummary();
+        updateButtons();
+      }
+    } else if (state.autoLocked) {
+      // If we auto-locked, follow the top rank if it changes (e.g. via pinning)
+      if (topVerifiable && topVerifiable.id !== state.attackSelection.toolId) {
+        const attack = getVerifiableAttack(topVerifiable);
+        state.attackSelection = { attack, toolId: topVerifiable.id, toolLabel: topVerifiable.label || topVerifiable.id, jobId: job.id };
+        // state.autoLocked remains true
+        switchInputMode('tool');
+        renderAttackSummary();
+        updateButtons();
+      }
+    }
+
+    const hasPinned = state.pinnedToolIds.length > 0;
+
+    sorted.forEach((r, index) => {
       const card = document.createElement('div'); card.className = 'result-card';
+      
+      // Drag and Drop Logic
+      const isPinned = state.pinnedToolIds.includes(r.id);
+      if (isPinned) {
+        card.draggable = true;
+        card.style.cursor = 'grab'; // Visual cue
+        card.dataset.toolId = r.id;
+
+        card.addEventListener('dragstart', (e) => {
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', r.id);
+          card.style.opacity = '0.5';
+          // Store the dragged ID globally or in state if needed, but dataTransfer is enough
+        });
+
+        card.addEventListener('dragend', (e) => {
+          card.style.opacity = '1';
+          card.classList.remove('drag-over');
+        });
+
+        card.addEventListener('dragover', (e) => {
+          if (e.preventDefault) e.preventDefault(); // Necessary to allow dropping
+          e.dataTransfer.dropEffect = 'move';
+          return false;
+        });
+
+        card.addEventListener('dragenter', (e) => {
+          if (card.dataset.toolId !== e.dataTransfer.getData('text/plain')) {
+             card.classList.add('drag-over');
+          }
+        });
+
+        card.addEventListener('dragleave', (e) => {
+          card.classList.remove('drag-over');
+        });
+
+        card.addEventListener('drop', (e) => {
+          e.stopPropagation(); // stops the browser from redirecting.
+          card.classList.remove('drag-over');
+          
+          const draggedId = e.dataTransfer.getData('text/plain');
+          const targetId = r.id;
+
+          if (draggedId !== targetId) {
+             const fromIndex = state.pinnedToolIds.indexOf(draggedId);
+             const toIndex = state.pinnedToolIds.indexOf(targetId);
+             
+             if (fromIndex !== -1 && toIndex !== -1) {
+                // Move element in array
+                state.pinnedToolIds.splice(fromIndex, 1);
+                state.pinnedToolIds.splice(toIndex, 0, draggedId);
+                renderToolResults();
+             }
+          }
+          return false;
+        });
+      }
 
       const redosValue = Array.isArray(r.output) ? r.output.some(x => x.is_redos) : r.output?.is_redos;
-
-      let attackObjList = Array.isArray(r.output) ? r.output : [r.output];
-      if (Array.isArray(r.output)) {
-        const redosItems = r.output.filter(x => x && x.is_redos);
-        if (redosItems.length > 0) attackObjList = redosItems;
-      }
-      attackObjList = attackObjList.filter(x => x); // filter null/undefined
-      const attackObj = attackObjList[0]; // Primary one for header interactions
-      const canVerify = attackObj && typeof attackObj === 'object' && ('prefix' in attackObj || 'infix' in attackObj || 'suffix' in attackObj);
+      const attackObj = getVerifiableAttack(r);
+      const canVerify = !!attackObj;
 
       // Check if this result is currently selected (locked)
       const isLocked = state.attackSelection &&
@@ -598,10 +816,56 @@ const state = {
         card.classList.add('redos-highlight');
       }
 
+      // const isPinned = state.pinnedToolIds.includes(r.id); // Already calculated above
+      
+      let autoCollapsed = false;
+      if (state.autoCollapseUnpinned && hasPinned && !isPinned) {
+        autoCollapsed = true;
+        // If alwaysExpandRedos is enabled and this result has ReDoS, do not collapse
+        if (state.alwaysExpandRedos && redosValue === true) {
+          autoCollapsed = false;
+        }
+      }
+
       const header = document.createElement('div'); header.className = 'result-header';
+
+      const leftGroup = document.createElement('div');
+      leftGroup.style.display = 'flex';
+      leftGroup.style.alignItems = 'center';
+      leftGroup.style.gap = '8px';
+
+      // Pin Button
+      const pinBtn = document.createElement('span');
+      pinBtn.className = 'pin-btn';
+      pinBtn.innerHTML = '📌';
+      pinBtn.style.cursor = 'pointer';
+      pinBtn.style.fontSize = '1.2em';
+      pinBtn.style.opacity = isPinned ? '1' : '0.2';
+      pinBtn.style.transition = 'opacity 0.2s';
+      pinBtn.title = isPinned ? '取消置顶' : '置顶 (其他结果将自动折叠)';
+      pinBtn.onclick = (e) => {
+        e.stopPropagation();
+        if (isPinned) {
+          const idx = state.pinnedToolIds.indexOf(r.id);
+          if (idx !== -1) state.pinnedToolIds.splice(idx, 1);
+        } else {
+          state.pinnedToolIds.push(r.id); // Add to end
+        }
+        renderToolResults();
+      };
+      // Hover effect for opacity
+      pinBtn.onmouseenter = () => { if (!isPinned) pinBtn.style.opacity = '0.7'; };
+      pinBtn.onmouseleave = () => { if (!isPinned) pinBtn.style.opacity = '0.2'; };
+
+      leftGroup.appendChild(pinBtn);
+
       const title = document.createElement('span'); title.className = 'result-title'; title.textContent = r.label || r.id;
+      leftGroup.appendChild(title);
+
       const badge = document.createElement('span'); badge.className = 'badge badge-status status-' + r.status; badge.textContent = r.status;
-      header.appendChild(title); header.appendChild(badge);
+      leftGroup.appendChild(badge);
+
+      header.appendChild(leftGroup);
 
       if (typeof redosValue === 'boolean') {
         if (canVerify) {
@@ -618,6 +882,7 @@ const state = {
             btn.addEventListener('click', (e) => {
               e.stopPropagation();
               state.attackSelection = { attack: attackObj, toolId: r.id, toolLabel: r.label || r.id, jobId: job.id };
+              state.autoLocked = false;
               switchInputMode('tool');
               renderAttackSummary();
               updateButtons();
@@ -637,10 +902,40 @@ const state = {
       card.appendChild(header);
 
       const body = document.createElement('div'); body.className = 'result-body';
+      
+      if (autoCollapsed) {
+        body.style.display = 'none';
+        card.classList.add('collapsed');
+        
+        header.style.cursor = 'pointer';
+        header.title = '点击展开';
+        const expandHint = document.createElement('span');
+        expandHint.textContent = ' (已折叠)';
+        expandHint.style.fontSize = '0.8em';
+        expandHint.style.color = '#999';
+        leftGroup.appendChild(expandHint);
+        
+        header.onclick = (e) => {
+          body.style.display = body.style.display === 'none' ? 'block' : 'none';
+          if (body.style.display === 'block') {
+            expandHint.style.display = 'none';
+          } else {
+            expandHint.style.display = 'inline';
+          }
+        };
+      }
+
       if (r.error && r.error.message) {
         body.appendChild(createCollapsiblePre(r.error.message));
       } else if (r.output) {
         body.appendChild(createCollapsiblePre(JSON.stringify(r.output, null, 2)));
+
+        let attackObjList = Array.isArray(r.output) ? r.output : [r.output];
+        if (Array.isArray(r.output)) {
+          const redosItems = r.output.filter(x => x && x.is_redos);
+          if (redosItems.length > 0) attackObjList = redosItems;
+        }
+        attackObjList = attackObjList.filter(x => x);
 
         if (attackObjList.length > 0) {
           const verifiableList = attackObjList.filter(atk =>
@@ -730,6 +1025,7 @@ const state = {
 
                 e.stopPropagation();
                 state.attackSelection = { attack: atk, toolId: r.id, toolLabel: r.label || r.id, jobId: job.id };
+                state.autoLocked = false;
                 switchInputMode('tool');
                 renderAttackSummary();
                 updateButtons();

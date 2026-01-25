@@ -120,6 +120,8 @@ select:focus {
 textarea {
   resize: vertical;
   min-height: 96px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .help-text {
@@ -385,6 +387,85 @@ button:disabled {
   width: 100%;
   padding: 6px;
   font-size: 12px;
+}
+
+.regex-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.regex-nav-buttons-preview {
+  flex-shrink: 0;
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #64748b;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover:not(:disabled) {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #cbd5f5;
+}
+
+.nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.regex-pagination {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.regex-index-input {
+  width: 40px;
+  padding: 2px 4px;
+  border: 1px solid #cbd5f5;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 13px;
+  font-family: inherit;
+  color: #0f172a;
+  background: #fff;
+  -moz-appearance: textfield;
+}
+
+.regex-index-input::-webkit-inner-spin-button, 
+.regex-index-input::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+
+.regex-index-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.regex-total-count {
+  font-weight: 600;
+  color: #475569;
+}
+
+.collapse-toggle {
   text-align: center;
   background: #f1f5f9;
   border: none;
@@ -890,4 +971,60 @@ details.advanced-settings .form-grid {
 
 .toggle-switch:hover .label-text {
   color: var(--text-primary);
+}
+
+/* Drag and Drop styles */
+.result-card[draggable="true"] {
+  cursor: grab;
+}
+
+.result-card[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+.result-card.drag-over {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.4);
+  transform: scale(1.01);
+  background-color: #f1f5f9;
+}
+
+/* Collapsible Panel Support */
+details.panel > summary {
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+details.panel > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.panel > summary::after {
+  content: '↓';
+  font-size: 1.1rem;
+  transition: transform 0.3s;
+  background: rgba(37, 99, 235, 0.1);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--accent);
+  flex-shrink: 0;
+  margin-left: 16px;
+}
+
+details.panel[open] > summary::after {
+  transform: rotate(180deg);
+}
+
+.panel-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
