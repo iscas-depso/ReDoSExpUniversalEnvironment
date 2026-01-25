@@ -13,3 +13,4 @@ tools/redoshunter/.idea
 *.pdf
 tmp.json*
 data/history.jsonl
+config/settings.json

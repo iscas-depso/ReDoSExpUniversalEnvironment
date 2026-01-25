@@ -43,15 +43,43 @@ function createApp(options = {}) {
   const jobManager = providedJobManager || new JobManager();
   const fs = require('fs');
   const historyPath = path.join(__dirname, '..', 'data', 'history.jsonl');
+  const configPath = path.join(__dirname, '..', 'config', 'settings.json');
 
-  // Ensure data directory exists
+  // Ensure data and config directories exist
   try {
     const dataDir = path.dirname(historyPath);
     if (!fs.existsSync(dataDir)) {
       fs.mkdirSync(dataDir, { recursive: true });
     }
+    const configDir = path.dirname(configPath);
+    if (!fs.existsSync(configDir)) {
+      fs.mkdirSync(configDir, { recursive: true });
+    }
   } catch (err) {
-    console.error('Failed to create data directory:', err);
+    console.error('Failed to create directories:', err);
+  }
+
+  function getSettings() {
+    try {
+      if (fs.existsSync(configPath)) {
+        return JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      }
+    } catch (e) {
+      console.error('Error reading config:', e);
+    }
+    return {};
+  }
+
+  function saveSettings(newSettings) {
+    try {
+      const current = getSettings();
+      const next = { ...current, ...newSettings };
+      fs.writeFileSync(configPath, JSON.stringify(next, null, 2));
+      return next;
+    } catch (e) {
+      console.error('Error writing config:', e);
+      return {};
+    }
   }
 
   const historyManager = new HistoryManager(historyPath);
@@ -71,19 +99,32 @@ function createApp(options = {}) {
   );
 
   app.get('/api/meta', (req, res) => {
+    const s = getSettings();
     res.json({
       tools: TOOL_METADATA,
       engines: ENGINE_METADATA,
       matchModes: MATCH_MODES,
       defaults: {
-        toolTimeoutSeconds: Math.round(DEFAULT_OPTIONS.toolTimeoutMs / 1000),
-        engineTimeoutSeconds: Math.round(DEFAULT_OPTIONS.engineTimeoutMs / 1000),
-        maxRepeatTimes: DEFAULT_OPTIONS.maxRepeatTimes,
-        maxAttackLength: DEFAULT_OPTIONS.maxAttackLength,
-        defaultCores: DEFAULT_OPTIONS.defaultCores || null,
-        defaultMemoryMB: DEFAULT_OPTIONS.defaultMemoryMB || null
+        toolTimeoutSeconds: s.toolTimeoutSeconds ?? Math.round(DEFAULT_OPTIONS.toolTimeoutMs / 1000),
+        engineTimeoutSeconds: s.engineTimeoutSeconds ?? Math.round(DEFAULT_OPTIONS.engineTimeoutMs / 1000),
+        maxRepeatTimes: s.maxRepeatTimes ?? DEFAULT_OPTIONS.maxRepeatTimes,
+        maxAttackLength: s.maxAttackLength ?? DEFAULT_OPTIONS.maxAttackLength,
+
+        toolCores: s.toolCores ?? (DEFAULT_OPTIONS.defaultCores || null),
+        toolMemory: s.toolMemory ?? (DEFAULT_OPTIONS.defaultMemoryMB || null),
+
+        engineCores: s.engineCores ?? (DEFAULT_OPTIONS.defaultCores || null),
+        engineMemory: s.engineMemory ?? (DEFAULT_OPTIONS.defaultMemoryMB || null),
+
+        matchMode: s.matchMode ?? 0,
+        repeatOverride: s.repeatOverride ?? null
       }
     });
+  });
+
+  app.post('/api/settings', (req, res) => {
+    const updated = saveSettings(req.body);
+    res.json({ status: 'ok', settings: updated });
   });
 
   app.get('/api/history', async (req, res) => {

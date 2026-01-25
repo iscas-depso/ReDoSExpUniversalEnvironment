@@ -8,8 +8,8 @@ const ENGINES_ROOT = path.join(PROJECT_ROOT, 'engines');
 const PYTHON_BIN = process.env.PYTHON_BIN || 'python3';
 
 const DEFAULT_OPTIONS = {
-  toolTimeoutMs: Number(process.env.TOOL_TIMEOUT_MS) || 10 * 60 * 1000,
-  engineTimeoutMs: Number(process.env.ENGINE_TIMEOUT_MS) || 2 * 60 * 1000,
+  toolTimeoutMs: Number(process.env.TOOL_TIMEOUT_MS) || 60 * 1000,
+  engineTimeoutMs: Number(process.env.ENGINE_TIMEOUT_MS) || 10 * 1000,
   maxRepeatTimes: Number(process.env.MAX_REPEAT_TIMES) || 8192,
   maxAttackLength: Number(process.env.MAX_ATTACK_LENGTH) || 500_000,
   // Optional resource defaults (undefined => no explicit limit)

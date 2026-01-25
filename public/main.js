@@ -74,18 +74,7 @@
     }
   }
 
-  async function loadMeta() {
-    const res = await fetch('/api/meta');
-    if (!res.ok) throw new Error('meta HTTP ' + res.status);
-    const data = await res.json();
-    state.meta = data;
-    populateTools(data.tools || []);
-    populateEngines(data.engines || []);
-    populateMatchModes(data.matchModes || []);
-    if (E.maxAttackLength && data.defaults && data.defaults.maxAttackLength) {
-      E.maxAttackLength.value = data.defaults.maxAttackLength;
-    }
-  }
+
 
   function populateTools(tools) {
     E.toolsList.innerHTML = '';
@@ -146,6 +135,7 @@
   }
 
   function bindUI() {
+    // ... existing bindUI logic
     if (E.toolsSelectAll) E.toolsSelectAll.addEventListener('click', () => toggleAll('tools', true));
     if (E.toolsClear) E.toolsClear.addEventListener('click', () => toggleAll('tools', false));
     if (E.enginesSelectAll) E.enginesSelectAll.addEventListener('click', () => toggleAll('engines', true));
@@ -198,6 +188,46 @@
     if (E.historyDialog) E.historyDialog.addEventListener('click', (e) => {
       if (e.target === E.historyDialog) E.historyDialog.close();
     });
+
+    // Auto-save settings listeners
+    const settingsInputs = [
+      E.toolsTimeout, E.toolsCores, E.toolsMemory,
+      E.enginesTimeout, E.enginesCores, E.enginesMemory,
+      E.matchMode, E.repeatOverride, E.maxAttackLength
+    ];
+    settingsInputs.forEach(el => {
+      if (el) el.addEventListener('change', saveSettings);
+    });
+  }
+
+  // New saveSettings function
+  async function saveSettings() {
+    const payload = {
+      toolTimeoutSeconds: num(E.toolsTimeout?.value),
+      toolCores: num(E.toolsCores?.value),
+      toolMemory: num(E.toolsMemory?.value),
+      engineTimeoutSeconds: num(E.enginesTimeout?.value),
+      engineCores: num(E.enginesCores?.value),
+      engineMemory: num(E.enginesMemory?.value),
+      matchMode: Number(E.matchMode?.value || 0),
+      repeatOverride: num(E.repeatOverride?.value),
+      maxAttackLength: num(E.maxAttackLength?.value)
+    };
+    // Send even if null/undefined to clear settings if needed (though num() filters to undefined)
+    // Actually, we want to respect the user's intent. If they clear it, it should probably be null.
+    // However, our backend checks for ??, so undefined means "use default".
+    // If we want to explicitly save "empty", we might need null.
+    // For now, let's just send what we have. API expects partial updates.
+
+    try {
+      await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    } catch (e) {
+      console.error('Failed to save settings', e);
+    }
   }
 
   function switchInputMode(mode) {
@@ -213,6 +243,34 @@
     if (E.manualInputJson) E.manualInputJson.style.display = mode === 'json' ? 'block' : 'none';
     renderAttackSummary();
     updateButtons();
+  }
+
+  // ... (toggleAll, updateButtons ...) 
+
+  async function loadMeta() {
+    const res = await fetch('/api/meta');
+    if (!res.ok) throw new Error('meta HTTP ' + res.status);
+    const data = await res.json();
+    state.meta = data;
+    populateTools(data.tools || []);
+    populateEngines(data.engines || []);
+    populateMatchModes(data.matchModes || []);
+
+    // Populate defaults
+    if (data.defaults) {
+      const d = data.defaults;
+      if (E.toolsTimeout) E.toolsTimeout.value = d.toolTimeoutSeconds || '';
+      if (E.toolsCores) E.toolsCores.value = d.toolCores || '';
+      if (E.toolsMemory) E.toolsMemory.value = d.toolMemory || '';
+
+      if (E.enginesTimeout) E.enginesTimeout.value = d.engineTimeoutSeconds || '';
+      if (E.enginesCores) E.enginesCores.value = d.engineCores || '';
+      if (E.enginesMemory) E.enginesMemory.value = d.engineMemory || '';
+
+      if (E.matchMode) E.matchMode.value = d.matchMode ?? 0;
+      if (E.repeatOverride) E.repeatOverride.value = d.repeatOverride || '';
+      if (E.maxAttackLength) E.maxAttackLength.value = d.maxAttackLength || '';
+    }
   }
 
   function toggleAll(type, checked) {
