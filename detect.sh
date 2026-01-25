@@ -59,6 +59,7 @@ for engine in "${ENGINES[@]}"; do
                 --fullmatch \
                 --total-parts $PARTS \
                 --part-index $part \
+                --enable-cpu-monitor \
                 --cmd "/app/engines/${engine}/bin/benchmark" \
                 "${DATASETDIR}/results/1_expr_${toolsname}.json" \
                 >>$output_file
