@@ -339,6 +339,63 @@ button:disabled {
   overflow-wrap: anywhere;
   word-break: break-word;
   max-width: 100%;
+  margin: 0;
+}
+
+.collapsible-container {
+  position: relative;
+  background: rgba(15, 23, 42, 0.05);
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.collapsible-pre {
+  max-height: 150px;
+  overflow: hidden;
+  padding: 12px;
+  transition: max-height 0.3s ease;
+}
+
+.collapsible-pre.expanded {
+  max-height: 2000px;
+  /* Large enough to show content but still allow transition */
+  overflow-y: auto;
+}
+
+.collapsible-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 48px;
+  background: linear-gradient(transparent, #f1f5f9);
+  pointer-events: none;
+  transition: opacity 0.3s;
+  z-index: 1;
+}
+
+.expanded .collapsible-overlay {
+  opacity: 0;
+}
+
+.collapse-toggle {
+  display: block;
+  width: 100%;
+  padding: 6px;
+  font-size: 12px;
+  text-align: center;
+  background: #f1f5f9;
+  border-top: 1px solid #e2e8f0;
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.collapse-toggle:hover {
+  background: #e2e8f0;
 }
 
 .badge {
@@ -448,6 +505,10 @@ button:disabled {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
+}
+
+#base64-panel {
+  grid-column: 1 / -1;
 }
 
 .page-footer {

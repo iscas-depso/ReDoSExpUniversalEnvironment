@@ -47,7 +47,14 @@
     attackSuffix: el('attack-suffix'),
     modeJson: el('mode-json'),
     manualInputJson: el('manual-input-json'),
-    attackJsonText: el('attack-json-text')
+    attackJsonText: el('attack-json-text'),
+    base64Input: el('base64-input'),
+    base64Output: el('base64-output'),
+    base64Encode: el('base64-encode'),
+    base64Decode: el('base64-decode'),
+    base64Clear: el('base64-clear'),
+    base64Copy: el('base64-copy'),
+    base64Ascii: el('base64-ascii')
   };
 
   document.addEventListener('DOMContentLoaded', init);
@@ -151,6 +158,34 @@
     if (E.attackPrefix) E.attackPrefix.addEventListener('input', updateButtons);
     if (E.attackSuffix) E.attackSuffix.addEventListener('input', updateButtons);
     if (E.attackJsonText) E.attackJsonText.addEventListener('input', updateButtons);
+    if (E.base64Encode) E.base64Encode.addEventListener('click', () => {
+      if (!E.base64Input || !E.base64Output) return;
+      let val = E.base64Input.value;
+      if (E.base64Ascii && E.base64Ascii.checked) {
+        val = escapeToAscii(val);
+      }
+      E.base64Output.value = toBase64(val);
+    });
+    if (E.base64Decode) E.base64Decode.addEventListener('click', () => {
+      if (!E.base64Input || !E.base64Output) return;
+      let res = fromBase64(E.base64Input.value);
+      if (E.base64Ascii && E.base64Ascii.checked) {
+        res = escapeToAscii(res);
+      }
+      E.base64Output.value = res;
+    });
+    if (E.base64Clear) E.base64Clear.addEventListener('click', () => {
+      if (E.base64Input) E.base64Input.value = '';
+      if (E.base64Output) E.base64Output.value = '';
+    });
+    if (E.base64Copy) E.base64Copy.addEventListener('click', () => {
+      if (E.base64Output && E.base64Output.value) {
+        navigator.clipboard.writeText(E.base64Output.value);
+        const originalText = E.base64Copy.textContent;
+        E.base64Copy.textContent = '已复制';
+        setTimeout(() => E.base64Copy.textContent = originalText, 2000);
+      }
+    });
   }
 
   function switchInputMode(mode) {
@@ -214,6 +249,16 @@
     } catch {
       try { return atob(b64); } catch { return b64; }
     }
+  }
+
+  function escapeToAscii(str) {
+    return str.split('').map(c => {
+      const code = c.charCodeAt(0);
+      if (code > 127) {
+        return '\\u' + code.toString(16).padStart(4, '0');
+      }
+      return c;
+    }).join('');
   }
 
   function buildAttackPayload() {
@@ -383,9 +428,9 @@
       card.appendChild(header);
       const body = document.createElement('div'); body.className = 'result-body';
       if (r.error && r.error.message) {
-        const pre = document.createElement('pre'); pre.textContent = r.error.message; body.appendChild(pre);
+        body.appendChild(createCollapsiblePre(r.error.message));
       } else if (r.output) {
-        const pre = document.createElement('pre'); pre.textContent = JSON.stringify(r.output, null, 2); body.appendChild(pre);
+        body.appendChild(createCollapsiblePre(JSON.stringify(r.output, null, 2)));
         const attackObj = Array.isArray(r.output) ? (r.output.find(x => x.is_redos) || r.output[0]) : r.output;
         if (attackObj && typeof attackObj === 'object' && ('prefix' in attackObj || 'infix' in attackObj || 'suffix' in attackObj)) {
           const decodedBox = document.createElement('div'); decodedBox.className = 'decoded-box';
@@ -465,9 +510,9 @@
       body.appendChild(meta);
 
       if (r.error && r.error.message) {
-        const err = document.createElement('pre'); err.textContent = r.error.message; body.appendChild(err);
-        if (r.error.stdout) { const pre = document.createElement('pre'); pre.textContent = r.error.stdout; body.appendChild(pre); }
-        if (r.error.stderr) { const pre = document.createElement('pre'); pre.textContent = r.error.stderr; body.appendChild(pre); }
+        body.appendChild(createCollapsiblePre(r.error.message));
+        if (r.error.stdout) { body.appendChild(createCollapsiblePre(r.error.stdout)); }
+        if (r.error.stderr) { body.appendChild(createCollapsiblePre(r.error.stderr)); }
       } else if (r.output) {
         const out = Array.isArray(r.output) ? r.output[0] : r.output;
         const mc = (out && typeof out.match_count === 'number') ? out.match_count : null;
@@ -479,7 +524,9 @@
       if (Array.isArray(r.logs) && r.logs.length > 0) {
         const logsBox = document.createElement('details');
         const sum = document.createElement('summary'); sum.textContent = '查看日志'; logsBox.appendChild(sum);
-        r.logs.forEach(l => { const pre = document.createElement('pre'); pre.textContent = `${l.stream || 'log'}:\n${l.content || ''}`; logsBox.appendChild(pre); });
+        r.logs.forEach(l => {
+          logsBox.appendChild(createCollapsiblePre(`${l.stream || 'log'}:\n${l.content || ''}`));
+        });
         body.appendChild(logsBox);
       }
 
@@ -496,6 +543,52 @@
     if (v < 60_000) return `${(v / 1000).toFixed(2)} s`;
     const m = Math.floor(v / 60_000); const s = ((v % 60_000) / 1000).toFixed(1);
     return `${m} min ${s}s`;
+  }
+
+  function createCollapsiblePre(text, maxHeight = 150) {
+    const container = document.createElement('div');
+    container.className = 'collapsible-container';
+
+    const pre = document.createElement('pre');
+    pre.className = 'collapsible-pre';
+    pre.textContent = text;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'collapsible-overlay';
+
+    const toggle = document.createElement('div');
+    toggle.className = 'collapse-toggle';
+    toggle.textContent = '展开全文';
+
+    container.appendChild(pre);
+    container.appendChild(overlay);
+    container.appendChild(toggle);
+
+    // Only show toggle if content is likely to overflow
+    // We can't easily check scrollHeight before adding to DOM, 
+    // but we can estimate or check after a short delay.
+    setTimeout(() => {
+      if (pre.scrollHeight <= maxHeight + 20) {
+        overlay.style.display = 'none';
+        toggle.style.display = 'none';
+        pre.style.maxHeight = 'none';
+      }
+    }, 0);
+
+    toggle.addEventListener('click', () => {
+      const isExpanded = pre.classList.contains('expanded');
+      if (isExpanded) {
+        pre.classList.remove('expanded');
+        toggle.textContent = '展开全文';
+        container.classList.remove('expanded');
+      } else {
+        pre.classList.add('expanded');
+        toggle.textContent = '收起全文';
+        container.classList.add('expanded');
+      }
+    });
+
+    return container;
   }
 
   function renderAttackSummary() {

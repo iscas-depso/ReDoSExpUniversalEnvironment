@@ -66,6 +66,35 @@
     </div>
   </header>
   <main class="layout">
+    <section class="panel" id="base64-panel">
+      <div class="panel-header">
+        <h2>辅助工具：Base64 转换</h2>
+        <p>快速对文本进行 Base64 编码或从 Base64 解码，方便查看结果或构造 Payload。</p>
+      </div>
+      <div class="form-group">
+        <label for="base64-input">输入内容</label>
+        <textarea id="base64-input" placeholder="输入原始文本以编码，或输入 Base64 字符串以解码..." rows="4"></textarea>
+      </div>
+      <div class="form-group" style="flex-direction: row; align-items: center; gap: 8px; margin-bottom: 8px;">
+        <input type="checkbox" id="base64-ascii" style="width: auto; margin: 0;">
+        <label for="base64-ascii" style="font-weight: normal; font-size: 14px; cursor: pointer;">强制纯 ASCII 模式 (Unicode 转
+          \uXXXX)</label>
+      </div>
+      <div class="panel-actions" style="justify-content: flex-start; gap: 12px;">
+        <button id="base64-encode" class="primary">进行编码 (Encode)</button>
+        <button id="base64-decode" class="ghost">进行解码 (Decode)</button>
+        <button id="base64-clear" class="ghost">清空</button>
+      </div>
+      <div class="form-group">
+        <label for="base64-output">转换结果</label>
+        <div style="position: relative;">
+          <textarea id="base64-output" placeholder="结果将显示在这里..." rows="4" readonly></textarea>
+          <button id="base64-copy" class="small ghost"
+            style="position: absolute; right: 8px; top: 8px; border-radius: 6px; padding: 4px 8px;">复制</button>
+        </div>
+      </div>
+    </section>
+
     <section class="panel" id="tools-panel">
       <div class="panel-header">
         <h2>第一阶段：检测工具</h2>

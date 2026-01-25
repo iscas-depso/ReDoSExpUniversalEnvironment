@@ -12,6 +12,8 @@ import os
 import base64
 from pathlib import Path
 
+SUFFIX = "\uffff\n\u0000🦄"
+
 
 def main():
     if len(sys.argv) < 3:
@@ -129,9 +131,7 @@ def convert_java_output_to_contract(java_output, elapsed_ms):
         infix_b64 = base64.b64encode(
             java_output.get("infix", "").encode("utf-8")
         ).decode("utf-8")
-        suffix_b64 = base64.b64encode("\uffff\u0000🦄\n".encode("utf-8")).decode(
-            "utf-8"
-        )
+        suffix_b64 = base64.b64encode(SUFFIX.encode("utf-8")).decode("utf-8")
         if java_output.get("vulnerability") == "Polynomial":
             repeat_times = 500000
         else:
