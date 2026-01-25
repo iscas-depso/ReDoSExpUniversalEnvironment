@@ -62,6 +62,7 @@ const state = {
     historyList: el('history-list'),
     regexQuickActions: el('regex-quick-actions'),
     regexPreviewContent: el('regex-preview-content'),
+    enableHighlight: el('enable-regex-highlight'),
     copyRegexBtn: el('copy-regex-btn'),
     copyB64Btn: el('copy-b64-btn')
   };
@@ -155,6 +156,7 @@ const state = {
     if (E.enginesSelectAll) E.enginesSelectAll.addEventListener('click', () => toggleAll('engines', true));
     if (E.enginesClear) E.enginesClear.addEventListener('click', () => toggleAll('engines', false));
     if (E.regex) E.regex.addEventListener('input', updateButtons);
+    if (E.enableHighlight) E.enableHighlight.addEventListener('change', updateButtons);
     bindQuickActions(); // Call binding logic
     if (E.runTools) E.runTools.addEventListener('click', onRunTools);
     if (E.runEngines) E.runEngines.addEventListener('click', onRunEngines);
@@ -340,7 +342,11 @@ const state = {
         E.regexQuickActions.style.display = 'flex'; // Flex to align items
         const parsedPattern = extractRegexPattern(regexVal);
         try {
-          E.regexPreviewContent.innerHTML = colorizePattern(parsedPattern);
+          if (E.enableHighlight && E.enableHighlight.checked) {
+            E.regexPreviewContent.innerHTML = colorizePattern(parsedPattern);
+          } else {
+            E.regexPreviewContent.textContent = parsedPattern;
+          }
         } catch (e) {
           E.regexPreviewContent.textContent = parsedPattern;
         }

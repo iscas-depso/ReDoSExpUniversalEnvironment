@@ -149,6 +149,11 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
           <label for="regex-input" style="margin-bottom: 0;">目标正则表达式</label>
           <div style="display: flex; gap: 8px; align-items: center;">
+            <label class="toggle-switch">
+              <input type="checkbox" id="enable-regex-highlight" checked>
+              <span class="slider"></span>
+              <span class="label-text">语法高亮</span>
+            </label>
             <button type="button" id="copy-regex-btn" class="ghost small" style="display:none">📋 复制正则</button>
             <button type="button" id="copy-b64-btn" class="ghost small" style="display:none">📋 复制 Base64</button>
             <button id="show-history" class="ghost small" type="button">📜 历史记录</button>
