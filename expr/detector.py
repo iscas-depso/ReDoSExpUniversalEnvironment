@@ -327,8 +327,11 @@ def run_command(args):
             tmp_input_path.unlink(missing_ok=True)
 
 
-def process_file(filename):
-    print(f"=== Processing file: {filename} ===", file=sys.stderr)
+def process_file(filename, total_parts=1, part_index=0):
+    print(
+        f"=== Processing file: {filename} (Part {part_index+1}/{total_parts}) ===",
+        file=sys.stderr,
+    )
 
     try:
         with open(filename, "r") as f:
@@ -344,12 +347,28 @@ def process_file(filename):
             data = json.loads(s)
             all_commands.append((data["file"], s, data["line"]))
 
+    # Slice the commands according to total_parts and part_index
+    total_count = len(all_commands)
+    if total_parts > 1:
+        chunk_size = (total_count + total_parts - 1) // total_parts
+        start_idx = part_index * chunk_size
+        end_idx = min(start_idx + chunk_size, total_count)
+        all_commands = all_commands[start_idx:end_idx]
+        print(
+            f"Slicing: processing index {start_idx} to {end_idx} (Total in this part: {len(all_commands)})",
+            file=sys.stderr,
+        )
+
+    if not all_commands:
+        print(f"No commands to process for part {part_index}", file=sys.stderr)
+        return
+
     # print(all_commands)
     with NoDaemonPool(processes=CPU_COUNT) as pool:
         for _ in tqdm(
             pool.imap_unordered(run_command, all_commands),
             total=len(all_commands),
-            desc=f"Processing {filename}",
+            desc=f"Processing {filename} (Part {part_index+1}/{total_parts})",
         ):
             pass
 
@@ -381,6 +400,18 @@ def main():
     parser.add_argument(
         "--enable-cpu-monitor", action="store_true", help="Enable CPU monitor"
     )
+    parser.add_argument(
+        "--total-parts",
+        type=int,
+        default=1,
+        help="Total number of parts to split the input into (default: 1)",
+    )
+    parser.add_argument(
+        "--part-index",
+        type=int,
+        default=0,
+        help="The current part index to process (0-based, default: 0)",
+    )
 
     args = parser.parse_args()
 
@@ -397,7 +428,7 @@ def main():
     init_cpu_pool()
 
     for filename in args.files:
-        process_file(filename)
+        process_file(filename, total_parts=args.total_parts, part_index=args.part_index)
 
 
 if __name__ == "__main__":

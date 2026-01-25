@@ -33,29 +33,38 @@ fi
 
 IMAGE="redos-test"
 DATASETDIR="/app/expr"
+PARTS=20
+
+
 for engine in "${ENGINES[@]}"; do
     for toolsname in "${TOOLS[@]}"; do
-    echo "========================================"
-    echo "Running ${engine}_${toolsname}"
-    echo "========================================"
+        echo "========================================"
+        echo "Running ${engine}_${toolsname}"
+        echo "========================================"
+        output_file="./expr/results/${engine}/1_detect_${toolsname}.json"
+        : > $output_file
+        
+        for ((part=0; part<PARTS; part++)); do
+            docker run --rm --privileged \
+                "${EXTRA_DOCKER_ARGS[@]}" \
+                --tmpfs /tmp:rw \
+                -v ./expr:/app/expr \
+                "${IMAGE}" \
+                python3 /app/expr/detector.py \
+                --runexec \
+                --timeout 5 \
+                --cpus 30 \
+                --memlimit 10240 \
+                --attack-size 100 \
+                --fullmatch \
+                --total-parts $PARTS \
+                --part-index $part \
+                --cmd "/app/engines/${engine}/bin/benchmark" \
+                "${DATASETDIR}/results/1_expr_${toolsname}.json" \
+                >>$output_file
+        done
 
-    docker run --rm --privileged \
-        "${EXTRA_DOCKER_ARGS[@]}" \
-        --tmpfs /tmp:rw \
-        -v ./expr:/app/expr \
-        "${IMAGE}" \
-        python3 /app/expr/detector.py \
-        --runexec \
-        --timeout 5 \
-        --cpus 30 \
-        --memlimit 10240 \
-        --attack-size 100 \
-        --fullmatch \
-        --cmd "/app/engines/${engine}/bin/benchmark" \
-        "${DATASETDIR}/results/1_expr_${toolsname}.json" \
-        > "./expr/results/${engine}/1_detect_${toolsname}.json"
-
-    echo "Finished: ${engine}_${toolsname}"
+        echo "Finished: ${engine}_${toolsname}"
     done
 done
 
