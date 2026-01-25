@@ -602,7 +602,28 @@
                 const div = document.createElement('div'); div.className = 'decoded-item';
                 const strong = document.createElement('strong'); strong.textContent = item.label;
                 const code = document.createElement('code');
-                code.textContent = item.value ? fromBase64(item.value) : '(空)';
+
+                if (!item.value) {
+                  code.textContent = '(空)';
+                } else {
+                  const raw = fromBase64(item.value);
+                  const escaped = escapeToAscii(raw);
+                  code.textContent = raw;
+                  code.title = escaped; // Tooltip shows full escaped string
+
+                  // Hover to show escaped characters
+                  div.addEventListener('mouseenter', () => {
+                    code.textContent = escaped;
+                    code.style.color = 'var(--accent)';
+                    code.style.backgroundColor = 'rgba(37, 99, 235, 0.1)';
+                  });
+                  div.addEventListener('mouseleave', () => {
+                    code.textContent = raw;
+                    code.style.color = '';
+                    code.style.backgroundColor = '';
+                  });
+                }
+
                 div.appendChild(strong); div.appendChild(code);
                 decodedBox.appendChild(div);
               });
