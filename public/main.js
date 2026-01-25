@@ -537,13 +537,13 @@
                 decodedBox.appendChild(div);
               }
 
-              // Verify Button
-              const verifyBtn = document.createElement('button');
-              verifyBtn.className = 'badge';
-              verifyBtn.style.marginTop = '8px';
-              verifyBtn.style.cursor = 'pointer';
-              verifyBtn.innerHTML = '▶ Use This';
-              verifyBtn.addEventListener('click', (e) => {
+              // Make the whole box clickable for verification
+              decodedBox.title = '点击使用此 Payload 进行验证';
+              decodedBox.addEventListener('click', (e) => {
+                // If user is selecting text, do not trigger
+                const sel = window.getSelection();
+                if (sel && sel.toString().length > 0) return;
+
                 e.stopPropagation();
                 state.attackSelection = { attack: atk, toolId: r.id, toolLabel: r.label || r.id, jobId: job.id };
                 switchInputMode('tool');
@@ -553,7 +553,6 @@
                 const panel = document.getElementById('engines-panel');
                 if (panel) panel.scrollIntoView({ behavior: 'smooth' });
               });
-              decodedBox.appendChild(verifyBtn);
 
               container.appendChild(decodedBox);
               return container;

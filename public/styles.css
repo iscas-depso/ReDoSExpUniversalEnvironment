@@ -601,6 +601,39 @@ button:disabled {
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.decoded-box:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+  background: linear-gradient(to bottom right, #fff, rgba(37, 99, 235, 0.02));
+}
+
+.decoded-box:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+.decoded-box::after {
+  content: "▶ Use This";
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+.decoded-box:hover::after {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .decoded-item {
