@@ -12,7 +12,7 @@ import os
 import base64
 from pathlib import Path
 
-SUFFIX = "\uffff\n\u0000🦄"
+SUFFIX = "\uffff\u0000🦄\n🐶\u0000\uffff"
 
 
 def main():
@@ -40,7 +40,7 @@ def main():
         # Record start time
         start_time = time.time()
 
-        cmds = [str(exec_path), "-a"]
+        cmds = [str(exec_path), "-at"]
         if cpu_core:
             cmds = ["taskset", "-c", str(cpu_core), *cmds]
 

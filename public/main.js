@@ -416,6 +416,7 @@
       const bOrder = statusOrder[b.status] ?? 1;
       return aOrder - bOrder;
     });
+
     sorted.forEach(r => {
       const card = document.createElement('div'); card.className = 'result-card';
 
@@ -423,7 +424,16 @@
       const attackObj = Array.isArray(r.output) ? (r.output.find(x => x.is_redos) || r.output[0]) : r.output;
       const canVerify = attackObj && typeof attackObj === 'object' && ('prefix' in attackObj || 'infix' in attackObj || 'suffix' in attackObj);
 
-      if (redosValue === true) card.classList.add('redos-highlight');
+      // Check if this result is currently selected (locked)
+      const isLocked = state.attackSelection &&
+        state.attackSelection.toolId === r.id &&
+        state.attackSelection.jobId === job.id;
+
+      if (isLocked) {
+        card.classList.add('locked-selection');
+      } else if (redosValue === true) {
+        card.classList.add('redos-highlight');
+      }
 
       const header = document.createElement('div'); header.className = 'result-header';
       const title = document.createElement('span'); title.className = 'result-title'; title.textContent = r.label || r.id;
@@ -433,18 +443,26 @@
       if (typeof redosValue === 'boolean') {
         if (canVerify) {
           const btn = document.createElement('button');
-          btn.className = redosValue ? 'badge badge-redos-true' : 'badge badge-redos-false';
-          btn.style.cursor = 'pointer';
-          btn.innerHTML = (redosValue ? 'ReDoS' : 'Safe') + ' &nbsp;▶ 验证';
-          btn.title = '点击使用此 Payload 进行验证';
-          btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            state.attackSelection = { attack: attackObj, toolId: r.id, toolLabel: r.label || r.id, jobId: job.id };
-            switchInputMode('tool');
-            renderAttackSummary(); updateButtons();
-            const panel = document.getElementById('engines-panel');
-            if (panel) panel.scrollIntoView({ behavior: 'smooth' });
-          });
+          if (isLocked) {
+            btn.className = 'badge badge-locked';
+            btn.innerHTML = '已锁定 (Current)';
+            btn.title = '当前正在使用此工具的结果进行验证';
+          } else {
+            btn.className = redosValue ? 'badge badge-redos-true' : 'badge badge-redos-false';
+            btn.style.cursor = 'pointer';
+            btn.innerHTML = (redosValue ? 'ReDoS' : 'Safe') + ' &nbsp;▶ 验证';
+            btn.title = '点击使用此 Payload 进行验证';
+            btn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              state.attackSelection = { attack: attackObj, toolId: r.id, toolLabel: r.label || r.id, jobId: job.id };
+              switchInputMode('tool');
+              renderAttackSummary();
+              updateButtons();
+              renderToolResults(); // Re-render to update locked state
+              const panel = document.getElementById('engines-panel');
+              if (panel) panel.scrollIntoView({ behavior: 'smooth' });
+            });
+          }
           header.appendChild(btn);
         } else {
           const span = document.createElement('span');

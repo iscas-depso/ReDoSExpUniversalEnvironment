@@ -693,3 +693,17 @@ details.advanced-settings .form-grid {
   padding: 0;
   margin: 0;
 }
+
+.result-card.locked-selection {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2) !important;
+  background: white !important;
+}
+
+.badge-locked {
+  background: var(--text-primary);
+  color: #fff;
+  cursor: default !important;
+  position: relative;
+  border: 2px solid var(--text-primary);
+}
