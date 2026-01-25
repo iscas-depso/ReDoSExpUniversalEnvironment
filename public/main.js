@@ -418,27 +418,50 @@
     });
     sorted.forEach(r => {
       const card = document.createElement('div'); card.className = 'result-card';
-      const isRedos = Array.isArray(r.output) ? r.output.some(x => x.is_redos) : r.output?.is_redos === true;
-      if (isRedos) card.classList.add('redos-highlight');
+
+      const redosValue = Array.isArray(r.output) ? r.output.some(x => x.is_redos) : r.output?.is_redos;
+      const attackObj = Array.isArray(r.output) ? (r.output.find(x => x.is_redos) || r.output[0]) : r.output;
+      const canVerify = attackObj && typeof attackObj === 'object' && ('prefix' in attackObj || 'infix' in attackObj || 'suffix' in attackObj);
+
+      if (redosValue === true) card.classList.add('redos-highlight');
+
       const header = document.createElement('div'); header.className = 'result-header';
       const title = document.createElement('span'); title.className = 'result-title'; title.textContent = r.label || r.id;
       const badge = document.createElement('span'); badge.className = 'badge badge-status status-' + r.status; badge.textContent = r.status;
       header.appendChild(title); header.appendChild(badge);
-      const redosValue = Array.isArray(r.output) ? r.output.some(x => x.is_redos) : r.output?.is_redos;
+
       if (typeof redosValue === 'boolean') {
-        const redosBadge = document.createElement('span');
-        redosBadge.className = redosValue ? 'badge badge-redos-true' : 'badge badge-redos-false';
-        redosBadge.textContent = redosValue ? 'ReDoS' : 'Safe';
-        header.appendChild(redosBadge);
+        if (canVerify) {
+          const btn = document.createElement('button');
+          btn.className = redosValue ? 'badge badge-redos-true' : 'badge badge-redos-false';
+          btn.style.cursor = 'pointer';
+          btn.innerHTML = (redosValue ? 'ReDoS' : 'Safe') + ' &nbsp;▶ 验证';
+          btn.title = '点击使用此 Payload 进行验证';
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            state.attackSelection = { attack: attackObj, toolId: r.id, toolLabel: r.label || r.id, jobId: job.id };
+            switchInputMode('tool');
+            renderAttackSummary(); updateButtons();
+            const panel = document.getElementById('engines-panel');
+            if (panel) panel.scrollIntoView({ behavior: 'smooth' });
+          });
+          header.appendChild(btn);
+        } else {
+          const span = document.createElement('span');
+          span.className = redosValue ? 'badge badge-redos-true' : 'badge badge-redos-false';
+          span.textContent = redosValue ? 'ReDoS' : 'Safe';
+          header.appendChild(span);
+        }
       }
       card.appendChild(header);
+
       const body = document.createElement('div'); body.className = 'result-body';
       if (r.error && r.error.message) {
         body.appendChild(createCollapsiblePre(r.error.message));
       } else if (r.output) {
         body.appendChild(createCollapsiblePre(JSON.stringify(r.output, null, 2)));
-        const attackObj = Array.isArray(r.output) ? (r.output.find(x => x.is_redos) || r.output[0]) : r.output;
-        if (attackObj && typeof attackObj === 'object' && ('prefix' in attackObj || 'infix' in attackObj || 'suffix' in attackObj)) {
+
+        if (canVerify) {
           const decodedBox = document.createElement('div'); decodedBox.className = 'decoded-box';
           const items = [
             { label: 'Prefix', value: attackObj.prefix },
@@ -461,13 +484,6 @@
             decodedBox.appendChild(div);
           }
           body.appendChild(decodedBox);
-          const btn = document.createElement('button'); btn.textContent = '用于验证'; btn.className = 'small';
-          btn.addEventListener('click', () => {
-            state.attackSelection = { attack: attackObj, toolId: r.id, toolLabel: r.label || r.id, jobId: job.id };
-            switchInputMode('tool');
-            renderAttackSummary(); updateButtons();
-          });
-          body.appendChild(btn);
         }
       } else {
         const em = document.createElement('em'); em.textContent = '无输出'; body.appendChild(em);
