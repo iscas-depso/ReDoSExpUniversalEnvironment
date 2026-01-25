@@ -516,6 +516,25 @@
 
               // Box
               const decodedBox = document.createElement('div'); decodedBox.className = 'decoded-box';
+
+              // Copy Button
+              const copyBtn = document.createElement('div');
+              copyBtn.className = 'decoded-copy-btn';
+              copyBtn.innerHTML = '📋 Copy JSON';
+              copyBtn.title = '复制原始 JSON';
+              copyBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(JSON.stringify(atk, null, 2));
+                const original = copyBtn.innerHTML;
+                copyBtn.innerHTML = '✅ Copied!';
+                copyBtn.style.color = 'var(--success)'; // Use CSS variable
+                setTimeout(() => {
+                  copyBtn.innerHTML = original;
+                  copyBtn.style.color = '';
+                }, 2000);
+              });
+              decodedBox.appendChild(copyBtn);
+
               const items = [
                 { label: 'Prefix', value: atk.prefix },
                 { label: 'Infix', value: atk.infix },
