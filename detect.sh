@@ -4,25 +4,25 @@ set -euo pipefail
 
 # 工具名列表（按顺序执行）
 TOOLS=(
-  recheck
-  ere
-  redoshunter
-  rengar
-  rescue
-  regexploit
-  regexstatic
+    ere
+    recheck
+#   redoshunter
+#   rengar
+#   rescue
+#   regexploit
+#   regexstatic
 #   regulator
 )
 
 # 引擎名列表
 ENGINES=(
-    c
-    perl
-    csharp
+    # c
+    # perl
+    # csharp
     java11
-    python
-    nodejs14
-    java8
+    # python
+    # nodejs14
+    # java8
 )
 
 
@@ -47,13 +47,13 @@ for engine in "${ENGINES[@]}"; do
         python3 /app/expr/detector.py \
         --runexec \
         --timeout 5 \
-        --cpus 64 \
+        --cpus 30 \
         --memlimit 10240 \
         --attack-size 100 \
         --fullmatch \
         --cmd "/app/engines/${engine}/bin/benchmark" \
-        "${DATASETDIR}/1_expr_${toolsname}.json" \
-        > "./expr/1_detect_${engine}_${toolsname}.json"
+        "${DATASETDIR}/results/1_expr_${toolsname}.json" \
+        > "./expr/results/${engine}/1_detect_${toolsname}.json"
 
     echo "Finished: ${engine}_${toolsname}"
     done

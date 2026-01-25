@@ -40,6 +40,8 @@ _cpu_usage = multiprocessing.Array(
     "f", os.cpu_count() or 1
 )  # Supporting up to 512 cores
 
+memory_shortage = False
+
 
 def _monitor_resources():
     """Background thread to update resource usage metrics periodically."""
@@ -49,13 +51,19 @@ def _monitor_resources():
         try:
             # Update memory usage (relatively fast)
             _mem_usage.value = psutil.virtual_memory().percent
+            if not memory_shortage and _mem_usage.value >= 80:
+                memory_shortage = True
+                print("Memory shortage detected!")
+            elif memory_shortage and _mem_usage.value < 80:
+                memory_shortage = False
+                print("Memory shortage cleared!")
 
             # Update CPU usage for all cores (slow because of interval)
             # This blocking call happens once for all processes to share
-            usages = psutil.cpu_percent(interval=0.5, percpu=True)
-            for i, usage in enumerate(usages):
-                if i < 512:
-                    _cpu_usage[i] = usage
+            # usages = psutil.cpu_percent(interval=0.5, percpu=True)
+            # for i, usage in enumerate(usages):
+            #     if i < 512:
+            #         _cpu_usage[i] = usage
         except Exception:
             # Prevent the monitor thread from dying on unexpected errors
             pass
