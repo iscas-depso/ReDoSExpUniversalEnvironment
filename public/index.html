@@ -111,30 +111,34 @@
           <div class="selection-actions">
             <button id="tools-select-all" type="button" class="ghost small">全选</button>
             <button id="tools-clear" type="button" class="ghost small">清空</button>
+            <button id="run-tools" class="primary small">运行所选工具</button>
           </div>
         </div>
         <div id="tools-list" class="checkbox-grid"></div>
       </div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label for="tools-timeout">运行时间 (秒)</label>
-          <input id="tools-timeout" type="number" min="1" placeholder="不限时" value="60">
-          <p class="help-text">不填则不限时。</p>
+      <details class="advanced-settings">
+        <summary>高级运行设置 (超时、核心、内存)</summary>
+        <div class="advanced-content">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="tools-timeout">运行时间 (秒)</label>
+              <input id="tools-timeout" type="number" min="1" placeholder="不限时" value="60">
+              <p class="help-text">不填则不限时。</p>
+            </div>
+            <div class="form-group">
+              <label for="tools-cores">核心数</label>
+              <input id="tools-cores" type="number" min="1" placeholder="不限" value="1">
+              <p class="help-text">仅指定使用几个核心，具体绑核由后端自动分配。</p>
+            </div>
+            <div class="form-group">
+              <label for="tools-memory">内存限制 (MB)</label>
+              <input id="tools-memory" type="number" min="1" placeholder="不限" value="4096">
+              <p class="help-text">不填则不限制内存。</p>
+            </div>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="tools-cores">核心数</label>
-          <input id="tools-cores" type="number" min="1" placeholder="不限" value="1">
-          <p class="help-text">仅指定使用几个核心，具体绑核由后端自动分配。</p>
-        </div>
-        <div class="form-group">
-          <label for="tools-memory">内存限制 (MB)</label>
-          <input id="tools-memory" type="number" min="1" placeholder="不限" value="4096">
-          <p class="help-text">不填则不限制内存。</p>
-        </div>
-      </div>
-      <div class="panel-actions">
-        <button id="run-tools" class="primary">运行所选工具</button>
-      </div>
+      </details>
+
       <div id="tool-job-status" class="job-status"></div>
       <div id="tool-results" class="results-container"></div>
     </section>
@@ -185,50 +189,54 @@
           style="width:100%; font-family: monospace;"></textarea>
         <p class="help-text">直接输入包含 prefix, infix, suffix, repeat_times 的 JSON。这些字段应已是 Base64 编码。</p>
       </div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label for="match-mode">匹配模式</label>
-          <select id="match-mode"></select>
+      <details class="advanced-settings">
+        <summary>高级验证设置 (匹配模式、超时、资源限制)</summary>
+        <div class="advanced-content">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="match-mode">匹配模式</label>
+              <select id="match-mode"></select>
+            </div>
+            <div class="form-group">
+              <label for="repeat-override">重复次数覆盖（可选）</label>
+              <input id="repeat-override" type="number" min="1" placeholder="使用工具推荐值">
+              <p class="help-text">若希望自定义重复次数，可在此输入正整数。</p>
+            </div>
+            <div class="form-group">
+              <label for="max-attack-length">最大攻击串长度</label>
+              <input id="max-attack-length" type="number" min="64">
+              <p class="help-text">防止生成过大的测试负载，默认值会在页面加载时填充。</p>
+            </div>
+            <div class="form-group">
+              <label for="engines-timeout">运行时间 (秒)</label>
+              <input id="engines-timeout" type="number" min="1" placeholder="不限时" value="10">
+              <p class="help-text">不填则不限时。</p>
+            </div>
+            <div class="form-group">
+              <label for="engines-cores">核心数</label>
+              <input id="engines-cores" type="number" min="1" placeholder="不限" value="1">
+              <p class="help-text">仅指定使用几个核心，具体绑核由后端自动分配。</p>
+            </div>
+            <div class="form-group">
+              <label for="engines-memory">内存限制 (MB)</label>
+              <input id="engines-memory" type="number" min="1" placeholder="不限" value="4096">
+              <p class="help-text">不填则不限制内存。</p>
+            </div>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="repeat-override">重复次数覆盖（可选）</label>
-          <input id="repeat-override" type="number" min="1" placeholder="使用工具推荐值">
-          <p class="help-text">若希望自定义重复次数，可在此输入正整数。</p>
-        </div>
-        <div class="form-group">
-          <label for="max-attack-length">最大攻击串长度</label>
-          <input id="max-attack-length" type="number" min="64">
-          <p class="help-text">防止生成过大的测试负载，默认值会在页面加载时填充。</p>
-        </div>
-        <div class="form-group">
-          <label for="engines-timeout">运行时间 (秒)</label>
-          <input id="engines-timeout" type="number" min="1" placeholder="不限时" value="10">
-          <p class="help-text">不填则不限时。</p>
-        </div>
-        <div class="form-group">
-          <label for="engines-cores">核心数</label>
-          <input id="engines-cores" type="number" min="1" placeholder="不限" value="1">
-          <p class="help-text">仅指定使用几个核心，具体绑核由后端自动分配。</p>
-        </div>
-        <div class="form-group">
-          <label for="engines-memory">内存限制 (MB)</label>
-          <input id="engines-memory" type="number" min="1" placeholder="不限" value="4096">
-          <p class="help-text">不填则不限制内存。</p>
-        </div>
-      </div>
+      </details>
       <div class="selection-group">
         <div class="selection-header">
           <h3>验证引擎</h3>
           <div class="selection-actions">
             <button id="engines-select-all" type="button" class="ghost small">全选</button>
             <button id="engines-clear" type="button" class="ghost small">清空</button>
+            <button id="run-engines" class="primary small" disabled>运行所选引擎</button>
           </div>
         </div>
         <div id="engines-list" class="checkbox-grid"></div>
       </div>
-      <div class="panel-actions">
-        <button id="run-engines" class="primary" disabled>运行所选引擎</button>
-      </div>
+
       <div id="engine-job-status" class="job-status"></div>
       <div id="engine-results" class="results-container"></div>
     </section>

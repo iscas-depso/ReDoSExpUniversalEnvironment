@@ -162,7 +162,7 @@
       if (!E.base64Input || !E.base64Output) return;
       let val = E.base64Input.value;
       if (E.base64Ascii && E.base64Ascii.checked) {
-        val = escapeToAscii(val);
+        val = unescapeUnicode(val); // 先解析输入中的 \uXXXX
       }
       E.base64Output.value = toBase64(val);
     });
@@ -251,10 +251,16 @@
     }
   }
 
+  function unescapeUnicode(str) {
+    return str.replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) => {
+      return String.fromCharCode(parseInt(hex, 16));
+    });
+  }
+
   function escapeToAscii(str) {
     return str.split('').map(c => {
       const code = c.charCodeAt(0);
-      if (code > 127) {
+      if (code < 32 || code >= 127) {
         return '\\u' + code.toString(16).padStart(4, '0');
       }
       return c;
@@ -556,13 +562,19 @@
     const overlay = document.createElement('div');
     overlay.className = 'collapsible-overlay';
 
-    const toggle = document.createElement('div');
-    toggle.className = 'collapse-toggle';
-    toggle.textContent = '展开全文';
+    const toggleTop = document.createElement('div');
+    toggleTop.className = 'collapse-toggle toggle-top';
+    toggleTop.textContent = '展开全文';
 
+    const toggleBottom = document.createElement('div');
+    toggleBottom.className = 'collapse-toggle toggle-bottom';
+    toggleBottom.textContent = '展开全文';
+    toggleBottom.style.display = 'none'; // Only show bottom toggle when expanded
+
+    container.appendChild(toggleTop);
     container.appendChild(pre);
     container.appendChild(overlay);
-    container.appendChild(toggle);
+    container.appendChild(toggleBottom);
 
     // Only show toggle if content is likely to overflow
     // We can't easily check scrollHeight before adding to DOM, 
@@ -570,23 +582,31 @@
     setTimeout(() => {
       if (pre.scrollHeight <= maxHeight + 20) {
         overlay.style.display = 'none';
-        toggle.style.display = 'none';
+        toggleTop.style.display = 'none';
+        toggleBottom.style.display = 'none';
         pre.style.maxHeight = 'none';
       }
     }, 0);
 
-    toggle.addEventListener('click', () => {
+    const toggleState = () => {
       const isExpanded = pre.classList.contains('expanded');
       if (isExpanded) {
         pre.classList.remove('expanded');
-        toggle.textContent = '展开全文';
+        toggleTop.textContent = '展开全文';
+        toggleBottom.textContent = '展开全文';
+        toggleBottom.style.display = 'none';
         container.classList.remove('expanded');
       } else {
         pre.classList.add('expanded');
-        toggle.textContent = '收起全文';
+        toggleTop.textContent = '收起全文';
+        toggleBottom.textContent = '收起全文';
+        toggleBottom.style.display = 'block';
         container.classList.add('expanded');
       }
-    });
+    };
+
+    toggleTop.addEventListener('click', toggleState);
+    toggleBottom.addEventListener('click', toggleState);
 
     return container;
   }
