@@ -44,7 +44,10 @@
     attackFullText: el('attack-full-text'),
     attackPrefix: el('attack-prefix'),
     attackInfix: el('attack-infix'),
-    attackSuffix: el('attack-suffix')
+    attackSuffix: el('attack-suffix'),
+    modeJson: el('mode-json'),
+    manualInputJson: el('manual-input-json'),
+    attackJsonText: el('attack-json-text')
   };
 
   document.addEventListener('DOMContentLoaded', init);
@@ -142,20 +145,26 @@
     if (E.modeTool) E.modeTool.addEventListener('click', () => switchInputMode('tool'));
     if (E.modeFull) E.modeFull.addEventListener('click', () => switchInputMode('full'));
     if (E.modePattern) E.modePattern.addEventListener('click', () => switchInputMode('pattern'));
+    if (E.modeJson) E.modeJson.addEventListener('click', () => switchInputMode('json'));
     if (E.attackFullText) E.attackFullText.addEventListener('input', updateButtons);
     if (E.attackInfix) E.attackInfix.addEventListener('input', updateButtons);
     if (E.attackPrefix) E.attackPrefix.addEventListener('input', updateButtons);
     if (E.attackSuffix) E.attackSuffix.addEventListener('input', updateButtons);
+    if (E.attackJsonText) E.attackJsonText.addEventListener('input', updateButtons);
   }
 
   function switchInputMode(mode) {
     state.attackInputMode = mode;
-    [E.modeTool, E.modeFull, E.modePattern].forEach(btn => btn?.classList.remove('active'));
+    [E.modeTool, E.modeFull, E.modePattern, E.modeJson].forEach(btn => btn?.classList.remove('active'));
     if (mode === 'tool') E.modeTool?.classList.add('active');
     else if (mode === 'full') E.modeFull?.classList.add('active');
     else if (mode === 'pattern') E.modePattern?.classList.add('active');
+    else if (mode === 'json') E.modeJson?.classList.add('active');
+
     if (E.manualInputFull) E.manualInputFull.style.display = mode === 'full' ? 'block' : 'none';
     if (E.manualInputPattern) E.manualInputPattern.style.display = mode === 'pattern' ? 'block' : 'none';
+    if (E.manualInputJson) E.manualInputJson.style.display = mode === 'json' ? 'block' : 'none';
+    renderAttackSummary();
     updateButtons();
   }
 
@@ -183,6 +192,8 @@
       attackReady = !!(E.attackFullText && E.attackFullText.value.trim());
     } else if (state.attackInputMode === 'pattern') {
       attackReady = !!(E.attackInfix && E.attackInfix.value.trim());
+    } else if (state.attackInputMode === 'json') {
+      attackReady = !!(E.attackJsonText && E.attackJsonText.value.trim());
     }
     if (E.runEngines) E.runEngines.disabled = !(attackReady && state.selectedEngines.size > 0);
   }
@@ -238,6 +249,18 @@
           repeat_times: repeat
         },
         attackSource: { mode: 'manual-pattern' }
+      };
+    } else if (state.attackInputMode === 'json') {
+      const text = (E.attackJsonText?.value || '').trim();
+      let parsed = null;
+      try {
+        parsed = JSON.parse(text);
+      } catch (e) {
+        console.error('JSON parse error', e);
+      }
+      return {
+        attack: parsed,
+        attackSource: { mode: 'manual-json' }
       };
     }
     return { attack: null, attackSource: {} };
@@ -296,13 +319,13 @@
   }
 
   function subscribe(type, id) {
-    if (state.events[type]) { try { state.events[type].close(); } catch {} }
+    if (state.events[type]) { try { state.events[type].close(); } catch { } }
     const src = new EventSource(`/api/jobs/${id}/stream`);
     state.events[type] = src;
     src.onmessage = ev => {
       try {
         const data = JSON.parse(ev.data);
-        setStatus(type, `状态：${data.status}  进度：${data.progress?.completed||0}/${data.progress?.total||0}`);
+        setStatus(type, `状态：${data.status}  进度：${data.progress?.completed || 0}/${data.progress?.total || 0}`);
         if (type === 'tools') {
           state.currentToolJob = data;
           renderToolResults();
@@ -310,14 +333,14 @@
           state.currentEngineJob = data;
           renderEngineResults();
         }
-        if (['completed','completed_with_errors','failed','cancelled'].includes(data.status)) {
+        if (['completed', 'completed_with_errors', 'failed', 'cancelled'].includes(data.status)) {
           src.close();
           state.events[type] = null;
         }
         updateButtons();
-      } catch {}
+      } catch { }
     };
-    src.onerror = () => { setStatus(type, 'SSE 断开'); try { src.close(); } catch {} state.events[type]=null; };
+    src.onerror = () => { setStatus(type, 'SSE 断开'); try { src.close(); } catch { } state.events[type] = null; };
   }
 
   function setStatus(type, text) {
@@ -333,8 +356,10 @@
     }
     const sorted = [...job.results].sort((a, b) => {
       const statusOrder = { running: 0, failed: 2, completed: 3 };
-      const aSpecial = a.output?.is_redos === true ? -1 : 0;
-      const bSpecial = b.output?.is_redos === true ? -1 : 0;
+      const aIsRedos = Array.isArray(a.output) ? a.output.some(x => x.is_redos) : a.output?.is_redos === true;
+      const bIsRedos = Array.isArray(b.output) ? b.output.some(x => x.is_redos) : b.output?.is_redos === true;
+      const aSpecial = aIsRedos ? -1 : 0;
+      const bSpecial = bIsRedos ? -1 : 0;
       if (aSpecial !== bSpecial) return aSpecial - bSpecial;
       const aOrder = statusOrder[a.status] ?? 1;
       const bOrder = statusOrder[b.status] ?? 1;
@@ -342,15 +367,17 @@
     });
     sorted.forEach(r => {
       const card = document.createElement('div'); card.className = 'result-card';
-      if (r.output?.is_redos === true) card.classList.add('redos-highlight');
+      const isRedos = Array.isArray(r.output) ? r.output.some(x => x.is_redos) : r.output?.is_redos === true;
+      if (isRedos) card.classList.add('redos-highlight');
       const header = document.createElement('div'); header.className = 'result-header';
       const title = document.createElement('span'); title.className = 'result-title'; title.textContent = r.label || r.id;
       const badge = document.createElement('span'); badge.className = 'badge badge-status status-' + r.status; badge.textContent = r.status;
       header.appendChild(title); header.appendChild(badge);
-      if (r.output && typeof r.output.is_redos === 'boolean') {
+      const redosValue = Array.isArray(r.output) ? r.output.some(x => x.is_redos) : r.output?.is_redos;
+      if (typeof redosValue === 'boolean') {
         const redosBadge = document.createElement('span');
-        redosBadge.className = r.output.is_redos ? 'badge badge-redos-true' : 'badge badge-redos-false';
-        redosBadge.textContent = r.output.is_redos ? 'ReDoS' : 'Safe';
+        redosBadge.className = redosValue ? 'badge badge-redos-true' : 'badge badge-redos-false';
+        redosBadge.textContent = redosValue ? 'ReDoS' : 'Safe';
         header.appendChild(redosBadge);
       }
       card.appendChild(header);
@@ -359,12 +386,13 @@
         const pre = document.createElement('pre'); pre.textContent = r.error.message; body.appendChild(pre);
       } else if (r.output) {
         const pre = document.createElement('pre'); pre.textContent = JSON.stringify(r.output, null, 2); body.appendChild(pre);
-        if (typeof r.output === 'object' && ('prefix' in r.output || 'infix' in r.output || 'suffix' in r.output)) {
+        const attackObj = Array.isArray(r.output) ? (r.output.find(x => x.is_redos) || r.output[0]) : r.output;
+        if (attackObj && typeof attackObj === 'object' && ('prefix' in attackObj || 'infix' in attackObj || 'suffix' in attackObj)) {
           const decodedBox = document.createElement('div'); decodedBox.className = 'decoded-box';
           const items = [
-            { label: 'Prefix', value: r.output.prefix },
-            { label: 'Infix', value: r.output.infix },
-            { label: 'Suffix', value: r.output.suffix }
+            { label: 'Prefix', value: attackObj.prefix },
+            { label: 'Infix', value: attackObj.infix },
+            { label: 'Suffix', value: attackObj.suffix }
           ];
           items.forEach(item => {
             const div = document.createElement('div'); div.className = 'decoded-item';
@@ -374,17 +402,17 @@
             div.appendChild(strong); div.appendChild(code);
             decodedBox.appendChild(div);
           });
-          if (typeof r.output.repeat_times === 'number') {
+          if (typeof attackObj.repeat_times === 'number') {
             const div = document.createElement('div'); div.className = 'decoded-item';
             const strong = document.createElement('strong'); strong.textContent = 'Repeat';
-            const code = document.createElement('code'); code.textContent = r.output.repeat_times;
+            const code = document.createElement('code'); code.textContent = attackObj.repeat_times;
             div.appendChild(strong); div.appendChild(code);
             decodedBox.appendChild(div);
           }
           body.appendChild(decodedBox);
           const btn = document.createElement('button'); btn.textContent = '用于验证'; btn.className = 'small';
           btn.addEventListener('click', () => {
-            state.attackSelection = { attack: r.output, toolId: r.id, toolLabel: r.label || r.id, jobId: job.id };
+            state.attackSelection = { attack: attackObj, toolId: r.id, toolLabel: r.label || r.id, jobId: job.id };
             switchInputMode('tool');
             renderAttackSummary(); updateButtons();
           });
@@ -404,7 +432,11 @@
     if (!job || !Array.isArray(job.results) || job.results.length === 0) {
       const p = document.createElement('p'); p.textContent = '暂无结果'; container.appendChild(p); return;
     }
-    const getElapsed = r => (r.output && typeof r.output.elapsed_ms === 'number') ? r.output.elapsed_ms : (typeof r.elapsedMs === 'number' ? r.elapsedMs : 0);
+    const getElapsed = r => {
+      const out = Array.isArray(r.output) ? r.output[0] : r.output;
+      if (out && typeof out.elapsed_ms === 'number') return out.elapsed_ms;
+      return (typeof r.elapsedMs === 'number' ? r.elapsedMs : 0);
+    };
     const sorted = [...job.results].sort((a, b) => {
       const statusOrder = { running: 0, failed: 2, completed: 3 };
       const aSpecial = getElapsed(a) > 1000 ? -1 : 0;
@@ -437,7 +469,8 @@
         if (r.error.stdout) { const pre = document.createElement('pre'); pre.textContent = r.error.stdout; body.appendChild(pre); }
         if (r.error.stderr) { const pre = document.createElement('pre'); pre.textContent = r.error.stderr; body.appendChild(pre); }
       } else if (r.output) {
-        const mc = (typeof r.output.match_count === 'number') ? r.output.match_count : null;
+        const out = Array.isArray(r.output) ? r.output[0] : r.output;
+        const mc = (out && typeof out.match_count === 'number') ? out.match_count : null;
         const p1 = document.createElement('div'); p1.textContent = mc != null ? `匹配次数: ${mc}` : '匹配次数: (未知)'; body.appendChild(p1);
       } else {
         const em = document.createElement('em'); em.textContent = '无输出'; body.appendChild(em);
@@ -460,16 +493,27 @@
     if (!Number.isFinite(v) || v < 0) return '(未知)';
     if (v < 1) return `${(v * 1000).toFixed(2)} µs`;
     if (v < 1000) return `${v.toFixed(3)} ms`;
-    if (v < 60_000) return `${(v/1000).toFixed(2)} s`;
-    const m = Math.floor(v/60_000); const s = ((v%60_000)/1000).toFixed(1);
+    if (v < 60_000) return `${(v / 1000).toFixed(2)} s`;
+    const m = Math.floor(v / 60_000); const s = ((v % 60_000) / 1000).toFixed(1);
     return `${m} min ${s}s`;
   }
 
   function renderAttackSummary() {
     const box = E.attackSummary; if (!box) return; box.innerHTML = '';
-    if (!state.attackSelection) { box.textContent = '未选择工具结果'; return; }
-    const t = state.attackSelection;
-    const p = document.createElement('p'); p.textContent = `来源工具: ${t.toolLabel}`; box.appendChild(p);
+    if (state.attackInputMode === 'tool') {
+      if (!state.attackSelection) {
+        box.textContent = '还没有选择工具结果。完成第一阶段后，点击对应结果的"用于验证"按钮，或手动输入攻击字符串。';
+        return;
+      }
+      const t = state.attackSelection;
+      const p = document.createElement('p'); p.textContent = `来源工具: ${t.toolLabel}`; box.appendChild(p);
+    } else if (state.attackInputMode === 'full') {
+      box.textContent = '当前模式：直接输入全文';
+    } else if (state.attackInputMode === 'pattern') {
+      box.textContent = '当前模式：前缀 + 中缀 * N + 后缀';
+    } else if (state.attackInputMode === 'json') {
+      box.textContent = '当前模式：JSON 字符串输入';
+    }
   }
 
   if (typeof window !== 'undefined') {

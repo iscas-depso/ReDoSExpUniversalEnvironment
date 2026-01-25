@@ -179,16 +179,16 @@ async def run_fuzzer(
 
 
 def main():
-    if len(sys.argv) != 4:
+    if len(sys.argv) < 3:
         print(
-            "Usage: python run.py <base64_regex> <output_file_path> <cpu_core>",
+            "Usage: python run.py <base64_regex> <output_file_path> [cpu_core]",
             file=sys.stderr,
         )
         sys.exit(1)
 
     base64_regex = sys.argv[1]
     output_file_path = sys.argv[2]
-    cpu_core = sys.argv[3]
+    cpu_core = sys.argv[3] if len(sys.argv) > 3 else None
 
     ftime_ms = 60000  # Maximum milliseconds to spend fuzzing (60 seconds)
     ptime_ms = 30000  # Maximum milliseconds to spend pumping (30 seconds)

@@ -1,24 +1,59 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ReDoS 检测与验证控制台</title>
   <link rel="stylesheet" href="./styles.css">
   <style>
-    body { font-family: system-ui, Arial, sans-serif; margin: 0; padding: 0; }
-    .layout { padding: 16px; display: grid; gap: 16px; }
-    .panel { border: 1px solid #ddd; border-radius: 8px; padding: 16px; }
-    .form-group { margin: 8px 0; }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-    .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
-    .panel-actions { margin-top: 8px; }
-    .primary { padding: 8px 12px; }
+    body {
+      font-family: system-ui, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .layout {
+      padding: 16px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .panel {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .form-group {
+      margin: 8px 0;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 8px;
+    }
+
+    .panel-actions {
+      margin-top: 8px;
+    }
+
+    .primary {
+      padding: 8px 12px;
+    }
   </style>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 </head>
+
 <body>
   <header class="page-header">
     <div>
@@ -80,7 +115,7 @@
         <h2>第二阶段：引擎验证</h2>
         <p>从上一阶段选择一个攻击字符串，在多个执行引擎上验证耗时表现。</p>
       </div>
-<div id="attack-summary" class="attack-summary">
+      <div id="attack-summary" class="attack-summary">
         <p>还没有选择工具结果。完成第一阶段后，点击对应结果的"用于验证"按钮，或手动输入攻击字符串。</p>
       </div>
       <div class="form-group">
@@ -89,6 +124,7 @@
           <button id="mode-tool" type="button" class="tab-btn active">使用工具结果</button>
           <button id="mode-full" type="button" class="tab-btn">直接输入全文</button>
           <button id="mode-pattern" type="button" class="tab-btn">前缀+中缀*N+后缀</button>
+          <button id="mode-json" type="button" class="tab-btn">JSON 字符串</button>
         </div>
       </div>
       <div id="manual-input-full" class="form-group manual-input-section" style="display:none;">
@@ -112,6 +148,13 @@
           </div>
         </div>
         <p class="help-text">格式：prefix + infix × N + suffix，重复次数由"最大攻击串长度"自动计算。</p>
+      </div>
+      <div id="manual-input-json" class="form-group manual-input-section" style="display:none;">
+        <label for="attack-json-text">JSON 攻击详情</label>
+        <textarea id="attack-json-text"
+          placeholder='示例：{"prefix": "...", "infix": "...", "suffix": "...", "repeat_times": 512}' rows="5"
+          style="width:100%; font-family: monospace;"></textarea>
+        <p class="help-text">直接输入包含 prefix, infix, suffix, repeat_times 的 JSON。这些字段应已是 Base64 编码。</p>
       </div>
       <div class="form-grid">
         <div class="form-group">
@@ -167,4 +210,5 @@
 
   <script src="./main.js?v=1"></script>
 </body>
+
 </html>

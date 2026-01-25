@@ -347,6 +347,9 @@ def process_file(filename, total_parts=1, part_index=0):
             data = json.loads(s)
             all_commands.append((data["file"], s, data["line"]))
 
+    # Sort commands by line number
+    all_commands.sort(key=lambda x: x[2])
+
     # Slice the commands according to total_parts and part_index
     total_count = len(all_commands)
     if total_parts > 1:
