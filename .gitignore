@@ -11,3 +11,5 @@ tools/redoshunter/.idea
 .metals
 1_*.json
 *.pdf
+tmp.json*
+data/history.jsonl

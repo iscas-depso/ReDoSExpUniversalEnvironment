@@ -54,7 +54,11 @@
     base64Decode: el('base64-decode'),
     base64Clear: el('base64-clear'),
     base64Copy: el('base64-copy'),
-    base64Ascii: el('base64-ascii')
+    base64Ascii: el('base64-ascii'),
+    showHistory: el('show-history'),
+    historyDialog: el('history-dialog'),
+    closeHistory: el('close-history'),
+    historyList: el('history-list')
   };
 
   document.addEventListener('DOMContentLoaded', init);
@@ -185,6 +189,14 @@
         E.base64Copy.textContent = '已复制';
         setTimeout(() => E.base64Copy.textContent = originalText, 2000);
       }
+    });
+    if (E.showHistory) E.showHistory.addEventListener('click', () => {
+      E.historyDialog?.showModal();
+      loadHistory();
+    });
+
+    if (E.historyDialog) E.historyDialog.addEventListener('click', (e) => {
+      if (e.target === E.historyDialog) E.historyDialog.close();
     });
   }
 
@@ -421,7 +433,14 @@
       const card = document.createElement('div'); card.className = 'result-card';
 
       const redosValue = Array.isArray(r.output) ? r.output.some(x => x.is_redos) : r.output?.is_redos;
-      const attackObj = Array.isArray(r.output) ? (r.output.find(x => x.is_redos) || r.output[0]) : r.output;
+
+      let attackObjList = Array.isArray(r.output) ? r.output : [r.output];
+      if (Array.isArray(r.output)) {
+        const redosItems = r.output.filter(x => x && x.is_redos);
+        if (redosItems.length > 0) attackObjList = redosItems;
+      }
+      attackObjList = attackObjList.filter(x => x); // filter null/undefined
+      const attackObj = attackObjList[0]; // Primary one for header interactions
       const canVerify = attackObj && typeof attackObj === 'object' && ('prefix' in attackObj || 'infix' in attackObj || 'suffix' in attackObj);
 
       // Check if this result is currently selected (locked)
@@ -479,29 +498,106 @@
       } else if (r.output) {
         body.appendChild(createCollapsiblePre(JSON.stringify(r.output, null, 2)));
 
-        if (canVerify) {
-          const decodedBox = document.createElement('div'); decodedBox.className = 'decoded-box';
-          const items = [
-            { label: 'Prefix', value: attackObj.prefix },
-            { label: 'Infix', value: attackObj.infix },
-            { label: 'Suffix', value: attackObj.suffix }
-          ];
-          items.forEach(item => {
-            const div = document.createElement('div'); div.className = 'decoded-item';
-            const strong = document.createElement('strong'); strong.textContent = item.label;
-            const code = document.createElement('code');
-            code.textContent = item.value ? fromBase64(item.value) : '(空)';
-            div.appendChild(strong); div.appendChild(code);
-            decodedBox.appendChild(div);
-          });
-          if (typeof attackObj.repeat_times === 'number') {
-            const div = document.createElement('div'); div.className = 'decoded-item';
-            const strong = document.createElement('strong'); strong.textContent = 'Repeat';
-            const code = document.createElement('code'); code.textContent = attackObj.repeat_times;
-            div.appendChild(strong); div.appendChild(code);
-            decodedBox.appendChild(div);
+        if (attackObjList.length > 0) {
+          const verifiableList = attackObjList.filter(atk =>
+            atk && typeof atk === 'object' && ('prefix' in atk || 'infix' in atk || 'suffix' in atk)
+          );
+
+          if (verifiableList.length > 0) {
+            const createPayloadBox = (atk, idx) => {
+              const container = document.createElement('div');
+
+              // Label
+              const headerLabel = document.createElement('div');
+              headerLabel.innerHTML = `<strong>Payload #${idx + 1}</strong>` + (atk.is_redos ? ' <span style="color:#d9534f">(ReDoS)</span>' : '');
+              headerLabel.style.marginBottom = '4px';
+              headerLabel.style.marginTop = '8px';
+              container.appendChild(headerLabel);
+
+              // Box
+              const decodedBox = document.createElement('div'); decodedBox.className = 'decoded-box';
+              const items = [
+                { label: 'Prefix', value: atk.prefix },
+                { label: 'Infix', value: atk.infix },
+                { label: 'Suffix', value: atk.suffix }
+              ];
+              items.forEach(item => {
+                const div = document.createElement('div'); div.className = 'decoded-item';
+                const strong = document.createElement('strong'); strong.textContent = item.label;
+                const code = document.createElement('code');
+                code.textContent = item.value ? fromBase64(item.value) : '(空)';
+                div.appendChild(strong); div.appendChild(code);
+                decodedBox.appendChild(div);
+              });
+              if (typeof atk.repeat_times === 'number') {
+                const div = document.createElement('div'); div.className = 'decoded-item';
+                const strong = document.createElement('strong'); strong.textContent = 'Repeat';
+                const code = document.createElement('code'); code.textContent = atk.repeat_times;
+                div.appendChild(strong); div.appendChild(code);
+                decodedBox.appendChild(div);
+              }
+
+              // Verify Button
+              const verifyBtn = document.createElement('button');
+              verifyBtn.className = 'badge';
+              verifyBtn.style.marginTop = '8px';
+              verifyBtn.style.cursor = 'pointer';
+              verifyBtn.innerHTML = '▶ Use This';
+              verifyBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                state.attackSelection = { attack: atk, toolId: r.id, toolLabel: r.label || r.id, jobId: job.id };
+                switchInputMode('tool');
+                renderAttackSummary();
+                updateButtons();
+                renderToolResults();
+                const panel = document.getElementById('engines-panel');
+                if (panel) panel.scrollIntoView({ behavior: 'smooth' });
+              });
+              decodedBox.appendChild(verifyBtn);
+
+              container.appendChild(decodedBox);
+              return container;
+            };
+
+            // Render first payload
+            body.appendChild(createPayloadBox(verifiableList[0], 0));
+
+            // If more, hide them behind a toggle
+            if (verifiableList.length > 1) {
+              const restCount = verifiableList.length - 1;
+
+              const toggleBtn = document.createElement('div');
+              toggleBtn.textContent = `▶ 显示其余 ${restCount} 个 Payload...`;
+              toggleBtn.style.color = '#0066cc';
+              toggleBtn.style.cursor = 'pointer';
+              toggleBtn.style.marginTop = '8px';
+              toggleBtn.style.fontWeight = 'bold';
+              toggleBtn.style.fontSize = '0.9em';
+
+              const othersContainer = document.createElement('div');
+              othersContainer.style.display = 'none';
+              othersContainer.style.marginTop = '8px';
+              othersContainer.style.borderTop = '1px dashed #eee';
+              othersContainer.style.paddingTop = '8px';
+
+              verifiableList.slice(1).forEach((atk, i) => {
+                othersContainer.appendChild(createPayloadBox(atk, i + 1));
+              });
+
+              toggleBtn.addEventListener('click', () => {
+                if (othersContainer.style.display === 'none') {
+                  othersContainer.style.display = 'block';
+                  toggleBtn.textContent = `▼ 收起其余 ${restCount} 个 Payload`;
+                } else {
+                  othersContainer.style.display = 'none';
+                  toggleBtn.textContent = `▶ 显示其余 ${restCount} 个 Payload...`;
+                }
+              });
+
+              body.appendChild(toggleBtn);
+              body.appendChild(othersContainer);
+            }
           }
-          body.appendChild(decodedBox);
         }
       } else {
         const em = document.createElement('em'); em.textContent = '无输出'; body.appendChild(em);
@@ -661,6 +757,72 @@
     } else if (state.attackInputMode === 'json') {
       box.textContent = '当前模式：JSON 字符串输入';
     }
+  }
+
+  async function loadHistory() {
+    if (!E.historyList) return;
+    E.historyList.innerHTML = '<p>加载中...</p>';
+    try {
+      const res = await fetch('/api/history');
+      if (!res.ok) throw new Error('Failed to load history');
+      const history = await res.json();
+      renderHistory(history);
+    } catch (e) {
+      E.historyList.innerHTML = '<p style="color:red">加载失败</p>';
+      console.error(e);
+    }
+  }
+
+  function renderHistory(items) {
+    if (!E.historyList) return;
+    E.historyList.innerHTML = '';
+    if (!items || items.length === 0) {
+      E.historyList.innerHTML = '<p>暂无历史记录</p>';
+      return;
+    }
+    items.forEach(item => {
+      if (!item.regex) return;
+      const el = document.createElement('div');
+      el.className = 'history-item';
+
+      const content = document.createElement('div');
+      const reg = document.createElement('div');
+      reg.className = 'history-regex';
+      reg.textContent = item.regex.length > 100 ? item.regex.substring(0, 100) + '...' : item.regex;
+
+      const meta = document.createElement('div');
+      meta.className = 'history-meta';
+      const time = item.timestamp ? new Date(item.timestamp).toLocaleString() : '';
+      meta.textContent = `${item.type === 'engines' ? '🛠 验证' : '🔍 检测'} · ${item.detail || ''} · ${time}`;
+
+      content.appendChild(reg);
+      content.appendChild(meta);
+
+      const btn = document.createElement('button');
+      btn.className = 'small ghost';
+      btn.textContent = '填入';
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        if (E.regex) {
+          E.regex.value = item.regex;
+          E.regex.dispatchEvent(new Event('input')); // Trigger updateButtons
+        }
+        E.historyDialog?.close();
+      };
+
+      el.appendChild(content);
+      el.appendChild(btn);
+
+      el.addEventListener('click', () => {
+        if (E.regex) {
+          E.regex.value = item.regex;
+          E.regex.dispatchEvent(new Event('input'));
+        }
+        E.historyDialog?.close();
+      });
+
+      E.historyList.appendChild(el);
+    });
   }
 
   if (typeof window !== 'undefined') {

@@ -228,9 +228,7 @@ def main():
     )
     parser.add_argument(
         "directory",
-        nargs="?",
-        default=".",
-        help="Path to the directory containing JSONL files (default: current directory)",
+        help="Path to the directory containing JSONL files",
     )
     parser.add_argument(
         "--tool",

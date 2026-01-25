@@ -48,6 +48,51 @@
     .primary {
       padding: 8px 12px;
     }
+
+    dialog::backdrop {
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    dialog {
+      width: 600px;
+      max-width: 90vw;
+      border: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Fix for .panel display: flex overriding dialog's default hidden state */
+    dialog.panel {
+      display: none;
+    }
+
+    dialog.panel[open] {
+      display: flex;
+    }
+
+    .history-item {
+      padding: 8px;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .history-item:hover {
+      background-color: #f5f5f5;
+    }
+
+    .history-regex {
+      font-family: monospace;
+      font-weight: bold;
+      word-break: break-all;
+    }
+
+    .history-meta {
+      font-size: 0.8em;
+      color: #666;
+    }
   </style>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
@@ -101,7 +146,10 @@
         <p>选择要运行的检测工具，它们会并行执行并给出潜在的攻击字符串。</p>
       </div>
       <div class="form-group">
-        <label for="regex-input">目标正则表达式</label>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <label for="regex-input" style="margin-bottom: 0;">目标正则表达式</label>
+          <button id="show-history" class="ghost small" type="button">📜 历史记录</button>
+        </div>
         <textarea id="regex-input" placeholder="示例：^(a+)+$" rows="4"></textarea>
         <p class="help-text">输入原始正则表达式，后端会自动进行 Base64 编码。</p>
       </div>
@@ -244,6 +292,19 @@
   <footer class="page-footer">
     <p>💡 提示：若长时间无响应，可在 Docker 容器中查看服务日志，确认依赖是否正确安装。</p>
   </footer>
+
+  <dialog id="history-dialog" class="panel">
+    <div class="panel-header">
+      <h3>历史记录</h3>
+      <form method="dialog">
+        <button id="close-history" class="ghost small">关闭</button>
+      </form>
+    </div>
+    <div id="history-list"
+      style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+      <p>加载中...</p>
+    </div>
+  </dialog>
 
   <script src="./main.js?v=1"></script>
 </body>

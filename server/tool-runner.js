@@ -31,6 +31,8 @@ function encodeRegex(regexJson) {
       pattern = obj.pattern;
     } else if (typeof obj.input === 'string') {
       pattern = obj.input;
+    } else if (Array.isArray(obj.input) && obj.input.length > 0 && typeof obj.input[0].pattern === 'string') {
+      pattern = obj.input[0].pattern;
     } else {
       throw new Error('pattern 或 input 字段不存在或不是字符串');
     }

@@ -5,6 +5,7 @@ const express = require('express');
 const morgan = require('morgan');
 
 const JobManager = require('./job-manager');
+const HistoryManager = require('./history-manager');
 const { CpuAllocator } = require('./cpu-allocator');
 const {
   TOOL_DEFINITIONS,
@@ -40,6 +41,20 @@ function createApp(options = {}) {
   } = options;
 
   const jobManager = providedJobManager || new JobManager();
+  const fs = require('fs');
+  const historyPath = path.join(__dirname, '..', 'data', 'history.jsonl');
+
+  // Ensure data directory exists
+  try {
+    const dataDir = path.dirname(historyPath);
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+  } catch (err) {
+    console.error('Failed to create data directory:', err);
+  }
+
+  const historyManager = new HistoryManager(historyPath);
   const cpuAllocator = new CpuAllocator();
   const app = express();
 
@@ -71,6 +86,15 @@ function createApp(options = {}) {
     });
   });
 
+  app.get('/api/history', async (req, res) => {
+    try {
+      const history = await historyManager.getRecent(50);
+      res.json(history);
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to fetch history' });
+    }
+  });
+
   app.get('/api/jobs/:id', (req, res) => {
     const job = jobManager.getJob(req.params.id);
     if (!job) {
@@ -94,10 +118,10 @@ function createApp(options = {}) {
     });
     res.flushHeaders?.();
 
-  jobManager.subscribe(job.id, res);
-  res.write(`data: ${JSON.stringify(jobManager.serialize(job))}\n\n`);
-  res.flush?.();
-});
+    jobManager.subscribe(job.id, res);
+    res.write(`data: ${JSON.stringify(jobManager.serialize(job))}\n\n`);
+    res.flush?.();
+  });
 
   app.post('/api/jobs/tools', (req, res) => {
     const regex = sanitizeRegexInput(req.body?.regex);
@@ -142,6 +166,12 @@ function createApp(options = {}) {
         cpuCores: Number.isFinite(cpuCores) && cpuCores > 0 ? cpuCores : (DEFAULT_OPTIONS.defaultCores || null),
         memoryMB: Number.isFinite(memoryMB) && memoryMB > 0 ? memoryMB : (DEFAULT_OPTIONS.defaultMemoryMB || null)
       }
+    });
+
+    historyManager.append({
+      type: 'tools',
+      regex,
+      detail: `${toolIds.length} tools`
     });
 
     res.status(202).json({
@@ -225,6 +255,12 @@ function createApp(options = {}) {
         memoryMB: Number.isFinite(memoryMB) && memoryMB > 0 ? memoryMB : (DEFAULT_OPTIONS.defaultMemoryMB || null),
         attackSource
       }
+    });
+
+    historyManager.append({
+      type: 'engines',
+      regex,
+      detail: `${engines.length} engines`
     });
 
     res.status(202).json({
