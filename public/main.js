@@ -1,7 +1,8 @@
-(function () {
-  'use strict';
+import { colorizeAll, colorizePattern, loadStyles } from 'regex-colorizer';
 
-  const state = {
+loadStyles();
+
+const state = {
     meta: null,
     selectedTools: new Set(),
     selectedEngines: new Set(),
@@ -58,13 +59,26 @@
     showHistory: el('show-history'),
     historyDialog: el('history-dialog'),
     closeHistory: el('close-history'),
-    historyList: el('history-list')
+    historyList: el('history-list'),
+    regexQuickActions: el('regex-quick-actions'),
+    regexPreviewContent: el('regex-preview-content'),
+    copyRegexBtn: el('copy-regex-btn'),
+    copyB64Btn: el('copy-b64-btn')
   };
 
   document.addEventListener('DOMContentLoaded', init);
 
   async function init() {
     try {
+      // Apply the dynamically generated class from regex-colorizer to the preview element
+      const styles = document.getElementsByTagName('style');
+      for (let i = styles.length - 1; i >= 0; i--) {
+        if (styles[i].id && styles[i].id.startsWith('rc-')) {
+          if (E.regexPreviewContent) E.regexPreviewContent.classList.add(styles[i].id);
+          break;
+        }
+      }
+
       await loadMeta();
       bindUI();
       updateButtons();
@@ -141,6 +155,7 @@
     if (E.enginesSelectAll) E.enginesSelectAll.addEventListener('click', () => toggleAll('engines', true));
     if (E.enginesClear) E.enginesClear.addEventListener('click', () => toggleAll('engines', false));
     if (E.regex) E.regex.addEventListener('input', updateButtons);
+    bindQuickActions(); // Call binding logic
     if (E.runTools) E.runTools.addEventListener('click', onRunTools);
     if (E.runEngines) E.runEngines.addEventListener('click', onRunEngines);
     if (E.modeTool) E.modeTool.addEventListener('click', () => switchInputMode('tool'));
@@ -230,6 +245,34 @@
     }
   }
 
+  // Bind Quick Actions Copy Events
+  function bindQuickActions() {
+    if (E.copyRegexBtn) {
+      E.copyRegexBtn.addEventListener('click', () => {
+        if (E.regex && E.regex.value) {
+          const val = extractRegexPattern(E.regex.value);
+          navigator.clipboard.writeText(val);
+          tempBtnText(E.copyRegexBtn, '✅ 已复制');
+        }
+      });
+    }
+    if (E.copyB64Btn) {
+      E.copyB64Btn.addEventListener('click', () => {
+        if (E.regex && E.regex.value) {
+          const val = extractRegexPattern(E.regex.value);
+          navigator.clipboard.writeText(toBase64(val));
+          tempBtnText(E.copyB64Btn, '✅ Base64');
+        }
+      });
+    }
+  }
+
+  function tempBtnText(btn, text) {
+    const original = btn.textContent;
+    btn.textContent = text;
+    setTimeout(() => btn.textContent = original, 1500);
+  }
+
   function switchInputMode(mode) {
     state.attackInputMode = mode;
     [E.modeTool, E.modeFull, E.modePattern, E.modeJson].forEach(btn => btn?.classList.remove('active'));
@@ -288,7 +331,28 @@
   }
 
   function updateButtons() {
-    const regexFilled = !!(E.regex && E.regex.value.trim());
+    const regexVal = E.regex ? E.regex.value.trim() : '';
+    const regexFilled = !!regexVal;
+
+    // Update Regex Quick Actions Display
+    if (E.regexQuickActions && E.regexPreviewContent) {
+      if (regexFilled) {
+        E.regexQuickActions.style.display = 'flex'; // Flex to align items
+        const parsedPattern = extractRegexPattern(regexVal);
+        try {
+          E.regexPreviewContent.innerHTML = colorizePattern(parsedPattern);
+        } catch (e) {
+          E.regexPreviewContent.textContent = parsedPattern;
+        }
+        E.regexPreviewContent.title = parsedPattern; // Tooltip for full text
+      } else {
+        E.regexQuickActions.style.display = 'none';
+      }
+    }
+
+    if (E.copyRegexBtn) E.copyRegexBtn.style.display = regexFilled ? 'inline-block' : 'none';
+    if (E.copyB64Btn) E.copyB64Btn.style.display = regexFilled ? 'inline-block' : 'none';
+
     if (E.runTools) E.runTools.disabled = !(regexFilled && state.selectedTools.size > 0);
     let attackReady = false;
     if (state.attackInputMode === 'tool') {
@@ -301,6 +365,22 @@
       attackReady = !!(E.attackJsonText && E.attackJsonText.value.trim());
     }
     if (E.runEngines) E.runEngines.disabled = !(attackReady && state.selectedEngines.size > 0);
+  }
+
+  function extractRegexPattern(text) {
+    try {
+      const obj = JSON.parse(text);
+      if (typeof obj.pattern === 'string') {
+        return obj.pattern;
+      } else if (typeof obj.input === 'string') {
+        return obj.input;
+      } else if (Array.isArray(obj.input) && obj.input.length > 0 && typeof obj.input[0].pattern === 'string') {
+        return obj.input[0].pattern;
+      }
+    } catch (e) {
+      // Ignore error, treat as raw string
+    }
+    return text;
   }
 
   function num(v) { const n = Number(v); return Number.isFinite(n) && n > 0 ? n : undefined; }
@@ -925,4 +1005,3 @@
   if (typeof window !== 'undefined') {
     window.__REDOS_STATE__ = state;
   }
-})();

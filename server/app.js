@@ -334,6 +334,9 @@ function createApp(options = {}) {
   const publicDir = path.join(__dirname, '..', 'public');
   app.use(express.static(publicDir, { fallthrough: true }));
 
+  // Expose regex-colorizer for frontend import
+  app.use('/vendor/regex-colorizer', express.static(path.join(__dirname, '..', 'node_modules', 'regex-colorizer')));
+
   app.use((req, res, next) => {
     if (req.path.startsWith('/api/')) {
       res.status(404).json({ error: 'API route not found' });

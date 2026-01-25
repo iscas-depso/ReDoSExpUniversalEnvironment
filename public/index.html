@@ -148,10 +148,18 @@
       <div class="form-group">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
           <label for="regex-input" style="margin-bottom: 0;">目标正则表达式</label>
-          <button id="show-history" class="ghost small" type="button">📜 历史记录</button>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button type="button" id="copy-regex-btn" class="ghost small" style="display:none">📋 复制正则</button>
+            <button type="button" id="copy-b64-btn" class="ghost small" style="display:none">📋 复制 Base64</button>
+            <button id="show-history" class="ghost small" type="button">📜 历史记录</button>
+          </div>
         </div>
         <textarea id="regex-input" placeholder="示例：^(a+)+$" rows="4"></textarea>
-        <p class="help-text">输入原始正则表达式，后端会自动进行 Base64 编码。</p>
+        <!-- Regex Actions Bar: Replaces the simple help text -->
+        <div id="regex-quick-actions" class="regex-actions-bar" style="display:none">
+          <div class="regex-preview-text regex" id="regex-preview-content"></div>
+        </div>
+        <p class="help-text" style="margin-top:4px;">输入原始正则表达式，后端会自动进行 Base64 编码。</p>
       </div>
       <div class="selection-group">
         <div class="selection-header">
@@ -306,7 +314,14 @@
     </div>
   </dialog>
 
-  <script src="./main.js?v=1"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "regex-colorizer": "/vendor/regex-colorizer/src/index.js"
+      }
+    }
+  </script>
+  <script type="module" src="./main.js?v=1"></script>
 </body>
 
 </html>

@@ -776,3 +776,68 @@ details.advanced-settings .form-grid {
   position: relative;
   border: 2px solid var(--text-primary);
 }
+
+/* Regex Quick Actions Bar */
+.regex-actions-bar {
+  margin-top: 4px;
+  position: relative;
+  background: #f8fafc;
+  border: 1px solid #cbd5f5;
+  border-radius: 8px;
+  padding: 6px 12px;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: border-color 0.2s;
+}
+
+.regex-actions-bar:hover {
+  border-color: var(--accent);
+  background: #fff;
+}
+
+.regex-preview-text {
+  font-size: 13px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  flex: 1;
+  /* Take remaining space */
+}
+
+.regex-action-buttons {
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transform: translateX(10px);
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+.regex-actions-bar:hover .regex-action-buttons {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.mini-btn {
+  background: #fff;
+  border: 1px solid #cbd5f5;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.mini-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.15);
+}
