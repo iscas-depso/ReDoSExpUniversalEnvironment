@@ -19,7 +19,14 @@ TOOLS = [
 ]
 
 
-def load_tool_results(directory):
+def load_tool_results(
+    directory,
+    detect_redos=True,
+    no_detect_tool=False,
+    our_tool="ere",
+    ground_truth=False,
+    all_vulnerable_keys=None,
+):
     """
     扫描目录并加载所有工具的检测结果
     """
@@ -54,28 +61,53 @@ def load_tool_results(directory):
                     data = json.loads(line_content)
                     # 唯一标识符
                     key = (data["file"], data["line"])
+                    if detect_redos:
+                        if is_expr:
+                            # 解析 output 字段（它是字符串形式的 JSON）
+                            output_json = json.loads(data["output"])
+                            is_redos = output_json.get("is_redos", False)
+                        else:
+                            if (tool_name == our_tool and no_detect_tool) or (
+                                ground_truth
+                                and all_vulnerable_keys is not None
+                                and key in all_vulnerable_keys
+                            ):
+                                is_redos = (
+                                    data.get("stderr", "")
+                                    != "input is not a valid attack"
+                                )
+                            else:
+                                is_redos = data.get(
+                                    "timeout", False
+                                ) or "terminationreason=" in data.get("stdout", "")
 
-                    if is_expr:
-                        # 解析 output 字段（它是字符串形式的 JSON）
-                        output_json = json.loads(data["output"])
-                        is_redos = output_json.get("is_redos", False)
-                    else:
-                        is_redos = data.get(
-                            "timeout", False
-                        ) or "terminationreason=" in data.get("stdout", "")
-
-                    tool_data[key] = is_redos
+                        tool_data[key] = is_redos
                     raw_data[key] = line_content
                 except (json.JSONDecodeError, KeyError) as e:
                     pass
 
         all_results[tool_name] = tool_data
         all_raw_data[tool_name] = raw_data
+    if detect_redos:
+        for tool_name, tool_data in all_results.items():
+            total = len(tool_data)
+            redos_count = sum(tool_data.values())
+            print(f"{tool_name}: {total}/{redos_count}", file=sys.stderr)
 
-    for tool_name, tool_data in all_results.items():
-        total = len(tool_data)
-        redos_count = sum(tool_data.values())
-        print(f"{tool_name}: {total}/{redos_count}", file=sys.stderr)
+    if ground_truth and all_vulnerable_keys is None:
+        all_vulnerable_keys = set()
+        for tool_name, tool_data in all_results.items():
+            for key, is_redos in tool_data.items():
+                if is_redos:
+                    all_vulnerable_keys.add(key)
+        return load_tool_results(
+            directory,
+            detect_redos,
+            no_detect_tool,
+            our_tool,
+            ground_truth,
+            all_vulnerable_keys,
+        )
 
     return all_results, all_raw_data
 
@@ -236,6 +268,57 @@ def print_missed_cases(all_results, all_raw_data, our_tool="ere"):
                 print(json.dumps(raw_data, ensure_ascii=True))
 
 
+def print_missed_ours(all_results, all_raw_data, our_tool="ere"):
+    """
+    输出所有我们的工具没有发现，但其他工具发现了的数据
+    """
+    if our_tool not in all_results:
+        print(f"Error: Our tool '{our_tool}' results not found!")
+        return
+
+    our_data = all_results[our_tool]
+
+    # 1. 找出所有工具发现的所有漏洞的并集
+    all_vulnerable_keys = set()
+    for tool_name, tool_data in all_results.items():
+        for key, is_redos in tool_data.items():
+            if is_redos:
+                all_vulnerable_keys.add(key)
+
+    # 2. 检查哪些是我们的工具漏掉的
+    for key in sorted(all_vulnerable_keys):
+        if our_data.get(key, False):
+            continue
+        print(all_raw_data[our_tool][key])
+
+
+def print_only_ours(all_results, all_raw_data, our_tool="ere"):
+    """
+    输出所有我们的工具发现的数据
+    """
+    if our_tool not in all_results:
+        print(f"Error: Our tool '{our_tool}' results not found!")
+        return
+
+    our_data = all_results[our_tool]
+
+    # 1. 找出所有其他工具发现的所有漏洞的并集
+    other_vulnerable_keys = set()
+    our_vulnerable_keys = set()
+    for tool_name, tool_data in all_results.items():
+        for key, is_redos in tool_data.items():
+            if is_redos:
+                if tool_name == our_tool:
+                    our_vulnerable_keys.add(key)
+                else:
+                    other_vulnerable_keys.add(key)
+
+    # 2. 检查哪些是只有我们的工具发现的
+    only_ours = our_vulnerable_keys - other_vulnerable_keys
+    for key in sorted(only_ours):
+        print(all_raw_data[our_tool][key])
+
+
 def main():
     import argparse
 
@@ -250,21 +333,63 @@ def main():
         "--tool",
         "-t",
         default="ere",
-        help="The name of our tool to compare with others (default: ere)",
+        help="Name of our tool (default: ere)",
     )
+
     parser.add_argument(
         "--show-missed",
-        "-s",
+        "-m",
         action="store_true",
-        help="Print cases where our tool failed but others succeeded",
+        help="Show cases missed by our tool but detected by others",
     )
+
+    parser.add_argument(
+        "--show-missed-ours",
+        "-M",
+        action="store_true",
+        help="Show all cases our tool failed to detect",
+    )
+
+    parser.add_argument(
+        "--show-only-ours",
+        "-o",
+        action="store_true",
+        help="Show only cases our tool successfully detected",
+    )
+
+    parser.add_argument(
+        "--disable-detect",
+        "-d",
+        action="store_true",
+        help="Disable detection for our tool",
+    )
+
+    parser.add_argument(
+        "--use-ground-truth",
+        "-g",
+        action="store_true",
+        help="Evaluate tools using ground truth",
+    )
+
     args = parser.parse_args()
     current_dir = args.directory
-    results, raw_data = load_tool_results(current_dir)
+    results, raw_data = load_tool_results(
+        current_dir,
+        no_detect_tool=args.disable_detect,
+        our_tool=args.tool,
+        ground_truth=args.use_ground_truth,
+    )
 
     if results:
         if args.show_missed:
             print_missed_cases(results, raw_data, our_tool=args.tool)
+        elif args.show_missed_ours:
+            _, nredos_raw_data = load_tool_results(
+                current_dir, detect_redos=False, our_tool=args.tool
+            )
+            print_missed_ours(results, nredos_raw_data, our_tool=args.tool)
+        elif args.show_only_ours:
+            print_only_ours(results, raw_data, our_tool=args.tool)
         else:
             process_and_plot(results, our_tool=args.tool)
     else:

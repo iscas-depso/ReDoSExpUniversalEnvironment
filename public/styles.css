@@ -930,7 +930,7 @@ details.advanced-settings .form-grid {
 }
 
 .regex-preview-text {
-  font-size: 13px;
+  font-size: 16px;
   white-space: pre-wrap;
   word-break: break-all;
   flex: 1;
