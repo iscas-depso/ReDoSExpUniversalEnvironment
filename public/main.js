@@ -47,8 +47,10 @@ const E = {
   toolsClear: el('tools-clear'),
   enginesSelectAll: el('engines-select-all'),
   enginesClear: el('engines-clear'),
-  toolStatus: el('tool-job-status'),
-  engineStatus: el('engine-job-status'),
+  toolsRiskFound: el('tools-risk-found'),
+  toolsProgress: el('tools-progress-text'),
+  enginesVerifiedSuccess: el('engines-verified-success'),
+  enginesProgress: el('engines-progress-text'),
   activePayloadInfo: el('active-payload-info'),
   toolResults: el('tool-results'),
   autoCollapseUnpinned: el('auto-collapse-unpinned'),
@@ -466,26 +468,8 @@ function updateSelectionSummary() {
   function updateText(summaryEl, selectedSet, allItemsMap) {
     if (!summaryEl) return;
     const count = selectedSet.size;
-    if (count === 0) {
-      summaryEl.textContent = '未选择';
-      return;
-    }
-    
-    const maxNames = 3;
-    const names = [];
-    let i = 0;
-    for (const id of selectedSet) {
-      if (i >= maxNames) break;
-      const item = allItemsMap[id];
-      if (item) names.push(item.label || item.name || id);
-      i++;
-    }
-    
-    let text = `已选 ${count} 项: ${names.join(', ')}`;
-    if (count > maxNames) {
-      text += ` 等...`;
-    }
-    summaryEl.textContent = text;
+    const total = Object.keys(allItemsMap).length;
+    summaryEl.textContent = `${count}/${total}`;
   }
 
   // Create maps for quick lookup
@@ -841,7 +825,7 @@ async function onRunTools() {
     const data = await res.json();
     state.currentToolJob = { id: data.jobId, status: data.status };
     renderToolResults();
-    scrollToTarget(E.toolStatus);
+    scrollToTarget(E.toolResults);
     state.scrollFlags.tools = true;
     subscribe('tools', data.jobId);
   } catch (e) {
@@ -1094,7 +1078,7 @@ async function onRunEngines() {
     const data = await res.json();
     state.currentEngineJob = { id: data.jobId, status: data.status };
     renderEngineResults();
-    scrollToTarget(E.engineStatus);
+    scrollToTarget(E.engineResults);
     state.scrollFlags.engines = true;
     subscribe('engines', data.jobId);
   } catch (e) {
@@ -1109,14 +1093,18 @@ function subscribe(type, id) {
   src.onmessage = ev => {
     try {
       const data = JSON.parse(ev.data);
-      setStatus(type, `状态：${data.status}  进度：${data.progress?.completed || 0}/${data.progress?.total || 0}`);
+      const progressText = `${data.progress?.completed || 0}/${data.progress?.total || 0}`;
+      
       if (type === 'tools') {
+        if (E.toolsProgress) E.toolsProgress.textContent = progressText;
         state.currentToolJob = data;
         renderToolResults();
       } else {
+        if (E.enginesProgress) E.enginesProgress.textContent = progressText;
         state.currentEngineJob = data;
         renderEngineResults();
       }
+
       if (['completed', 'completed_with_errors', 'failed', 'cancelled'].includes(data.status)) {
         src.close();
         state.events[type] = null;
@@ -1128,7 +1116,7 @@ function subscribe(type, id) {
 }
 
 function setStatus(type, text) {
-  const el = type === 'tools' ? E.toolStatus : E.engineStatus;
+  const el = type === 'tools' ? E.toolsProgress : E.enginesProgress;
   if (el) el.textContent = text;
 }
 
@@ -1150,9 +1138,32 @@ function getVerifiableAttack(r) {
 function renderToolResults() {
   const container = E.toolResults; if (!container) return;
   const job = state.currentToolJob; container.innerHTML = '';
-  if (!job || !Array.isArray(job.results) || job.results.length === 0) {
-    const p = document.createElement('p'); p.textContent = '暂无结果'; container.appendChild(p); return;
+  
+  // Update Risk Found Count
+  let riskCount = 0;
+  if (job && Array.isArray(job.results)) {
+    riskCount = job.results.filter(r => 
+      Array.isArray(r.output) ? r.output.some(x => x.is_redos) : r.output?.is_redos === true
+    ).length;
   }
+  if (E.toolsRiskFound) E.toolsRiskFound.textContent = riskCount;
+
+  if (!job || !Array.isArray(job.results) || job.results.length === 0) {
+    const p = document.createElement('p'); p.textContent = '暂无结果'; container.appendChild(p); 
+    // 清空图表
+    const chartContainer = document.getElementById('tool-chart-container');
+    if (chartContainer) {
+      chartContainer.style.display = 'none';
+    }
+    return;
+  }
+  
+  // 显示图表容器
+  const chartContainer = document.getElementById('tool-chart-container');
+  if (chartContainer) {
+    chartContainer.style.display = 'block';
+  }
+  
   const sorted = [...job.results].sort((a, b) => {
     const aPinIndex = state.pinnedToolIds.indexOf(a.id);
     const bPinIndex = state.pinnedToolIds.indexOf(b.id);
@@ -1174,6 +1185,68 @@ function renderToolResults() {
     const bOrder = statusOrder[b.status] ?? 1;
     return aOrder - bOrder;
   });
+  
+  // 准备图表数据
+  const toolNames = sorted.map(r => r.label || r.id);
+  const toolTimes = sorted.map(r => typeof r.elapsedMs === 'number' ? r.elapsedMs : 0);
+  const toolRedos = sorted.map(r => Array.isArray(r.output) ? r.output.some(x => x.is_redos) : r.output?.is_redos === true);
+  
+  // 生成图表
+  const ctx = document.getElementById('tool-time-chart');
+  if (ctx) {
+    // 销毁现有图表
+    if (window.toolChart) {
+      window.toolChart.destroy();
+    }
+    
+    // 创建新图表
+    window.toolChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: toolNames,
+        datasets: [{
+          label: '运行时间 (ms)',
+          data: toolTimes,
+          backgroundColor: toolRedos.map(isRedos => isRedos ? 'rgba(220, 53, 69, 0.7)' : 'rgba(54, 162, 235, 0.7)'),
+          borderColor: toolRedos.map(isRedos => isRedos ? 'rgba(220, 53, 69, 1)' : 'rgba(54, 162, 235, 1)'),
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: '毫秒 (ms)'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: '工具'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const time = context.parsed.y;
+                const isRedos = toolRedos[context.dataIndex];
+                return [`运行时间: ${formatMs(time)}`, `ReDoS: ${isRedos ? '是' : '否'}`];
+              }
+            }
+          }
+        }
+      }
+    });
+  }
 
   // Auto-lock logic: Select the top-ranked result that is completed and verifiable
   const topVerifiable = sorted.find(r => r.status === 'completed' && getVerifiableAttack(r));
@@ -1604,14 +1677,36 @@ function renderToolResults() {
 function renderEngineResults() {
   const container = E.engineResults; if (!container) return;
   const job = state.currentEngineJob; container.innerHTML = '';
-  if (!job || !Array.isArray(job.results) || job.results.length === 0) {
-    const p = document.createElement('p'); p.textContent = '暂无结果'; container.appendChild(p); return;
-  }
+  
   const getElapsed = r => {
     const out = Array.isArray(r.output) ? r.output[0] : r.output;
     if (out && typeof out.elapsed_ms === 'number') return out.elapsed_ms;
     return (typeof r.elapsedMs === 'number' ? r.elapsedMs : 0);
   };
+
+  // Update Verified Success Count
+  let verifiedCount = 0;
+  if (job && Array.isArray(job.results)) {
+    verifiedCount = job.results.filter(r => getElapsed(r) > 1000).length;
+  }
+  if (E.enginesVerifiedSuccess) E.enginesVerifiedSuccess.textContent = verifiedCount;
+
+  if (!job || !Array.isArray(job.results) || job.results.length === 0) {
+    const p = document.createElement('p'); p.textContent = '暂无结果'; container.appendChild(p); 
+    // 清空图表
+    const chartContainer = document.getElementById('engine-chart-container');
+    if (chartContainer) {
+      chartContainer.style.display = 'none';
+    }
+    return;
+  }
+  
+  // 显示图表容器
+  const chartContainer = document.getElementById('engine-chart-container');
+  if (chartContainer) {
+    chartContainer.style.display = 'block';
+  }
+  
   const sorted = [...job.results].sort((a, b) => {
     const statusOrder = { running: 0, failed: 2, completed: 3 };
     const aSpecial = getElapsed(a) > 1000 ? -1 : 0;
@@ -1622,6 +1717,67 @@ function renderEngineResults() {
     if (aOrder !== bOrder) return aOrder - bOrder;
     return getElapsed(b) - getElapsed(a);
   });
+  
+  // 准备图表数据
+  const engineNames = sorted.map(r => r.label || r.id);
+  const engineTimes = sorted.map(r => getElapsed(r));
+  
+  // 生成图表
+  const ctx = document.getElementById('engine-time-chart');
+  if (ctx) {
+    // 销毁现有图表
+    if (window.engineChart) {
+      window.engineChart.destroy();
+    }
+    
+    // 创建新图表
+    window.engineChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: engineNames,
+        datasets: [{
+          label: '运行时间 (ms)',
+          data: engineTimes,
+          backgroundColor: engineTimes.map(time => time > 1000 ? 'rgba(220, 53, 69, 0.7)' : 'rgba(54, 162, 235, 0.7)'),
+          borderColor: engineTimes.map(time => time > 1000 ? 'rgba(220, 53, 69, 1)' : 'rgba(54, 162, 235, 1)'),
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: '毫秒 (ms)'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: '引擎'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const time = context.parsed.y;
+                return `运行时间: ${formatMs(time)}`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+  
   sorted.forEach(r => {
     const card = document.createElement('div'); card.className = 'result-card';
     const elapsed = getElapsed(r);

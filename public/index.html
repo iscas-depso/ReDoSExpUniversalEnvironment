@@ -6,94 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ReDoS 检测与验证控制台</title>
   <link rel="stylesheet" href="./styles.css">
-  <style>
-    body {
-      font-family: system-ui, Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    .layout {
-      padding: 16px;
-      display: grid;
-      gap: 16px;
-    }
-
-    .panel {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 16px;
-    }
-
-    .form-group {
-      margin: 8px 0;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 12px;
-    }
-
-    .checkbox-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 8px;
-    }
-
-    .panel-actions {
-      margin-top: 8px;
-    }
-
-    .primary {
-      padding: 8px 12px;
-    }
-
-    dialog::backdrop {
-      background: rgba(0, 0, 0, 0.3);
-    }
-
-    dialog {
-      width: 600px;
-      max-width: 90vw;
-      border: none;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    /* Fix for .panel display: flex overriding dialog's default hidden state */
-    dialog.panel {
-      display: none;
-    }
-
-    dialog.panel[open] {
-      display: flex;
-    }
-
-    .history-item {
-      padding: 8px;
-      border: 1px solid #eee;
-      border-radius: 4px;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .history-item:hover {
-      background-color: #f5f5f5;
-    }
-
-    .history-regex {
-      font-family: monospace;
-      font-weight: bold;
-      word-break: break-all;
-    }
-
-    .history-meta {
-      font-size: 0.8em;
-      color: #666;
-    }
-  </style>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
@@ -101,90 +15,68 @@
 
 <body>
   <header class="page-header">
-    <div>
+    <div style="text-align: center; width: 100%;">
       <h1>ReDoS 检测与验证控制台</h1>
-      <p class="subtitle">在容器中并行运行工具与引擎，快速完成 ReDoS 检测与验证</p>
+      <p class="subtitle">输入正则表达式和测试字符串。</p>
     </div>
-    <div class="runtime-info">
+    <div class="runtime-info" style="position: absolute; right: 24px; top: 24px;">
       <span class="badge badge-neutral">容器内服务</span>
       <span class="badge badge-neutral">端口 <span id="runtime-port">8080</span></span>
     </div>
   </header>
-  <main class="layout">
-    <details class="panel" id="base64-panel">
-      <summary class="panel-header">
-        <div>
-          <h2>辅助工具：Base64 转换</h2>
-          <p>快速对文本进行 Base64 编码或从 Base64 解码，方便查看结果或构造 Payload。</p>
-        </div>
-      </summary>
-      <div class="panel-content">
-        <div class="form-group">
-          <label for="base64-input">输入内容</label>
-          <textarea id="base64-input" placeholder="输入原始文本以编码，或输入 Base64 字符串以解码..." rows="4"></textarea>
-        </div>
-        <div class="form-group" style="flex-direction: row; align-items: center; gap: 8px; margin-bottom: 8px;">
-          <input type="checkbox" id="base64-ascii" style="width: auto; margin: 0;">
-          <label for="base64-ascii" style="font-weight: normal; font-size: 14px; cursor: pointer;">强制纯 ASCII 模式 (Unicode 转
-            \uXXXX)</label>
-        </div>
-        <div class="panel-actions" style="justify-content: flex-start; gap: 12px;">
-          <button id="base64-encode" class="primary">进行编码 (Encode)</button>
-          <button id="base64-decode" class="ghost">进行解码 (Decode)</button>
-          <button id="base64-clear" class="ghost">清空</button>
-        </div>
-        <div class="form-group">
-          <label for="base64-output">转换结果</label>
-          <div style="position: relative;">
-            <textarea id="base64-output" placeholder="结果将显示在这里..." rows="4" readonly></textarea>
-            <button id="base64-copy" class="small ghost"
-              style="position: absolute; right: 8px; top: 8px; border-radius: 6px; padding: 4px 8px;">复制</button>
-          </div>
-        </div>
-      </div>
-    </details>
 
-    <section class="panel" id="tools-panel">
+  <main class="layout">
+
+    <!-- Row 1: Regex Input Panel -->
+    <section class="panel" id="regex-panel" style="display: flex; flex-direction: column;">
       <div class="panel-header">
-        <h2>第一阶段：检测工具</h2>
-        <p>选择要运行的检测工具，它们会并行执行并给出潜在的攻击字符串。</p>
+        <h2>正则表达式 (Regex)</h2>
+        <div class="input-header-controls">
+          <label class="toggle-switch">
+            <input type="checkbox" id="enable-regex-highlight" checked>
+            <span class="slider"></span>
+            <span class="label-text">高亮</span>
+          </label>
+          <button id="show-history" class="ghost small" type="button" title="History">🗑️</button>
+        </div>
       </div>
-      <div class="form-group">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-          <label for="regex-input" style="margin-bottom: 0;">目标正则表达式</label>
-          <div style="display: flex; gap: 8px; align-items: center;">
-            <label class="toggle-switch">
-              <input type="checkbox" id="enable-regex-highlight" checked>
-              <span class="slider"></span>
-              <span class="label-text">语法高亮</span>
-            </label>
-            <button id="show-history" class="ghost small" type="button">📜 历史记录</button>
-          </div>
+
+      <div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
+        <div class="regex-input-wrapper" style="flex: 1; min-height: 150px;">
+          <textarea id="regex-input" placeholder="示例：^(a+)+$" rows="5"
+            style="height: 100%; font-family: monospace;"></textarea>
         </div>
-        <div class="regex-input-wrapper">
-          <textarea id="regex-input" placeholder="示例：^(a+)+$" rows="4"></textarea>
-        </div>
-        <!-- Regex Actions Bar: Replaces the simple help text -->
-        <div id="regex-quick-actions" class="regex-actions-bar" style="display:none; flex-direction: column; align-items: stretch;">
+
+        <!-- Regex Actions Bar -->
+        <div id="regex-quick-actions" class="regex-actions-bar"
+          style="display:none; flex-direction: column; align-items: stretch; margin-top: 8px;">
           <div style="display: flex; gap: 8px; width: 100%;">
             <div class="regex-preview-text regex" id="regex-preview-content" style="flex: 1; min-width: 0;"></div>
-            <div id="regex-nav-buttons" class="regex-nav-buttons-preview" style="display: none; flex-direction: row; gap: 4px; justify-content: flex-start;">
+            <div id="regex-nav-buttons" class="regex-nav-buttons-preview"
+              style="display: none; flex-direction: row; gap: 4px; justify-content: flex-start;">
               <button type="button" id="regex-prev" class="nav-btn" title="Previous Regex">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
               </button>
               <button type="button" id="regex-next" class="nav-btn" title="Next Regex">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
               </button>
             </div>
           </div>
-          <div id="regex-counter-container" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; border-top: 1px solid #e2e8f0; padding-top: 8px;">
+          <div id="regex-counter-container"
+            style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; border-top: 1px solid #e2e8f0; padding-top: 8px;">
             <div style="flex: 1; display: flex; gap: 8px;">
-              <button type="button" id="copy-regex-btn" class="ghost small" style="display:none">📋 复制正则</button>
-              <button type="button" id="copy-b64-btn" class="ghost small" style="display:none">📋 复制 Base64</button>
-              <button type="button" id="open-regex101-btn" class="ghost small" style="display:none">🔗 Regex101</button>
+              <button type="button" id="copy-regex-btn" class="ghost small" style="display:none">📋</button>
+              <button type="button" id="copy-b64-btn" class="ghost small" style="display:none">📋 B64</button>
+              <button type="button" id="open-regex101-btn" class="ghost small" style="display:none">🔗</button>
             </div>
             <div id="regex-jump-to-wrapper" style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 0.85em; color: #64748b;">Jump to:</span>
+              <span style="font-size: 0.85em; color: #64748b;">Jump:</span>
               <div class="regex-pagination">
                 <input type="number" id="regex-index-input" class="regex-index-input" min="1" value="1">
                 <span class="regex-total-sep">/</span>
@@ -194,180 +86,266 @@
           </div>
         </div>
       </div>
-      <details class="advanced-settings">
-        <summary>高级运行设置 (超时、核心、内存)</summary>
-        <div class="advanced-content">
+    </section>
+
+    <!-- Row 1: Payload Input Panel -->
+    <section class="panel" id="payload-panel" style="display: flex; flex-direction: column;">
+      <div class="panel-header">
+        <h2>测试字符串 (Payload)</h2>
+        <div class="input-mode-tabs">
+          <button id="mode-tool" type="button" class="tab-btn active">工具结果</button>
+          <button id="mode-full" type="button" class="tab-btn">直接输入</button>
+          <button id="mode-pattern" type="button" class="tab-btn">构造模式</button>
+          <button id="mode-json" type="button" class="tab-btn">JSON</button>
+        </div>
+      </div>
+
+      <div style="flex: 1; display: flex; flex-direction: column;">
+        <div id="attack-summary" class="attack-summary" style="margin-bottom: 12px;">
+          <p>还没有选择工具结果。</p>
+        </div>
+
+        <div id="active-payload-info" class="payload-info"
+          style="display:none; margin-bottom: 12px; padding: 12px; border: 1px solid #b3e5fc; background: #e1f5fe; border-radius: 6px;">
+        </div>
+
+        <div id="manual-input-full" class="form-group manual-input-section" style="display:none;">
+          <textarea id="attack-full-text" placeholder="直接输入要测试的完整攻击字符串" rows="5"
+            style="width:100%; font-family: monospace;"></textarea>
+        </div>
+
+        <div id="manual-input-pattern" class="manual-input-section" style="display:none;">
           <div class="form-grid">
             <div class="form-group">
-              <label for="tools-timeout">运行时间 (秒)</label>
-              <input id="tools-timeout" type="number" min="1" placeholder="不限时">
-              <p class="help-text">不填则不限时。</p>
+              <label for="attack-prefix">前缀 (prefix)</label>
+              <input id="attack-prefix" type="text" placeholder="可选">
             </div>
             <div class="form-group">
-              <label for="tools-cores">核心数</label>
-              <input id="tools-cores" type="number" min="1" placeholder="不限">
-              <p class="help-text">仅指定使用几个核心，具体绑核由后端自动分配。</p>
+              <label for="attack-infix">中缀 (infix)</label>
+              <input id="attack-infix" type="text" placeholder="重复部分">
             </div>
             <div class="form-group">
-              <label for="tools-memory">内存限制 (MB)</label>
-              <input id="tools-memory" type="number" min="1" placeholder="不限">
-              <p class="help-text">不填则不限制内存。</p>
+              <label for="attack-suffix">后缀 (suffix)</label>
+              <input id="attack-suffix" type="text" placeholder="可选">
             </div>
           </div>
         </div>
-      </details>
-      <!-- Tools Selection -->
-      <details id="tools-selection-panel" class="selection-panel selection-group">
-        <summary>
-          <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
-            <h3 style="margin: 0; font-size: 15px; white-space: nowrap;">检测工具</h3>
-            <span id="tools-summary-text" class="summary-text">未选择</span>
-          </div>
-          <div class="selection-actions" onclick="event.preventDefault()">
-            <button id="tools-select-all" type="button" class="ghost mini-btn">全选</button>
-            <button id="tools-clear" type="button" class="ghost mini-btn">清空</button>
-            <div class="divider-vertical"></div>
-            <button id="run-tools" class="primary mini-btn run-btn">
-              <span class="icon">▶</span> 运行
-            </button>
-          </div>
-        </summary>
-        <div id="tools-list" class="checkbox-grid scrollable-grid"></div>
-      </details>
 
-      <div id="tool-job-status" class="job-status"></div>
-      
-      <div class="result-view-options" style="display: flex; gap: 16px; margin-bottom: 8px; align-items: center; justify-content: flex-end;">
-        <label style="font-size: 14px; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;">
+        <div id="manual-input-json" class="form-group manual-input-section" style="display:none;">
+          <textarea id="attack-json-text" style="display:none;"></textarea>
+          <div id="json-editor-container" style="border: 1px solid #ccc; font-size: 14px; height: 200px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Row 2: Base64 Panel (Reference Inspired Style) -->
+    <details class="panel full-width" id="base64-panel">
+      <summary>
+        <span>▶ Base64 转换工具</span>
+      </summary>
+      <div class="panel-content">
+        <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 24px; align-items: center;">
+          <div style="margin: 0;">
+            <label for="base64-input"
+              style="font-size: 11px; margin-bottom: 6px; display: block; color: var(--text-secondary); font-weight: 600; text-transform: uppercase;">输入内容</label>
+            <textarea id="base64-input" placeholder="输入原始文本以编码，或输入 Base64 字符串以解码..." rows="2"
+              style="font-size: 13px; line-height: 1.5;"></textarea>
+          </div>
+
+          <div
+            style="display: flex; flex-direction: column; gap: 8px; align-items: center; justify-content: center; padding-top: 18px;">
+            <button id="base64-encode" class="primary"
+              style="width: 85px; padding: 6px 0; font-size: 12px; border-radius: 6px;">编码 →</button>
+            <button id="base64-decode" class="ghost"
+              style="width: 85px; padding: 6px 0; font-size: 12px; border-radius: 6px;">← 解码</button>
+            <button id="base64-clear" class="ghost mini-btn"
+              style="width: 85px; font-size: 11px; opacity: 0.6;">清空</button>
+          </div>
+
+          <div style="margin: 0;">
+            <label for="base64-output"
+              style="font-size: 11px; margin-bottom: 6px; display: block; color: var(--text-secondary); font-weight: 600; text-transform: uppercase;">转换结果</label>
+            <div style="position: relative;">
+              <textarea id="base64-output" placeholder="..." rows="2" readonly
+                style="font-size: 13px; line-height: 1.5; background: #f8fafc;"></textarea>
+              <button id="base64-copy" class="mini-btn" style="position: absolute; right: 8px; top: 8px;">复制</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px; margin: 16px 0 0 0; justify-content: center;">
+          <input type="checkbox" id="base64-ascii" style="width: auto; margin: 0;">
+          <label for="base64-ascii"
+            style="font-weight: normal; font-size: 12px; cursor: pointer; color: var(--text-secondary);">强制纯 ASCII
+            模式</label>
+        </div>
+      </div>
+    </details>
+
+    <!-- Row 3: Phase 1 Detection -->
+    <section class="panel phase-dashboard-card" id="tools-panel">
+      <div class="panel-header">
+        <h2 style="font-size: 18px;">第一阶段：检测</h2>
+        <span class="badge-status badge-ready">Ready</span>
+      </div>
+
+      <div class="phase-stats-row">
+        <div class="stat-item">
+          <span id="tools-summary-text" class="stat-value" style="font-size: 20px;">-</span>
+          <span class="stat-label">工具选中</span>
+        </div>
+        <div class="stat-item">
+          <span id="tools-risk-found" class="stat-value" style="font-size: 20px;">-</span>
+          <span class="stat-label">发现风险</span>
+        </div>
+        <div class="stat-item">
+          <span id="tools-progress-text" class="stat-value" style="font-size: 20px;">-</span>
+          <span class="stat-label">进度</span>
+        </div>
+      </div>
+
+      <button id="run-tools" class="big-run-btn">
+        <span>▶ 运行检测</span>
+      </button>
+
+      <div class="config-group">
+        <details id="tools-selection-panel" class="selection-panel-embedded">
+          <summary>选择工具 & 配置</summary>
+          <div style="padding: 16px;">
+            <div class="selection-actions" style="margin-bottom: 12px;">
+              <button id="tools-select-all" type="button" class="ghost mini-btn">全选</button>
+              <button id="tools-clear" type="button" class="ghost mini-btn">清空</button>
+            </div>
+            <div id="tools-list" class="checkbox-grid scrollable-grid"></div>
+
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #eee;">
+              <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #666;">高级运行设置</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="tools-timeout">超时(s)</label>
+                  <input id="tools-timeout" type="number" min="1" placeholder="不限时">
+                </div>
+                <div class="form-group">
+                  <label for="tools-cores">核心数</label>
+                  <input id="tools-cores" type="number" min="1" placeholder="不限">
+                </div>
+                <div class="form-group">
+                  <label for="tools-memory">内存(MB)</label>
+                  <input id="tools-memory" type="number" min="1" placeholder="不限">
+                </div>
+              </div>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <div class="result-view-options"
+        style="display: flex; gap: 16px; margin: 8px 0; align-items: center; justify-content: flex-end;">
+        <label
+          style="font-size: 12px; display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none;">
           <input type="checkbox" id="auto-collapse-unpinned" checked>
-          自动折叠未置顶项
+          折叠未置顶
         </label>
-        <label style="font-size: 14px; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;">
+        <label
+          style="font-size: 12px; display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none;">
           <input type="checkbox" id="always-expand-redos" checked>
-          始终展开 ReDoS 结果
+          展开 ReDoS
         </label>
+      </div>
+
+      <!-- 工具运行时间图表 -->
+      <div id="tool-chart-container" style="margin: 16px 0; padding: 16px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc;">
+        <h3 style="margin-top: 0; font-size: 16px; color: #334155;">工具运行时间对比</h3>
+        <div style="height: 300px;">
+          <canvas id="tool-time-chart"></canvas>
+        </div>
       </div>
 
       <div id="tool-results" class="results-container"></div>
     </section>
 
-    <section class="panel" id="engines-panel">
+    <!-- Row 3: Phase 2 Verification -->
+    <section class="panel phase-dashboard-card" id="engines-panel">
       <div class="panel-header">
-        <h2>第二阶段：引擎验证</h2>
-        <p>从上一阶段选择一个攻击字符串，在多个执行引擎上验证耗时表现。</p>
+        <h2 style="font-size: 18px;">第二阶段：验证</h2>
+        <span class="badge-status badge-completed">Completed</span>
       </div>
-      <div id="attack-summary" class="attack-summary">
-        <p>还没有选择工具结果。完成第一阶段后，点击对应结果的"用于验证"按钮，或手动输入攻击字符串。</p>
-      </div>
-      <div class="form-group">
-        <label>攻击字符串输入模式</label>
-        <div class="input-mode-tabs">
-          <button id="mode-tool" type="button" class="tab-btn active">使用工具结果</button>
-          <button id="mode-full" type="button" class="tab-btn">直接输入全文</button>
-          <button id="mode-pattern" type="button" class="tab-btn">前缀+中缀*N+后缀</button>
-          <button id="mode-json" type="button" class="tab-btn">JSON 字符串</button>
-        </div>
-      </div>
-      <div id="manual-input-full" class="form-group manual-input-section" style="display:none;">
-        <label for="attack-full-text">完整攻击文本</label>
-        <textarea id="attack-full-text" placeholder="直接输入要测试的完整攻击字符串" rows="3" style="width:100%;"></textarea>
-        <p class="help-text">输入原始文本，系统会自动进行 Base64 编码传输。</p>
-      </div>
-      <div id="manual-input-pattern" class="manual-input-section" style="display:none;">
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="attack-prefix">前缀 (prefix)</label>
-            <input id="attack-prefix" type="text" placeholder="可选">
-          </div>
-          <div class="form-group">
-            <label for="attack-infix">中缀 (infix)</label>
-            <input id="attack-infix" type="text" placeholder="重复部分">
-          </div>
-          <div class="form-group">
-            <label for="attack-suffix">后缀 (suffix)</label>
-            <input id="attack-suffix" type="text" placeholder="可选">
-          </div>
-        </div>
-        <p class="help-text">格式：prefix + infix × N + suffix，重复次数由"最大攻击串长度"自动计算。</p>
-      </div>
-      <div id="manual-input-json" class="form-group manual-input-section" style="display:none;">
-        <label for="attack-json-text">JSON 攻击详情</label>
-        <textarea id="attack-json-text" style="display:none;"></textarea>
-        <div id="json-editor-container" style="border: 1px solid #ccc; font-size: 14px;"></div>
-        <p class="help-text">直接输入包含 prefix, infix, suffix, repeat_times 的 JSON。这些字段应已是 Base64 编码。</p>
-      </div>
-      <details class="advanced-settings">
-        <summary>高级验证设置 (匹配模式、超时、资源限制)</summary>
-        <div class="advanced-content">
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="match-mode">匹配模式</label>
-              <select id="match-mode"></select>
-            </div>
-            <div class="form-group">
-              <label for="repeat-override">重复次数覆盖（可选）</label>
-              <input id="repeat-override" type="number" min="1" placeholder="使用工具推荐值">
-              <p class="help-text">若希望自定义重复次数，可在此输入正整数。</p>
-            </div>
-            <div class="form-group">
-              <label for="max-attack-length">最大攻击串长度</label>
-              <input id="max-attack-length" type="number" min="64">
-              <p class="help-text">防止生成过大的测试负载，默认值会在页面加载时填充。</p>
-            </div>
-            <div class="form-group">
-              <label for="engines-timeout">运行时间 (秒)</label>
-              <input id="engines-timeout" type="number" min="1" placeholder="不限时">
-              <p class="help-text">不填则不限时。</p>
-            </div>
-            <div class="form-group">
-              <label for="engines-cores">核心数</label>
-              <input id="engines-cores" type="number" min="1" placeholder="不限">
-              <p class="help-text">仅指定使用几个核心，具体绑核由后端自动分配。</p>
-            </div>
-            <div class="form-group">
-              <label for="engines-memory">内存限制 (MB)</label>
-              <input id="engines-memory" type="number" min="1" placeholder="不限">
-              <p class="help-text">不填则不限制内存。</p>
-            </div>
-          </div>
-        </div>
-      </details>
-      <!-- Engines Selection -->
-      <details id="engines-selection-panel" class="selection-panel selection-group">
-        <summary>
-          <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
-            <h3 style="margin: 0; font-size: 15px; white-space: nowrap;">验证引擎</h3>
-            <span id="engines-summary-text" class="summary-text">未选择</span>
-          </div>
-          <div class="selection-actions" onclick="event.preventDefault()">
-            <button id="engines-select-all" type="button" class="ghost mini-btn">全选</button>
-            <button id="engines-clear" type="button" class="ghost mini-btn">清空</button>
-            <div class="divider-vertical"></div>
-            <button id="run-engines" class="primary mini-btn run-btn">
-              <span class="icon">▶</span> 运行
-            </button>
-          </div>
-        </summary>
-        <div id="engines-list" class="checkbox-grid scrollable-grid"></div>
-      </details>
 
-      <div id="engine-job-status" class="job-status"></div>
-      <div id="active-payload-info" class="payload-info" style="display:none; margin-bottom: 16px; padding: 12px; border: 1px solid #b3e5fc; background: #e1f5fe; border-radius: 6px;"></div>
-      
-      <div class="result-view-options" style="display: flex; gap: 16px; margin-bottom: 8px; align-items: center; justify-content: flex-end;">
-        <label style="font-size: 14px; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;">
-          <input type="checkbox" id="engines-auto-collapse-unpinned" checked>
-          自动折叠未置顶项
-        </label>
-        <label style="font-size: 14px; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;">
-          <input type="checkbox" id="engines-always-expand-redos" checked>
-          始终展开 ReDoS 结果
-        </label>
+      <div class="phase-stats-row">
+        <div class="stat-item">
+          <span id="engines-summary-text" class="stat-value" style="font-size: 20px;">-</span>
+          <span class="stat-label">引擎选中</span>
+        </div>
+        <div class="stat-item">
+          <span id="engines-verified-success" class="stat-value" style="font-size: 20px;">-</span>
+          <span class="stat-label">验证成功</span>
+        </div>
+        <div class="stat-item">
+          <span id="engines-progress-text" class="stat-value" style="font-size: 20px;">-</span>
+          <span class="stat-label">进度</span>
+        </div>
+      </div>
+
+      <button id="run-engines" class="big-run-btn">
+        <span>▶ 运行验证</span>
+      </button>
+
+      <div class="config-group">
+        <details id="engines-selection-panel" class="selection-panel-embedded">
+          <summary>选择引擎 & 配置</summary>
+          <div style="padding: 16px;">
+            <div class="selection-actions" style="margin-bottom: 12px;">
+              <button id="engines-select-all" type="button" class="ghost mini-btn">全选</button>
+              <button id="engines-clear" type="button" class="ghost mini-btn">清空</button>
+            </div>
+            <div id="engines-list" class="checkbox-grid scrollable-grid"></div>
+
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #eee;">
+              <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #666;">高级验证设置</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="match-mode">匹配模式</label>
+                  <select id="match-mode"></select>
+                </div>
+                <div class="form-group">
+                  <label for="repeat-override">重复次数</label>
+                  <input id="repeat-override" type="number" min="1" placeholder="默认">
+                </div>
+                <div class="form-group">
+                  <label for="max-attack-length">最大长度</label>
+                  <input id="max-attack-length" type="number" min="64">
+                </div>
+                <div class="form-group">
+                  <label for="engines-timeout">超时(s)</label>
+                  <input id="engines-timeout" type="number" min="1" placeholder="不限时">
+                </div>
+                <div class="form-group">
+                  <label for="engines-cores">核心数</label>
+                  <input id="engines-cores" type="number" min="1" placeholder="不限">
+                </div>
+                <div class="form-group">
+                  <label for="engines-memory">内存(MB)</label>
+                  <input id="engines-memory" type="number" min="1" placeholder="不限">
+                </div>
+              </div>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <!-- 引擎运行时间图表 -->
+      <div id="engine-chart-container" style="margin: 16px 0; padding: 16px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc;">
+        <h3 style="margin-top: 0; font-size: 16px; color: #334155;">引擎运行时间对比</h3>
+        <div style="height: 300px;">
+          <canvas id="engine-time-chart"></canvas>
+        </div>
       </div>
 
       <div id="engine-results" class="results-container"></div>
     </section>
+
   </main>
+
   <footer class="page-footer">
     <p>💡 提示：若长时间无响应，可在 Docker 容器中查看服务日志，确认依赖是否正确安装。</p>
   </footer>
