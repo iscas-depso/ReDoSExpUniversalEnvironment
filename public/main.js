@@ -15,7 +15,8 @@ const state = {
     events: { tools: null, engines: null },
     attackInputMode: 'tool',
     regexList: [],
-    regexIndex: 0
+    regexIndex: 0,
+    scrollFlags: { tools: false, engines: false }
   };
 
   const el = id => document.getElementById(id);
@@ -589,6 +590,10 @@ const state = {
     return { attack: null, attackSource: {} };
   }
 
+  function scrollToTarget(el) {
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
   async function onRunTools() {
     const regex = state.regexList[state.regexIndex] || '';
     const tools = Array.from(state.selectedTools);
@@ -606,6 +611,9 @@ const state = {
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
       state.currentToolJob = { id: data.jobId, status: data.status };
+      renderToolResults();
+      scrollToTarget(E.toolStatus);
+      state.scrollFlags.tools = true;
       subscribe('tools', data.jobId);
     } catch (e) {
       console.error(e); setStatus('tools', '提交失败');
@@ -635,6 +643,9 @@ const state = {
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
       state.currentEngineJob = { id: data.jobId, status: data.status };
+      renderEngineResults();
+      scrollToTarget(E.engineStatus);
+      state.scrollFlags.engines = true;
       subscribe('engines', data.jobId);
     } catch (e) {
       console.error(e); setStatus('engines', '提交失败');
@@ -1084,6 +1095,12 @@ const state = {
       card.appendChild(body);
       container.appendChild(card);
     });
+
+    if (state.scrollFlags.tools && container.querySelector('.result-card')) {
+      const first = container.querySelector('.result-card');
+      scrollToTarget(first);
+      state.scrollFlags.tools = false;
+    }
   }
 
   function renderEngineResults() {
@@ -1148,6 +1165,12 @@ const state = {
       card.appendChild(body);
       container.appendChild(card);
     });
+
+    if (state.scrollFlags.engines && container.querySelector('.result-card')) {
+      const first = container.querySelector('.result-card');
+      scrollToTarget(first);
+      state.scrollFlags.engines = false;
+    }
   }
 
   function formatMs(ms) {
