@@ -771,7 +771,7 @@ const state = {
     });
 
     // Helper to create item
-    const createItem = (label, rawValue) => {
+    const createItem = (label, rawValue, copyValue) => {
         const div = document.createElement('div'); div.className = 'decoded-item';
         const strong = document.createElement('strong'); strong.textContent = label;
         const code = document.createElement('code');
@@ -794,6 +794,16 @@ const state = {
                  code.style.backgroundColor = '';
              });
         }
+
+        if (copyValue) {
+            div.style.cursor = 'pointer';
+            div.title = '点击复制: ' + (copyValue.length > 50 ? copyValue.substring(0, 50) + '...' : copyValue);
+            div.addEventListener('click', (e) => {
+                e.stopPropagation();
+                copyToClipboard(copyValue, div);
+            });
+        }
+
         div.appendChild(strong);
         div.appendChild(code);
         return div;
@@ -812,7 +822,7 @@ const state = {
 
     if (atk.fullText !== undefined) {
         const text = fromBase64(atk.fullText);
-        decodedBox.appendChild(createItem('FullText', text));
+        decodedBox.appendChild(createItem('FullText', text, atk.fullText));
         
         const div = document.createElement('div'); div.className = 'decoded-item';
         const strong = document.createElement('strong'); strong.textContent = 'Length';
@@ -826,15 +836,10 @@ const state = {
         const s = atk.suffix ? fromBase64(atk.suffix) : '';
         const r = atk.repeat_times || 1;
         
-        decodedBox.appendChild(createItem('Prefix', p));
-        decodedBox.appendChild(createItem('Infix', i));
-        decodedBox.appendChild(createItem('Suffix', s));
-        
-        const divR = document.createElement('div'); divR.className = 'decoded-item';
-        const strongR = document.createElement('strong'); strongR.textContent = 'Repeat';
-        const codeR = document.createElement('code'); codeR.textContent = r;
-        divR.appendChild(strongR); divR.appendChild(codeR);
-        decodedBox.appendChild(divR);
+        decodedBox.appendChild(createItem('Prefix', p, atk.prefix));
+        decodedBox.appendChild(createItem('Infix', i, atk.infix));
+        decodedBox.appendChild(createItem('Suffix', s, atk.suffix));
+        decodedBox.appendChild(createItem('Repeat', String(r), String(r)));
 
         const totalLen = p.length + i.length * r + s.length;
         const divL = document.createElement('div'); divL.className = 'decoded-item';
@@ -1258,6 +1263,23 @@ const state = {
                     code.style.color = '';
                     code.style.backgroundColor = '';
                   });
+
+                  // Copy behavior
+                  div.style.cursor = 'pointer';
+                  div.title = '点击复制: ' + (item.value.length > 50 ? item.value.substring(0, 50) + '...' : item.value);
+                  div.addEventListener('click', (e) => {
+                      e.stopPropagation();
+                      navigator.clipboard.writeText(item.value).then(() => {
+                          const originalColor = strong.style.color;
+                          const originalText = strong.textContent;
+                          strong.textContent = '✅ Copied!';
+                          strong.style.color = 'var(--success, green)';
+                          setTimeout(() => {
+                              strong.textContent = originalText;
+                              strong.style.color = originalColor;
+                          }, 1000);
+                      });
+                  });
                 }
 
                 div.appendChild(strong); div.appendChild(code);
@@ -1267,6 +1289,23 @@ const state = {
                 const div = document.createElement('div'); div.className = 'decoded-item';
                 const strong = document.createElement('strong'); strong.textContent = 'Repeat';
                 const code = document.createElement('code'); code.textContent = atk.repeat_times;
+                
+                div.style.cursor = 'pointer';
+                div.title = '点击复制 Repeat 次数';
+                div.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    navigator.clipboard.writeText(String(atk.repeat_times)).then(() => {
+                          const originalColor = strong.style.color;
+                          const originalText = strong.textContent;
+                          strong.textContent = '✅';
+                          strong.style.color = 'var(--success, green)';
+                          setTimeout(() => {
+                              strong.textContent = originalText;
+                              strong.style.color = originalColor;
+                          }, 1000);
+                    });
+                });
+
                 div.appendChild(strong); div.appendChild(code);
                 decodedBox.appendChild(div);
               }

@@ -68,9 +68,7 @@ def main():
             try:
                 java_output = json.loads(result.stdout)
                 print("java_output", java_output)
-                output_jsons = [
-                    convert_java_output_to_contract(java_output, elapsed_ms)
-                ]
+                output_jsons = convert_java_output_to_contract(java_output, elapsed_ms)
             except json.JSONDecodeError:
                 # If JSON parsing fails, treat as not ReDoS
                 output_jsons = [
@@ -114,49 +112,46 @@ def main():
 def convert_java_output_to_contract(java_output, elapsed_ms):
     """Convert Java output to the required contract format"""
 
-    # Default output
-    output = {"elapsed_ms": elapsed_ms, "is_redos": False}
-
     # Check if vulnerable
     if java_output.get("status") == "vulnerable":
-        output["is_redos"] = True
-
-        # Extract attack string details if available
         attack = java_output.get("attack")
         if attack and attack.get("pumps"):
+            outputs = []
             pumps = attack["pumps"]
-            prefix_b64 = base64.b64encode(
-                pumps[0].get("prefix", "").encode("utf-8")
-            ).decode("utf-8")
-            infix_b64 = base64.b64encode(
-                pumps[0].get("pump", "").encode("utf-8")
-            ).decode("utf-8")
             suffix_b64 = base64.b64encode(
                 attack.get("suffix", "").encode("utf-8")
             ).decode("utf-8")
             repeat_times = attack.get("base", -1)
 
-            # Use the extracted components
-            output.update(
-                {
+            for pump in pumps:
+                prefix_b64 = base64.b64encode(
+                    pump.get("prefix", "").encode("utf-8")
+                ).decode("utf-8")
+                infix_b64 = base64.b64encode(
+                    pump.get("pump", "").encode("utf-8")
+                ).decode("utf-8")
+
+                outputs.append({
+                    "elapsed_ms": elapsed_ms,
+                    "is_redos": True,
                     "prefix": prefix_b64,
                     "infix": infix_b64,
                     "suffix": suffix_b64,
                     "repeat_times": repeat_times,
-                }
-            )
+                })
+            return outputs
         else:
             # Fallback if no details available
-            output.update(
-                {
-                    "prefix": base64.b64encode("".encode("utf-8")).decode("utf-8"),
-                    "infix": base64.b64encode("a".encode("utf-8")).decode("utf-8"),
-                    "suffix": base64.b64encode("".encode("utf-8")).decode("utf-8"),
-                    "repeat_times": -1,
-                }
-            )
+            return [{
+                "elapsed_ms": elapsed_ms,
+                "is_redos": True,
+                "prefix": base64.b64encode("".encode("utf-8")).decode("utf-8"),
+                "infix": base64.b64encode("a".encode("utf-8")).decode("utf-8"),
+                "suffix": base64.b64encode("".encode("utf-8")).decode("utf-8"),
+                "repeat_times": -1,
+            }]
 
-    return output
+    return [{"elapsed_ms": elapsed_ms, "is_redos": False}]
 
 
 if __name__ == "__main__":

@@ -310,6 +310,7 @@ button:disabled {
   /* allow long words/paths to wrap within cards */
   overflow-wrap: anywhere;
   word-break: break-word;
+  cursor: text;
 }
 
 .result-body code {
@@ -333,6 +334,7 @@ button:disabled {
   overflow-x: auto;
   max-height: 160px;
   white-space: pre-wrap;
+  cursor: text;
 }
 
 /* wrap long lines inside generic pre blocks within result cards */
@@ -342,6 +344,7 @@ button:disabled {
   word-break: break-word;
   max-width: 100%;
   margin: 0;
+  cursor: text;
 }
 
 .collapsible-container {
@@ -358,6 +361,7 @@ button:disabled {
   overflow: hidden;
   padding: 12px;
   transition: max-height 0.3s ease;
+  cursor: text;
 }
 
 .collapsible-pre.expanded {
@@ -693,9 +697,30 @@ button:disabled {
   background: linear-gradient(to bottom right, #fff, rgba(37, 99, 235, 0.02));
 }
 
+/* Suppress box hover effects when hovering interactive children */
+.decoded-box:has(.decoded-item:hover),
+.decoded-box:has(.decoded-copy-btn:hover) {
+  border-color: #e2e8f0;
+  box-shadow: none;
+  background: #fff;
+  cursor: default;
+}
+
+.decoded-box:has(.decoded-item:hover)::after,
+.decoded-box:has(.decoded-copy-btn:hover)::after {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
 .decoded-box:active {
   transform: translateY(1px);
   box-shadow: none;
+}
+
+/* Suppress active state when clicking inner items */
+.decoded-box:has(.decoded-item:active),
+.decoded-box:has(.decoded-copy-btn:active) {
+  transform: none;
 }
 
 .decoded-box::after {
@@ -856,6 +881,7 @@ details.advanced-settings .form-grid {
   cursor: default !important;
   position: relative;
   border: 2px solid var(--text-primary);
+  padding: 2px 8px; /* Compensate for 2px border to match height of regular badge (4px padding) */
 }
 
 .badge-locked.badge-redos-true {

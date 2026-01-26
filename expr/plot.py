@@ -7,13 +7,13 @@ from tqdm import tqdm
 import sys
 
 TOOLS = [
-    "rengar",
-    "regexploit",
     "ere",
-    "rescue",
     "recheck",
-    "revealer",
     "redoshunter",
+    "rengar",
+    "rescue",
+    "regexploit",
+    "revealer",
     # "regexstatic",
     # "regulator",
 ]
@@ -213,11 +213,27 @@ def print_missed_cases(all_results, all_raw_data, our_tool="ere"):
     for key in sorted(all_vulnerable_keys):
         res_ours = our_data.get(key, False)
         if not res_ours:
+            tool_names = []
+            raw_data = None
             # 找出一个发现了该漏洞的其他工具，并输出其原始数据
-            for tool_name, tool_data in all_results.items():
-                if tool_name != our_tool and tool_data.get(key, False):
-                    print(all_raw_data[tool_name][key])
-                    break
+            # 按照TOOLS的顺序输出
+            for tool_name in TOOLS:
+                if tool_name == our_tool:
+                    continue
+                if tool_name not in all_results:
+                    continue
+                tool_data = all_results[tool_name]
+                if tool_data.get(key, False):
+                    if raw_data is None:
+                        raw_data = json.loads(all_raw_data[tool_name][key])
+                    tool_names.append(tool_name)
+
+            if raw_data is not None:
+                raw_data = {
+                    "tools": tool_names,
+                    **raw_data,
+                }
+                print(json.dumps(raw_data, ensure_ascii=True))
 
 
 def main():
