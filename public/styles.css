@@ -858,6 +858,30 @@ details.advanced-settings .form-grid {
   border: 2px solid var(--text-primary);
 }
 
+.badge-locked.badge-redos-true {
+  background-color: var(--danger);
+  border-color: var(--danger);
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.15),
+    rgba(255, 255, 255, 0.15) 10px,
+    transparent 10px,
+    transparent 20px
+  );
+}
+
+.badge-locked.badge-redos-false {
+  background-color: var(--success);
+  border-color: var(--success);
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.15),
+    rgba(255, 255, 255, 0.15) 10px,
+    transparent 10px,
+    transparent 20px
+  );
+}
+
 /* Regex Quick Actions Bar */
 .regex-actions-bar {
   margin-top: 4px;

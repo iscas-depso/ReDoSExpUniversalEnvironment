@@ -42,6 +42,7 @@ const state = {
     enginesClear: el('engines-clear'),
     toolStatus: el('tool-job-status'),
     engineStatus: el('engine-job-status'),
+    activePayloadInfo: el('active-payload-info'),
     toolResults: el('tool-results'),
     autoCollapseUnpinned: el('auto-collapse-unpinned'),
     alwaysExpandRedos: el('always-expand-redos'),
@@ -541,9 +542,11 @@ const state = {
   }
 
   function buildAttackPayload() {
+    let payload = { attack: null, attackSource: {} };
+
     if (state.attackInputMode === 'tool' && state.attackSelection) {
-      return {
-        attack: state.attackSelection.attack,
+      payload = {
+        attack: { ...state.attackSelection.attack },
         attackSource: {
           toolId: state.attackSelection.toolId,
           toolLabel: state.attackSelection.toolLabel,
@@ -552,7 +555,7 @@ const state = {
       };
     } else if (state.attackInputMode === 'full') {
       const text = (E.attackFullText?.value || '').trim();
-      return {
+      payload = {
         attack: { fullText: toBase64(text) },
         attackSource: { mode: 'manual-full' }
       };
@@ -560,17 +563,12 @@ const state = {
       const prefix = E.attackPrefix?.value || '';
       const infix = E.attackInfix?.value || '';
       const suffix = E.attackSuffix?.value || '';
-      const maxLen = num(E.maxAttackLength?.value) || 1024;
-      const prefixLen = prefix.length;
-      const infixLen = infix.length;
-      const suffixLen = suffix.length;
-      const repeat = infixLen > 0 ? Math.max(1, Math.floor((maxLen - prefixLen - suffixLen) / infixLen)) : 1;
-      return {
+      payload = {
         attack: {
           prefix: toBase64(prefix),
           infix: toBase64(infix),
           suffix: toBase64(suffix),
-          repeat_times: repeat
+          repeat_times: 1
         },
         attackSource: { mode: 'manual-pattern' }
       };
@@ -582,12 +580,59 @@ const state = {
       } catch (e) {
         console.error('JSON parse error', e);
       }
-      return {
+      payload = {
         attack: parsed,
         attackSource: { mode: 'manual-json' }
       };
     }
-    return { attack: null, attackSource: {} };
+
+    if (!payload.attack) return { attack: null, attackSource: {} };
+
+    const maxLenInput = num(E.maxAttackLength?.value);
+    const repeatOver = num(E.repeatOverride?.value);
+    
+    // Default max length for pattern mode if not specified (to match original behavior)
+    const effectiveMaxLen = (state.attackInputMode === 'pattern' && maxLenInput === undefined) 
+        ? 1024 
+        : maxLenInput;
+
+    const atk = payload.attack;
+
+    // Check for structural attack (infix present)
+    if (atk.infix !== undefined) {
+      let limitRepeats;
+      if (effectiveMaxLen !== undefined) {
+        const pre = atk.prefix ? fromBase64(atk.prefix) : '';
+        const inf = fromBase64(atk.infix);
+        const suf = atk.suffix ? fromBase64(atk.suffix) : '';
+        const baseLen = pre.length + suf.length;
+        
+        if (inf.length > 0) {
+          const available = Math.max(0, effectiveMaxLen - baseLen);
+          limitRepeats = Math.max(1, Math.floor(available / inf.length));
+        } else {
+          limitRepeats = 1;
+        }
+      }
+
+      if (repeatOver !== undefined) {
+        atk.repeat_times = repeatOver;
+        if (limitRepeats !== undefined) {
+          atk.repeat_times = Math.min(atk.repeat_times, limitRepeats);
+        }
+      } else if (limitRepeats !== undefined) {
+        atk.repeat_times = limitRepeats;
+      }
+    } else if (atk.fullText !== undefined) {
+      if (effectiveMaxLen !== undefined) {
+        const text = fromBase64(atk.fullText);
+        if (text.length > effectiveMaxLen) {
+          atk.fullText = toBase64(text.substring(0, effectiveMaxLen));
+        }
+      }
+    }
+
+    return payload;
   }
 
   function scrollToTarget(el) {
@@ -620,6 +665,195 @@ const state = {
     }
   }
 
+  function renderActivePayload(payload) {
+    const container = E.activePayloadInfo;
+    if (!container) return;
+    
+    // Inject custom style for active payload box if not present
+    if (!document.getElementById('active-payload-style')) {
+        const style = document.createElement('style');
+        style.id = 'active-payload-style';
+        style.textContent = `
+            .decoded-box.active-payload::after {
+                content: "📋 Click to Copy Payload";
+            }
+            .decoded-box.active-payload:hover {
+                border-color: var(--success);
+                background: linear-gradient(to bottom right, #fff, rgba(16, 185, 129, 0.05));
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    container.style.display = 'block';
+    container.innerHTML = '';
+
+    const header = document.createElement('div');
+    header.style.display = 'flex';
+    header.style.justifyContent = 'space-between';
+    header.style.alignItems = 'center';
+    header.style.marginBottom = '8px';
+    header.style.borderBottom = '1px solid #b3e5fc';
+    header.style.paddingBottom = '8px';
+
+    const title = document.createElement('strong');
+    title.textContent = '🚀 实际执行 Payload';
+    header.appendChild(title);
+    container.appendChild(header);
+
+    // Box
+    const decodedBox = document.createElement('div');
+    decodedBox.className = 'decoded-box active-payload';
+    decodedBox.title = '点击复制完整 Payload 内容';
+
+    // Copy Action
+    const copyToClipboard = (text, btn = null) => {
+        navigator.clipboard.writeText(text).then(() => {
+            if (btn) {
+                const original = btn.innerHTML;
+                btn.innerHTML = '✅ Copied!';
+                btn.style.color = 'var(--success)';
+                setTimeout(() => {
+                    btn.innerHTML = original;
+                    btn.style.color = '';
+                }, 2000);
+            } else {
+                 // Visual feedback for box click
+                 const originalBorder = decodedBox.style.borderColor;
+                 decodedBox.style.borderColor = 'var(--success)';
+                 decodedBox.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+                 
+                 // Create a floating feedback element
+                 const feedback = document.createElement('div');
+                 feedback.textContent = '已复制!';
+                 feedback.style.position = 'absolute';
+                 feedback.style.top = '50%';
+                 feedback.style.left = '50%';
+                 feedback.style.transform = 'translate(-50%, -50%)';
+                 feedback.style.background = 'rgba(0,0,0,0.7)';
+                 feedback.style.color = 'white';
+                 feedback.style.padding = '8px 16px';
+                 feedback.style.borderRadius = '4px';
+                 feedback.style.zIndex = '10';
+                 feedback.style.pointerEvents = 'none';
+                 decodedBox.appendChild(feedback);
+
+                 setTimeout(() => {
+                     decodedBox.style.borderColor = '';
+                     decodedBox.style.backgroundColor = '';
+                     if (decodedBox.contains(feedback)) decodedBox.removeChild(feedback);
+                 }, 1000);
+            }
+        });
+    };
+
+    const atk = payload.attack;
+    
+    // Construct full text for copy
+    let fullAttackString = '';
+    if (atk.fullText !== undefined) {
+        fullAttackString = fromBase64(atk.fullText);
+    } else if (atk.infix !== undefined) {
+         const p = atk.prefix ? fromBase64(atk.prefix) : '';
+         const i = fromBase64(atk.infix);
+         const s = atk.suffix ? fromBase64(atk.suffix) : '';
+         const r = atk.repeat_times || 1;
+         fullAttackString = p + i.repeat(r) + s;
+    } else {
+         fullAttackString = JSON.stringify(atk, null, 2);
+    }
+
+    decodedBox.addEventListener('click', (e) => {
+        // Prevent triggering if selecting text
+        const sel = window.getSelection();
+        if (sel && sel.toString().length > 0) return;
+        copyToClipboard(fullAttackString);
+    });
+
+    // Helper to create item
+    const createItem = (label, rawValue) => {
+        const div = document.createElement('div'); div.className = 'decoded-item';
+        const strong = document.createElement('strong'); strong.textContent = label;
+        const code = document.createElement('code');
+        
+        if (!rawValue) {
+             code.textContent = '(空)';
+        } else {
+             const escaped = escapeToAscii(rawValue);
+             code.textContent = rawValue.length > 500 ? rawValue.substring(0, 500) + '...' : rawValue;
+             code.title = escaped;
+             
+             div.addEventListener('mouseenter', () => {
+                 code.textContent = escaped;
+                 code.style.color = 'var(--accent)';
+                 code.style.backgroundColor = 'rgba(37, 99, 235, 0.1)';
+             });
+             div.addEventListener('mouseleave', () => {
+                 code.textContent = rawValue.length > 500 ? rawValue.substring(0, 500) + '...' : rawValue;
+                 code.style.color = '';
+                 code.style.backgroundColor = '';
+             });
+        }
+        div.appendChild(strong);
+        div.appendChild(code);
+        return div;
+    };
+
+    // Copy JSON Button
+    const copyJsonBtn = document.createElement('div');
+    copyJsonBtn.className = 'decoded-copy-btn';
+    copyJsonBtn.innerHTML = '📋 Copy JSON';
+    copyJsonBtn.title = '复制原始 JSON 配置';
+    copyJsonBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        copyToClipboard(JSON.stringify(atk, null, 2), copyJsonBtn);
+    });
+    decodedBox.appendChild(copyJsonBtn);
+
+    if (atk.fullText !== undefined) {
+        const text = fromBase64(atk.fullText);
+        decodedBox.appendChild(createItem('FullText', text));
+        
+        const div = document.createElement('div'); div.className = 'decoded-item';
+        const strong = document.createElement('strong'); strong.textContent = 'Length';
+        const code = document.createElement('code'); code.textContent = `${text.length}`;
+        div.appendChild(strong); div.appendChild(code);
+        decodedBox.appendChild(div);
+
+    } else if (atk.infix !== undefined) {
+        const p = atk.prefix ? fromBase64(atk.prefix) : '';
+        const i = fromBase64(atk.infix);
+        const s = atk.suffix ? fromBase64(atk.suffix) : '';
+        const r = atk.repeat_times || 1;
+        
+        decodedBox.appendChild(createItem('Prefix', p));
+        decodedBox.appendChild(createItem('Infix', i));
+        decodedBox.appendChild(createItem('Suffix', s));
+        
+        const divR = document.createElement('div'); divR.className = 'decoded-item';
+        const strongR = document.createElement('strong'); strongR.textContent = 'Repeat';
+        const codeR = document.createElement('code'); codeR.textContent = r;
+        divR.appendChild(strongR); divR.appendChild(codeR);
+        decodedBox.appendChild(divR);
+
+        const totalLen = p.length + i.length * r + s.length;
+        const divL = document.createElement('div'); divL.className = 'decoded-item';
+        const strongL = document.createElement('strong'); strongL.textContent = 'Total';
+        const codeL = document.createElement('code'); codeL.textContent = `${totalLen}`;
+        divL.appendChild(strongL); divL.appendChild(codeL);
+        decodedBox.appendChild(divL);
+    } else {
+        const pre = document.createElement('pre');
+        pre.textContent = JSON.stringify(atk, null, 2);
+        pre.style.padding = '8px';
+        pre.style.margin = '0';
+        pre.style.overflow = 'auto';
+        decodedBox.appendChild(pre);
+    }
+
+    container.appendChild(decodedBox);
+  }
+
   async function onRunEngines() {
     const regex = state.regexList[state.regexIndex] || '';
     const engines = Array.from(state.selectedEngines);
@@ -627,6 +861,7 @@ const state = {
     setStatus('engines', '提交中...');
     try {
       const payload = buildAttackPayload();
+      renderActivePayload(payload);
       const body = {
         regex,
         engines,
@@ -762,6 +997,15 @@ const state = {
         card.style.cursor = 'grab'; // Visual cue
         card.dataset.toolId = r.id;
 
+        // Allow text selection in result-body and payload by disabling drag
+        card.addEventListener('mousedown', (e) => {
+          if (e.target.closest('.result-body') || e.target.closest('.payload')) {
+            card.draggable = false;
+          }
+        });
+        card.addEventListener('mouseup', () => { card.draggable = true; });
+        card.addEventListener('mouseleave', () => { card.draggable = true; });
+
         card.addEventListener('dragstart', (e) => {
           e.dataTransfer.effectAllowed = 'move';
           e.dataTransfer.setData('text/plain', r.id);
@@ -882,8 +1126,8 @@ const state = {
         if (canVerify) {
           const btn = document.createElement('button');
           if (isLocked) {
-            btn.className = 'badge badge-locked';
-            btn.innerHTML = '已锁定 (Current)';
+            btn.className = 'badge badge-locked ' + (redosValue ? 'badge-redos-true' : 'badge-redos-false');
+            btn.innerHTML = (redosValue ? 'ReDoS' : 'Safe') + ' (已锁定)';
             btn.title = '当前正在使用此工具的结果进行验证';
           } else {
             btn.className = redosValue ? 'badge badge-redos-true' : 'badge badge-redos-false';
