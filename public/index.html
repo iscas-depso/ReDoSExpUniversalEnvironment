@@ -158,8 +158,6 @@
               <span class="slider"></span>
               <span class="label-text">语法高亮</span>
             </label>
-            <button type="button" id="copy-regex-btn" class="ghost small" style="display:none">📋 复制正则</button>
-            <button type="button" id="copy-b64-btn" class="ghost small" style="display:none">📋 复制 Base64</button>
             <button id="show-history" class="ghost small" type="button">📜 历史记录</button>
           </div>
         </div>
@@ -180,7 +178,11 @@
             </div>
           </div>
           <div id="regex-counter-container" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; border-top: 1px solid #e2e8f0; padding-top: 8px;">
-            <p class="help-text" style="margin:0; font-size: 0.8em; color: #888; flex: 1;">输入原始正则表达式，后端会自动进行 Base64 编码。</p>
+            <div style="flex: 1; display: flex; gap: 8px;">
+              <button type="button" id="copy-regex-btn" class="ghost small" style="display:none">📋 复制正则</button>
+              <button type="button" id="copy-b64-btn" class="ghost small" style="display:none">📋 复制 Base64</button>
+              <button type="button" id="open-regex101-btn" class="ghost small" style="display:none">🔗 Regex101</button>
+            </div>
             <div id="regex-jump-to-wrapper" style="display: flex; align-items: center; gap: 8px;">
               <span style="font-size: 0.85em; color: #64748b;">Jump to:</span>
               <div class="regex-pagination">
@@ -191,17 +193,6 @@
             </div>
           </div>
         </div>
-      </div>
-      <div class="selection-group">
-        <div class="selection-header">
-          <h3>检测工具</h3>
-          <div class="selection-actions">
-            <button id="tools-select-all" type="button" class="ghost small">全选</button>
-            <button id="tools-clear" type="button" class="ghost small">清空</button>
-            <button id="run-tools" class="primary small">运行所选工具</button>
-          </div>
-        </div>
-        <div id="tools-list" class="checkbox-grid"></div>
       </div>
       <details class="advanced-settings">
         <summary>高级运行设置 (超时、核心、内存)</summary>
@@ -224,6 +215,24 @@
             </div>
           </div>
         </div>
+      </details>
+      <!-- Tools Selection -->
+      <details id="tools-selection-panel" class="selection-panel selection-group">
+        <summary>
+          <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
+            <h3 style="margin: 0; font-size: 15px; white-space: nowrap;">检测工具</h3>
+            <span id="tools-summary-text" class="summary-text">未选择</span>
+          </div>
+          <div class="selection-actions" onclick="event.preventDefault()">
+            <button id="tools-select-all" type="button" class="ghost mini-btn">全选</button>
+            <button id="tools-clear" type="button" class="ghost mini-btn">清空</button>
+            <div class="divider-vertical"></div>
+            <button id="run-tools" class="primary mini-btn run-btn">
+              <span class="icon">▶</span> 运行
+            </button>
+          </div>
+        </summary>
+        <div id="tools-list" class="checkbox-grid scrollable-grid"></div>
       </details>
 
       <div id="tool-job-status" class="job-status"></div>
@@ -283,9 +292,8 @@
       </div>
       <div id="manual-input-json" class="form-group manual-input-section" style="display:none;">
         <label for="attack-json-text">JSON 攻击详情</label>
-        <textarea id="attack-json-text"
-          placeholder='示例：{"prefix": "...", "infix": "...", "suffix": "...", "repeat_times": 512}' rows="5"
-          style="width:100%; font-family: monospace;"></textarea>
+        <textarea id="attack-json-text" style="display:none;"></textarea>
+        <div id="json-editor-container" style="border: 1px solid #ccc; font-size: 14px;"></div>
         <p class="help-text">直接输入包含 prefix, infix, suffix, repeat_times 的 JSON。这些字段应已是 Base64 编码。</p>
       </div>
       <details class="advanced-settings">
@@ -324,20 +332,39 @@
           </div>
         </div>
       </details>
-      <div class="selection-group">
-        <div class="selection-header">
-          <h3>验证引擎</h3>
-          <div class="selection-actions">
-            <button id="engines-select-all" type="button" class="ghost small">全选</button>
-            <button id="engines-clear" type="button" class="ghost small">清空</button>
-            <button id="run-engines" class="primary small" disabled>运行所选引擎</button>
+      <!-- Engines Selection -->
+      <details id="engines-selection-panel" class="selection-panel selection-group">
+        <summary>
+          <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
+            <h3 style="margin: 0; font-size: 15px; white-space: nowrap;">验证引擎</h3>
+            <span id="engines-summary-text" class="summary-text">未选择</span>
           </div>
-        </div>
-        <div id="engines-list" class="checkbox-grid"></div>
-      </div>
+          <div class="selection-actions" onclick="event.preventDefault()">
+            <button id="engines-select-all" type="button" class="ghost mini-btn">全选</button>
+            <button id="engines-clear" type="button" class="ghost mini-btn">清空</button>
+            <div class="divider-vertical"></div>
+            <button id="run-engines" class="primary mini-btn run-btn">
+              <span class="icon">▶</span> 运行
+            </button>
+          </div>
+        </summary>
+        <div id="engines-list" class="checkbox-grid scrollable-grid"></div>
+      </details>
 
       <div id="engine-job-status" class="job-status"></div>
       <div id="active-payload-info" class="payload-info" style="display:none; margin-bottom: 16px; padding: 12px; border: 1px solid #b3e5fc; background: #e1f5fe; border-radius: 6px;"></div>
+      
+      <div class="result-view-options" style="display: flex; gap: 16px; margin-bottom: 8px; align-items: center; justify-content: flex-end;">
+        <label style="font-size: 14px; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;">
+          <input type="checkbox" id="engines-auto-collapse-unpinned" checked>
+          自动折叠未置顶项
+        </label>
+        <label style="font-size: 14px; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;">
+          <input type="checkbox" id="engines-always-expand-redos" checked>
+          始终展开 ReDoS 结果
+        </label>
+      </div>
+
       <div id="engine-results" class="results-container"></div>
     </section>
   </main>
@@ -361,11 +388,29 @@
   <script type="importmap">
     {
       "imports": {
-        "regex-colorizer": "/vendor/regex-colorizer/src/index.js"
+        "regex-colorizer": "/vendor/regex-colorizer/src/index.js",
+        "codemirror": "/vendor/codemirror/dist/index.js",
+        "@codemirror/autocomplete": "/vendor/@codemirror/autocomplete/dist/index.js",
+        "@codemirror/commands": "/vendor/@codemirror/commands/dist/index.js",
+        "@codemirror/language": "/vendor/@codemirror/language/dist/index.js",
+        "@codemirror/lint": "/vendor/@codemirror/lint/dist/index.js",
+        "@codemirror/search": "/vendor/@codemirror/search/dist/index.js",
+        "@codemirror/state": "/vendor/@codemirror/state/dist/index.js",
+        "@codemirror/view": "/vendor/@codemirror/view/dist/index.js",
+        "@codemirror/lang-json": "/vendor/@codemirror/lang-json/dist/index.js",
+        "@codemirror/theme-one-dark": "/vendor/@codemirror/theme-one-dark/dist/index.js",
+        "@lezer/common": "/vendor/@lezer/common/dist/index.js",
+        "@lezer/highlight": "/vendor/@lezer/highlight/dist/index.js",
+        "@lezer/lr": "/vendor/@lezer/lr/dist/index.js",
+        "@lezer/json": "/vendor/@lezer/json/dist/index.js",
+        "@marijn/find-cluster-break": "/vendor/@marijn/find-cluster-break/src/index.js",
+        "style-mod": "/vendor/style-mod/src/style-mod.js",
+        "w3c-keyname": "/vendor/w3c-keyname/index.js",
+        "crelt": "/vendor/crelt/index.js"
       }
     }
   </script>
-  <script type="module" src="./main.js?v=1"></script>
+  <script type="module" src="./main.js?v=3"></script>
 </body>
 
 </html>

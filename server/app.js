@@ -336,6 +336,21 @@ function createApp(options = {}) {
 
   // Expose regex-colorizer for frontend import
   app.use('/vendor/regex-colorizer', express.static(path.join(__dirname, '..', 'node_modules', 'regex-colorizer')));
+  
+  // Expose CodeMirror 6 and dependencies
+  const vendorModules = [
+    'codemirror',
+    '@codemirror',
+    '@lezer',
+    '@marijn',
+    'style-mod',
+    'w3c-keyname',
+    'crelt'
+  ];
+  
+  vendorModules.forEach(mod => {
+    app.use(`/vendor/${mod}`, express.static(path.join(__dirname, '..', 'node_modules', mod)));
+  });
 
   app.use((req, res, next) => {
     if (req.path.startsWith('/api/')) {
