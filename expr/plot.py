@@ -40,6 +40,8 @@ def load_tool_results(
     all_results = {}
     # 存储原始行内容的字典: {tool_name: {(file, line): raw_line}}
     all_raw_data = {}
+    # 存储报告的字典: {tool_name: {(file, line): is_report}}
+    all_report = {}
 
     for file_path in tqdm(files, desc="Loading results"):
         filename = os.path.basename(file_path)
@@ -50,6 +52,7 @@ def load_tool_results(
         )
 
         tool_data = {}
+        tool_report = {}
         raw_data = {}
         with open(file_path, "r", encoding="utf-8") as f:
             for line_content in f:
@@ -57,6 +60,7 @@ def load_tool_results(
                 if not line_content:
                     continue
                 is_redos = False
+                is_report = False
                 try:
                     data = json.loads(line_content)
                     # 唯一标识符
@@ -65,34 +69,41 @@ def load_tool_results(
                         if is_expr:
                             # 解析 output 字段（它是字符串形式的 JSON）
                             output_json = json.loads(data["output"])
-                            is_redos = output_json.get("is_redos", False)
+                            is_redos = any(
+                                obj.get("is_redos", False) for obj in output_json
+                            )
                         else:
+                            is_report = (
+                                data.get("stderr", "") != "input is not a valid attack"
+                            )
                             if (tool_name == our_tool and no_detect_tool) or (
                                 ground_truth
                                 and all_vulnerable_keys is not None
                                 and key in all_vulnerable_keys
                             ):
-                                is_redos = (
-                                    data.get("stderr", "")
-                                    != "input is not a valid attack"
-                                )
+                                is_redos = is_report
                             else:
                                 is_redos = data.get(
                                     "timeout", False
                                 ) or "terminationreason=" in data.get("stdout", "")
-
+                        tool_report[key] = is_report
                         tool_data[key] = is_redos
                     raw_data[key] = line_content
                 except (json.JSONDecodeError, KeyError) as e:
                     pass
-
+        all_report[tool_name] = tool_report
         all_results[tool_name] = tool_data
         all_raw_data[tool_name] = raw_data
     if detect_redos:
         for tool_name, tool_data in all_results.items():
             total = len(tool_data)
             redos_count = sum(tool_data.values())
-            print(f"{tool_name}: {total}/{redos_count}", file=sys.stderr)
+            report_count = sum(all_report[tool_name].values())
+            percentage = redos_count / report_count if report_count > 0 else 0
+            print(
+                f"{tool_name}: {total}/{report_count}/{redos_count} ({percentage:.2%})",
+                file=sys.stderr,
+            )
 
     if ground_truth and all_vulnerable_keys is None:
         all_vulnerable_keys = set()
@@ -112,7 +123,7 @@ def load_tool_results(
     return all_results, all_raw_data
 
 
-def process_and_plot(all_results, our_tool="ere"):
+def process_and_plot(all_results, our_tool="ere", output_file="comparison_result.pdf"):
     if our_tool not in all_results:
         print(f"Error: Our tool '{our_tool}' results not found!")
         return
@@ -165,6 +176,10 @@ def process_and_plot(all_results, our_tool="ere"):
                 "Only Other Tool": (only_other / total_vuln_count) * 100,
                 "Both Found": (common / total_vuln_count) * 100,
                 "Only Ours Found": (only_ours / total_vuln_count) * 100,
+                "Other Tools Found_count": neither,
+                "Only Other Tool_count": only_other,
+                "Both Found_count": common,
+                "Only Ours Found_count": only_ours,
             }
         )
 
@@ -183,21 +198,45 @@ def process_and_plot(all_results, our_tool="ere"):
     # 红色 (#f8cecc) - Only Other
     # 浅灰色 (#eeeeee) - Neither (Other Tools Found)
     colors = ["#eeeeee", "#f8cecc", "#fff2cc", "#dae8fc"]
+    pct_cols = ["Other Tools Found", "Only Other Tool", "Both Found", "Only Ours Found"]
 
-    df.plot(kind="bar", stacked=True, ax=ax, color=colors, edgecolor="gray", width=0.7)
+    # --- 核心改进：视觉补偿逻辑 ---
+    # 创建一个用于绘图的临时 DataFrame，确保极小值也有最小展示高度
+    vis_df = df[pct_cols].copy()
+    MIN_VIS_PCT = 2.0  # 定义最小视觉占比 (百分比)
+    for col in pct_cols:
+        # 只有原本 > 0 的项才进行补偿，0 依然保持为 0
+        vis_df[col] = vis_df[col].apply(lambda x: max(x, MIN_VIS_PCT) if x > 0 else 0)
+
+    # 重新归一化到 100%，以保证堆叠高度一致，但比例已经向小值倾斜了
+    row_sums = vis_df.sum(axis=1)
+    for col in pct_cols:
+        vis_df[col] = (vis_df[col] / row_sums) * 100
+
+    # 使用视觉补偿后的数据绘图，并加强边框对比
+    vis_df.plot(
+        kind="bar",
+        stacked=True,
+        ax=ax,
+        color=colors,
+        edgecolor="#444444",
+        linewidth=0.5,
+        width=0.7,
+    )
 
     # 在柱状图中添加具体数值标签
-    for container in ax.containers:
-        # 根据百分比和总数反推具体个数，如果数值大于 0 则显示
-        labels = [
-            (
-                f"{int(round(v.get_height() * total_vuln_count / 100))}"
-                if v.get_height() > 0
-                else ""
-            )
-            for v in container
-        ]
-        ax.bar_label(container, labels=labels, label_type="center", fontsize=9)
+    for i, container in enumerate(ax.containers):
+        # 使用预先保存的具体个数，如果数值大于 0 则显示
+        # 注意：这里依然使用原始 df 中的计数列，确保数据的真实准确
+        count_col = pct_cols[i] + "_count"
+        labels = [f"{int(count)}" if count > 0 else "" for count in df[count_col]]
+        ax.bar_label(
+            container,
+            labels=labels,
+            label_type="center",
+            fontsize=9,
+            fontweight="medium",
+        )
 
     # 设置样式
     ax.set_ylabel("Percentage of Total Vulnerabilities (%)", fontsize=12)
@@ -219,9 +258,8 @@ def process_and_plot(all_results, our_tool="ere"):
     plt.tight_layout()
 
     # 保存或显示
-    plt.savefig("comparison_result.pdf")
-    print("Plot saved as comparison_result.pdf")
-    plt.show()
+    plt.savefig(output_file)
+    print(f"Plot saved as {output_file}")
 
 
 def print_missed_cases(all_results, all_raw_data, our_tool="ere"):
@@ -300,8 +338,6 @@ def print_only_ours(all_results, all_raw_data, our_tool="ere"):
         print(f"Error: Our tool '{our_tool}' results not found!")
         return
 
-    our_data = all_results[our_tool]
-
     # 1. 找出所有其他工具发现的所有漏洞的并集
     other_vulnerable_keys = set()
     our_vulnerable_keys = set()
@@ -371,6 +407,13 @@ def main():
         help="Evaluate tools using ground truth",
     )
 
+    parser.add_argument(
+        "--output-file",
+        "-f",
+        default="comparison_result.pdf",
+        help="Output file path for the plot (default: comparison_result.pdf)",
+    )
+
     args = parser.parse_args()
     current_dir = args.directory
     results, raw_data = load_tool_results(
@@ -391,7 +434,7 @@ def main():
         elif args.show_only_ours:
             print_only_ours(results, raw_data, our_tool=args.tool)
         else:
-            process_and_plot(results, our_tool=args.tool)
+            process_and_plot(results, our_tool=args.tool, output_file=args.output_file)
     else:
         print("No valid JSONL files found.")
 

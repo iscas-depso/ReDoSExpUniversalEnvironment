@@ -133,7 +133,7 @@
 
         <div id="manual-input-json" class="form-group manual-input-section" style="display:none;">
           <textarea id="attack-json-text" style="display:none;"></textarea>
-          <div id="json-editor-container" style="border: 1px solid #ccc; font-size: 14px; height: 200px;"></div>
+          <div id="json-editor-container" style="border: 1px solid #ccc; font-size: 14px; min-height: 300px;"></div>
         </div>
       </div>
     </section>
@@ -186,7 +186,6 @@
     <section class="panel phase-dashboard-card" id="tools-panel">
       <div class="panel-header">
         <h2 style="font-size: 18px;">第一阶段：检测</h2>
-        <span class="badge-status badge-ready">Ready</span>
       </div>
 
       <div class="phase-stats-row">
@@ -204,7 +203,7 @@
         </div>
       </div>
 
-      <button id="run-tools" class="big-run-btn">
+      <button id="run-tools" class="big-run-btn big-run-btn-primary">
         <span>▶ 运行检测</span>
       </button>
 
@@ -268,7 +267,6 @@
     <section class="panel phase-dashboard-card" id="engines-panel">
       <div class="panel-header">
         <h2 style="font-size: 18px;">第二阶段：验证</h2>
-        <span class="badge-status badge-completed">Completed</span>
       </div>
 
       <div class="phase-stats-row">
@@ -286,7 +284,7 @@
         </div>
       </div>
 
-      <button id="run-engines" class="big-run-btn">
+      <button id="run-engines" class="big-run-btn big-run-btn-primary">
         <span>▶ 运行验证</span>
       </button>
 

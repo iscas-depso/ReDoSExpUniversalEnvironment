@@ -1213,17 +1213,18 @@ function renderToolResults() {
         }]
       },
       options: {
+        indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-          y: {
+          x: {
             beginAtZero: true,
             title: {
               display: true,
               text: '毫秒 (ms)'
             }
           },
-          x: {
+          y: {
             title: {
               display: true,
               text: '工具'
@@ -1237,7 +1238,7 @@ function renderToolResults() {
           tooltip: {
             callbacks: {
               label: function(context) {
-                const time = context.parsed.y;
+                const time = context.parsed.x;
                 const isRedos = toolRedos[context.dataIndex];
                 return [`运行时间: ${formatMs(time)}`, `ReDoS: ${isRedos ? '是' : '否'}`];
               }
@@ -1405,7 +1406,15 @@ function renderToolResults() {
     const title = document.createElement('span'); title.className = 'result-title'; title.textContent = r.label || r.id;
     leftGroup.appendChild(title);
 
-    const badge = document.createElement('span'); badge.className = 'badge badge-status status-' + r.status; badge.textContent = r.status;
+    const badge = document.createElement('span');
+    if (r.status === 'completed') {
+      badge.className = 'badge badge-status status-completed subtle-completed';
+      badge.textContent = '';
+      badge.title = 'Completed';
+    } else {
+      badge.className = 'badge badge-status status-' + r.status;
+      badge.textContent = r.status;
+    }
     leftGroup.appendChild(badge);
 
     header.appendChild(leftGroup);
@@ -1744,17 +1753,18 @@ function renderEngineResults() {
         }]
       },
       options: {
+        indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-          y: {
+          x: {
             beginAtZero: true,
             title: {
               display: true,
               text: '毫秒 (ms)'
             }
           },
-          x: {
+          y: {
             title: {
               display: true,
               text: '引擎'
@@ -1768,7 +1778,7 @@ function renderEngineResults() {
           tooltip: {
             callbacks: {
               label: function(context) {
-                const time = context.parsed.y;
+                const time = context.parsed.x;
                 return `运行时间: ${formatMs(time)}`;
               }
             }
@@ -1784,7 +1794,15 @@ function renderEngineResults() {
     if (elapsed > 1000) card.classList.add('slow-highlight');
     const header = document.createElement('div'); header.className = 'result-header';
     const title = document.createElement('span'); title.className = 'result-title'; title.textContent = r.label || r.id;
-    const badge = document.createElement('span'); badge.className = 'badge badge-status status-' + r.status; badge.textContent = r.status;
+    const badge = document.createElement('span');
+    if (r.status === 'completed') {
+      badge.className = 'badge badge-status status-completed subtle-completed';
+      badge.textContent = '';
+      badge.title = 'Completed';
+    } else {
+      badge.className = 'badge badge-status status-' + r.status;
+      badge.textContent = r.status;
+    }
     header.appendChild(title); header.appendChild(badge); card.appendChild(header);
 
     const body = document.createElement('div'); body.className = 'result-body';
