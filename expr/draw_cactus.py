@@ -4,13 +4,15 @@ import os
 import re
 import argparse
 import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
 from pathlib import Path
 from tqdm import tqdm
 import sys
 
 TOOLS = [
     "ere",
-    "recheck",
+    # "recheck",
     "redoshunter",
     "rengar",
     "rescue",
@@ -23,7 +25,7 @@ TOOLS = [
 
 def get_args():
     parser = argparse.ArgumentParser(
-        description="Generate Cactus Plots for Time or Memory with Verification Support."
+        description="Generate Benchmark Visualizations (Cactus Plot / Stacked Bar Chart)."
     )
 
     # --- 基础参数 ---
@@ -32,22 +34,21 @@ def get_args():
         "-d",
         type=str,
         default="./",
-        help="[Mode 1/2/3/4] 主数据目录：包含工具原始输出的 .json/.jsonl 文件",
+        help="[Mode 1/2/3/4] 主数据目录",
     )
 
     parser.add_argument(
         "--timeout",
-        "-t",
         type=float,
         default=600.0,
-        help="超时时间限制，单位秒 (默认: 600.0)",
+        help="超时时间限制 (s)",
     )
 
     parser.add_argument(
         "--mem-limit",
         type=float,
         default=10240.0,
-        help="内存限制，单位 MB (默认: 10240.0 MB)",
+        help="内存限制 (MB)",
     )
 
     parser.add_argument(
@@ -55,7 +56,7 @@ def get_args():
         "-o",
         type=str,
         default="plot.pdf",
-        help="输出图片的保存路径",
+        help="输出路径",
     )
 
     parser.add_argument(
@@ -64,71 +65,71 @@ def get_args():
         type=str,
         choices=["time", "memory"],
         default="time",
-        help="绘图指标: 'time' 或 'memory'",
+        help="指标: 'time' 或 'memory' (仅影响 Mode 3/4 的判定标准及仙人掌图数值)",
+    )
+
+    # --- 绘图类型与工具指定 ---
+    parser.add_argument(
+        "--plot-type",
+        "-p",
+        type=str,
+        choices=["cactus", "stackbar"],
+        default="cactus",
+        help="绘图类型: 'cactus' (仙人掌图) 或 'stackbar' (堆叠对比条形图)",
+    )
+
+    parser.add_argument(
+        "--our-tool",
+        "-t",
+        type=str,
+        default="ere",
+        help="[Stackbar Only] 指定'我方工具'的名称，用于与其他工具进行 Pairwise 对比",
     )
 
     # --- 过滤模式参数 ---
-
-    # Mode 2: 只看工具是否宣称 ReDoS
     parser.add_argument(
         "--redos-only",
         "-r",
         action="store_true",
-        help="[Mode 2] 仅统计工具自身报告发现了 ReDoS 的实例 (is_redos=true)",
+        help="[Mode 2] 仅统计工具报告 ReDoS 的实例",
     )
 
-    # Mode 3 & 4: 验证目录
     parser.add_argument(
         "--verify-dir",
         "-v",
         type=str,
         default=None,
-        help="[Mode 3/4] 验证数据目录：包含攻击串验证结果的 .json/.jsonl 文件",
+        help="[Mode 3/4] 验证数据目录",
     )
 
-    # Mode 4: 并集验证
     parser.add_argument(
         "--union-verify",
         "-u",
         action="store_true",
-        help="[Mode 4] 开启并集验证模式。如果未开启且提供了 verify-dir，则默认为 Mode 3 (严格对应验证)",
+        help="[Mode 4] 开启并集验证模式",
     )
 
     return parser.parse_args()
 
 
-# ================= 数据解析辅助函数 =================
+# ================= 辅助函数 =================
 
 
 def parse_cputime(stdout_str):
     if not stdout_str:
         return None
     match = re.search(r"cputime=([\d\.]+)s", stdout_str)
-    if match:
-        try:
-            return float(match.group(1))
-        except ValueError:
-            return None
-    return None
+    return float(match.group(1)) if match else None
 
 
 def parse_memory(stdout_str):
     if not stdout_str:
         return None
     match = re.search(r"memory=(\d+)B", stdout_str)
-    if match:
-        try:
-            bytes_val = int(match.group(1))
-            return bytes_val / (1024 * 1024)
-        except ValueError:
-            return None
-    return None
+    return int(match.group(1)) / (1024 * 1024) if match else None
 
 
 def check_is_redos(output_field):
-    """
-    解析 dir1 中工具输出的 output 字段，判断工具是否认为有 ReDoS
-    """
     if not output_field:
         return False
     try:
@@ -138,227 +139,196 @@ def check_is_redos(output_field):
                 if isinstance(item, dict) and item.get("is_redos") is True:
                     return True
         return False
-    except (json.JSONDecodeError, TypeError):
+    except:
         return False
 
 
 def check_verification_success(record):
-    """
-    解析 dir2 中的记录，判断攻击是否真实生效 (TP)
-    标准：
-    1. stderr 中没有 "input is not a valid attack"
-    2. timeout=True 或者 terminationreason=cputime-soft/cputime
-    """
     stderr = record.get("stderr", "")
     if stderr and "input is not a valid attack" in stderr:
         return False
-
     if record.get("timeout", False) is True:
         return True
-
     stdout = record.get("stdout", "")
-    if stdout:
-        # 检查 terminationreason
-        if "terminationreason=cputime-soft" in stdout:
-            return True
-        if "terminationreason=cputime" in stdout:
-            return True
-
-        # 也可以根据 walltime/cputime 是否超过阈值判断，但通常 benchExec 会写 terminationreason
-        # 这里严格按照 benchExec 的标记
-
+    if stdout and (
+        "terminationreason=cputime-soft" in stdout
+        or "terminationreason=cputime" in stdout
+    ):
+        return True
     return False
 
 
-# ================= 验证数据加载逻辑 =================
+# ================= 验证数据加载 =================
 
 
 def load_verification_data(verify_dir):
-    """
-    预读取验证目录下的所有数据。
-    返回:
-    1. tool_verification_map: { tool_name: { (file, line): True } }
-    2. global_verified_set: Set( (file, line) )
-    """
     tool_verification_map = {}
     global_verified_set = set()
-
     files = [
         f
-        for f in glob.glob(os.path.join(verify_dir, "*.json*"))  # 兼容 json 和 jsonl
-        if any(tool in os.path.basename(f) for tool in TOOLS)
+        for f in glob.glob(os.path.join(verify_dir, "*.json*"))
+        if any(t in os.path.basename(f) for t in TOOLS)
     ]
 
     if not files:
-        print(
-            f"[Verify] Warning: No verification files found in {verify_dir}",
-            file=sys.stderr,
-        )
+        print(f"[Verify] No files in {verify_dir}", file=sys.stderr)
         return {}, set()
 
-    print(
-        f"[Verify] Loading verification data from {len(files)} files...",
-        file=sys.stderr,
-    )
-
+    print(f"[Verify] Loading {len(files)} files...", file=sys.stderr)
     for filepath in files:
         tool_name = next(
-            (tool for tool in TOOLS if tool in os.path.basename(filepath)),
-            "unknown_tool",
+            (t for t in TOOLS if t in os.path.basename(filepath)), "unknown"
         )
-
         if tool_name not in tool_verification_map:
             tool_verification_map[tool_name] = {}
 
         try:
             with open(filepath, "r", encoding="utf-8") as f:
                 for line in f:
-                    line = line.strip()
-                    if not line:
+                    if not line.strip():
                         continue
                     try:
-                        record = json.loads(line)
-                        # 唯一标识符
-                        key = (record.get("file"), record.get("line"))
-
-                        # 判断验证是否成功
-                        if check_verification_success(record):
+                        rec = json.loads(line)
+                        key = (rec.get("file"), rec.get("line"))
+                        if check_verification_success(rec):
                             tool_verification_map[tool_name][key] = True
                             global_verified_set.add(key)
                         else:
-                            # 显式记录失败，或者不记录（get时默认None）
                             tool_verification_map[tool_name][key] = False
-
-                    except json.JSONDecodeError:
+                    except:
                         continue
-        except Exception as e:
-            print(f"[Verify] Error reading {filepath}: {e}", file=sys.stderr)
-
-    print(
-        f"[Verify] Loaded. Total unique verified vulnerable cases (Union): {len(global_verified_set)}",
-        file=sys.stderr,
-    )
+        except:
+            pass
     return tool_verification_map, global_verified_set
 
 
-# ================= 主数据处理逻辑 =================
+# ================= 核心过滤逻辑 (复用) =================
 
 
-def process_json_file(filepath, tool_name, args, tool_verify_map, global_verify_set):
-    values = []
+def is_valid_record(record, tool_name, args, tool_verify_map, global_verify_set):
+    """
+    判断一条记录是否在当前 Mode 下有效 (TP / Solved)
+    """
+    key = (record.get("file"), record.get("line"))
+    tool_claims_redos = check_is_redos(record.get("output", ""))
 
-    try:
-        with open(filepath, "r", encoding="utf-8") as f:
-            for line_num, line in enumerate(
-                tqdm(f, desc=f"Processing {os.path.basename(filepath)}")
-            ):
-                line = line.strip()
-                if not line:
-                    continue
+    # --- Mode 过滤 ---
+    keep_record = False
+    if not args.redos_only and not args.verify_dir:  # Mode 1
+        keep_record = True
+    elif args.redos_only and not args.verify_dir:  # Mode 2
+        if tool_claims_redos:
+            keep_record = True
+    elif args.verify_dir and not args.union_verify:  # Mode 3
+        if tool_claims_redos:
+            if tool_verify_map.get(tool_name, {}).get(key, False):
+                keep_record = True
+    elif args.verify_dir and args.union_verify:  # Mode 4
+        if tool_claims_redos:
+            if key in global_verify_set:
+                keep_record = True
 
-                try:
-                    record = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
+    if not keep_record:
+        return False
 
-                # 唯一标识
-                key = (record.get("file"), record.get("line"))
+    # --- 数值有效性判定 (是否 Solved) ---
+    # 只有在限制范围内解决的才算有效记录
+    stdout = record.get("stdout", "")
+    term_reason = ""
+    tm = re.search(r"terminationreason=(\w+)", stdout)
+    if tm:
+        term_reason = tm.group(1)
+    is_timeout_flag = record.get("timeout", False)
 
-                # --- 核心过滤逻辑 (4种模式) ---
+    if args.metric == "time":
+        is_timed_out = is_timeout_flag or term_reason in ["cputime", "cputime-soft"]
+        if is_timed_out:
+            return False  # 超时不算解决
+        val = parse_cputime(stdout)
+        if val is None or val > args.timeout:
+            return False
+        return True  # 有效且未超时
 
-                # 基础信息：工具是否认为自己发现了 ReDoS
-                tool_claims_redos = check_is_redos(record.get("output", ""))
+    elif args.metric == "memory":
+        is_oom = term_reason == "memory"
+        if is_oom:
+            return False  # OOM 不算解决
+        val = parse_memory(stdout)
+        if val is None or val > args.mem_limit:
+            return False
+        return True
 
-                keep_record = False
-
-                # Mode 1: 默认模式 (所有 case 都算)
-                if not args.redos_only and not args.verify_dir:
-                    keep_record = True
-
-                # Mode 2: 只看工具是否宣称 (无验证)
-                elif args.redos_only and not args.verify_dir:
-                    if tool_claims_redos:
-                        keep_record = True
-
-                # Mode 3: 严格验证 (工具宣称 + 该工具生成的串验证成功)
-                elif args.verify_dir and not args.union_verify:
-                    if tool_claims_redos:
-                        # 查表：当前工具在 verify_dir 中对应条目是否成功
-                        # 注意：如果 verify_map 里没这个 key，说明没跑验证或丢失，视为 False
-                        is_verified = tool_verify_map.get(tool_name, {}).get(key, False)
-                        if is_verified:
-                            keep_record = True
-
-                # Mode 4: 并集验证 (工具宣称 + 任意工具生成的串验证成功)
-                elif args.verify_dir and args.union_verify:
-                    if tool_claims_redos:
-                        # 查集合：该 (file, line) 是否在已知漏洞集合中
-                        if key in global_verify_set:
-                            keep_record = True
-
-                if not keep_record:
-                    continue
-
-                # --- 提取数值 (Time / Memory) ---
-                stdout = record.get("stdout", "")
-                termination_reason = ""
-                term_match = re.search(r"terminationreason=(\w+)", stdout)
-                if term_match:
-                    termination_reason = term_match.group(1)
-
-                is_timeout_flag = record.get("timeout", False)
-
-                if args.metric == "time":
-                    current_time = 0.0
-                    is_timed_out = is_timeout_flag or termination_reason in [
-                        "cputime",
-                        "cputime-soft",
-                    ]
-
-                    if is_timed_out:
-                        current_time = args.timeout
-                    else:
-                        parsed_time = parse_cputime(stdout)
-                        if parsed_time is not None:
-                            current_time = parsed_time
-                        else:
-                            current_time = args.timeout
-
-                    if current_time > args.timeout:
-                        current_time = args.timeout
-
-                    values.append(current_time)
-
-                elif args.metric == "memory":
-                    current_mem = 0.0
-                    is_oom = termination_reason == "memory"
-
-                    if is_oom:
-                        current_mem = args.mem_limit
-                    else:
-                        parsed_mem = parse_memory(stdout)
-                        if parsed_mem is not None:
-                            current_mem = parsed_mem
-                        else:
-                            current_mem = args.mem_limit
-
-                    if current_mem > args.mem_limit:
-                        current_mem = args.mem_limit
-
-                    values.append(current_mem)
-
-    except Exception as e:
-        print(f"Error processing file {filepath}: {e}")
-        return []
-
-    values.sort()
-    return values
+    return False
 
 
-# ================= 绘图逻辑 =================
+# ================= 数据提取 =================
 
 
-def plot_cactus_unified(data_dict, output_image, limit_value, metric, mode_desc):
+def process_data(args, tool_verify_map, global_verify_set):
+    """
+    返回:
+    1. cactus_data: { tool: [values...] }  -> 用于仙人掌图
+    2. solved_sets: { tool: set((file, line)) } -> 用于堆叠图
+    """
+    files = [
+        f
+        for f in glob.glob(os.path.join(args.dir, "*.json*"))
+        if any(t in os.path.basename(f) for t in TOOLS)
+    ]
+
+    cactus_data = {}
+    solved_sets = {}
+
+    for filepath in files:
+        tool_name = next(
+            (t for t in TOOLS if t in os.path.basename(filepath)), "unknown"
+        )
+        if tool_name not in cactus_data:
+            cactus_data[tool_name] = []
+        if tool_name not in solved_sets:
+            solved_sets[tool_name] = set()
+
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                for line in tqdm(f, desc=f"Reading {tool_name}"):
+                    if not line.strip():
+                        continue
+                    try:
+                        rec = json.loads(line)
+                        if is_valid_record(
+                            rec, tool_name, args, tool_verify_map, global_verify_set
+                        ):
+                            # 提取数值用于仙人掌图
+                            stdout = rec.get("stdout", "")
+                            val = 0
+                            if args.metric == "time":
+                                val = (
+                                    parse_cputime(stdout) or args.timeout
+                                )  # 理论上 is_valid 保证了非None，但防万一
+                            else:
+                                val = parse_memory(stdout) or args.mem_limit
+
+                            cactus_data[tool_name].append(val)
+
+                            # 提取 Key 用于堆叠图
+                            key = (rec.get("file"), rec.get("line"))
+                            solved_sets[tool_name].add(key)
+                    except:
+                        continue
+        except Exception as e:
+            print(f"Error {filepath}: {e}")
+
+    # 排序仙人掌数据
+    for t in cactus_data:
+        cactus_data[t].sort()
+
+    return cactus_data, solved_sets
+
+
+# ================= 绘图: 仙人掌图 =================
+
+
+def plot_cactus(data_dict, output_image, limit_value, metric, mode_desc):
     plt.figure(figsize=(12, 8))
     colors = plt.get_cmap("tab10").colors
     linestyles = ["-", "--", "-.", ":"]
@@ -366,125 +336,204 @@ def plot_cactus_unified(data_dict, output_image, limit_value, metric, mode_desc)
     max_solved = 0
 
     if metric == "time":
-        y_label = "CPU Time (s)"
-        limit_label = f"Timeout ({int(limit_value)}s)"
-        title = f"Cactus Plot of CPU Time (Log Scale)\n[{mode_desc}]"
-        min_val = 0.01
+        y_label, title, min_val = "CPU Time (s)", "Cactus Plot of CPU Time", 0.01
     else:
-        y_label = "Memory Usage (MB)"
-        limit_label = f"Mem Limit ({int(limit_value)} MB)"
-        title = f"Cactus Plot of Memory Usage (Log Scale)\n[{mode_desc}]"
-        min_val = 1.0
+        y_label, title, min_val = (
+            "Memory Usage (MB)",
+            "Cactus Plot of Memory Usage",
+            1.0,
+        )
 
     for idx, tool_name in enumerate(sorted_tools):
-        raw_values = data_dict[tool_name]
-        if not raw_values:
+        vals = data_dict[tool_name]
+        if not vals:
+            continue
+        # 再次过滤，虽然 process_data 已经过滤了，但双重保险
+        valid_vals = [v for v in vals if v < limit_value]
+        if not valid_vals:
             continue
 
-        # 过滤掉达到 Limit 的点 (只显示 Solved)
-        valid_values = [v for v in raw_values if v < limit_value]
-
-        if not valid_values:
-            continue
-
-        max_solved = max(max_solved, len(valid_values))
-        x_axis = range(1, len(valid_values) + 1)
-        y_axis = valid_values
-
+        max_solved = max(max_solved, len(valid_vals))
         plt.plot(
-            x_axis,
-            y_axis,
-            label=f"{tool_name} ({len(valid_values)})",
+            range(1, len(valid_vals) + 1),
+            valid_vals,
+            label=f"{tool_name} ({len(valid_vals)})",
             color=colors[idx % len(colors)],
             linestyle=linestyles[idx % len(linestyles)],
             linewidth=2,
             alpha=0.8,
-            marker=None,
         )
 
-    plt.title(title, fontsize=14)
-    plt.xlabel("Number of Instances", fontsize=12)
+    plt.title(f"{title} (Log Scale)\n[{mode_desc}]", fontsize=14)
+    plt.xlabel("Number of Solved Instances", fontsize=12)
     plt.ylabel(f"{y_label} - Log Scale", fontsize=12)
-
     plt.yscale("log")
     plt.ylim(bottom=min_val, top=limit_value * 1.5)
     plt.xlim(left=0, right=max_solved * 1.05 if max_solved > 0 else 10)
-
     plt.axhline(
         y=limit_value,
         color="r",
         linestyle="--",
         alpha=0.5,
-        label=limit_label,
+        label=f"Limit ({int(limit_value)})",
+    )
+    plt.grid(True, which="major", ls="-", alpha=0.4)
+    plt.grid(True, which="minor", ls=":", alpha=0.2)
+    plt.legend(loc="lower right")
+    plt.tight_layout()
+    plt.savefig(output_image, dpi=300)
+    print(f"Saved cactus plot to {output_image}")
+
+
+# ================= 绘图: 堆叠条形图 =================
+
+
+def plot_stacked_bar(solved_sets, our_tool_name, output_image, mode_desc):
+    if our_tool_name not in solved_sets:
+        print(f"Error: Our tool '{our_tool_name}' not found in data.", file=sys.stderr)
+        return
+
+    our_set = solved_sets[our_tool_name]
+    # 全集：所有工具解决的问题的并集
+    universe = set().union(*solved_sets.values())
+
+    # 准备 DataFrame 数据
+    # 行：其他工具
+    # 列：四种分类的计数
+
+    other_tools = sorted([t for t in solved_sets.keys() if t != our_tool_name])
+    if not other_tools:
+        print("Error: No other tools to compare against.", file=sys.stderr)
+        return
+
+    data = []
+    pct_cols = ["Other Tools Found", "Only Other Tool", "Both Found", "Only Ours Found"]
+
+    for other in other_tools:
+        other_set = solved_sets[other]
+
+        both = len(our_set.intersection(other_set))
+        only_ours = len(our_set - other_set)
+        only_other = len(other_set - our_set)
+
+        # "Other Tools Found" = Universe - (Ours U Other)
+        # 即：既没被我们发现，也没被当前对比的工具发现，但是被别的工具发现了
+        union_pair = our_set.union(other_set)
+        others_found = len(universe - union_pair)
+
+        data.append([others_found, only_other, both, only_ours])
+
+    df = pd.DataFrame(data, index=other_tools, columns=[c + "_count" for c in pct_cols])
+
+    # 计算百分比
+    df_total = df.sum(axis=1)
+    # 防止除以0
+    df_total = df_total.replace(0, 1)
+
+    for i, col in enumerate(pct_cols):
+        df[col] = (df[f"{col}_count"] / df_total) * 100
+
+    # --- 绘图 ---
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    colors = ["#eeeeee", "#f8cecc", "#fff2cc", "#dae8fc"]
+
+    # --- 核心改进：视觉补偿逻辑 ---
+    vis_df = df[pct_cols].copy()
+    MIN_VIS_PCT = 2.0
+    for col in pct_cols:
+        vis_df[col] = vis_df[col].apply(lambda x: max(x, MIN_VIS_PCT) if x > 0 else 0)
+
+    row_sums = vis_df.sum(axis=1)
+    for col in pct_cols:
+        vis_df[col] = (vis_df[col] / row_sums) * 100
+
+    vis_df.plot(
+        kind="bar",
+        stacked=True,
+        ax=ax,
+        color=colors,
+        edgecolor="#444444",
+        linewidth=0.5,
+        width=0.7,
     )
 
-    plt.grid(True, which="major", ls="-", alpha=0.4, color="gray")
-    plt.grid(True, which="minor", ls=":", alpha=0.2, color="gray")
-    plt.legend(loc="upper left", fontsize=10, framealpha=0.9)
-    plt.tight_layout()
+    # 添加数值标签
+    for i, container in enumerate(ax.containers):
+        count_col = pct_cols[i] + "_count"
+        # 获取对应列的原始计数
+        counts = df[count_col].values
+        labels = [f"{int(c)}" if c > 0 else "" for c in counts]
+        ax.bar_label(
+            container,
+            labels=labels,
+            label_type="center",
+            fontsize=9,
+            fontweight="medium",
+        )
 
-    print(f"Saving plot to {output_image}...", file=sys.stderr)
+    ax.set_ylabel("Percentage of Total Solved Cases (%)", fontsize=12)
+    ax.set_xlabel("Comparison with Other Tools", fontsize=12)
+    ax.set_ylim(0, 100)
+    ax.yaxis.grid(True, linestyle="--", alpha=0.7)
+    ax.set_title(
+        f"Pairwise Comparison: {our_tool_name} vs Others\n[{mode_desc}]", fontsize=14
+    )
+
+    # 图例
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(
+        handles[::-1],
+        labels[::-1],
+        loc="upper center",
+        bbox_to_anchor=(0.5, 1.15),
+        ncol=4,
+        frameon=False,
+    )
+
+    plt.xticks(rotation=45)
+    plt.tight_layout()
     plt.savefig(output_image, dpi=300)
+    print(f"Saved stacked bar chart to {output_image}")
 
 
 def main():
     args = get_args()
 
-    # 1. 确定运行模式描述
+    # 1. 确定模式描述
     if not args.verify_dir:
-        if args.redos_only:
-            mode_desc = "Mode 2: ReDoS Claimed Only"
-        else:
-            mode_desc = "Mode 1: All Instances"
+        mode_desc = (
+            "Mode 2: ReDoS Claimed" if args.redos_only else "Mode 1: All Instances"
+        )
     else:
-        if args.union_verify:
-            mode_desc = "Mode 4: Union Verification (TP)"
-        else:
-            mode_desc = "Mode 3: Strict Verification (TP)"
+        mode_desc = "Mode 4: Union TP" if args.union_verify else "Mode 3: Strict TP"
 
     print(f"Running in {mode_desc}", file=sys.stderr)
-    print(f"Metric: {args.metric}", file=sys.stderr)
 
-    # 2. 如果需要验证，先加载验证数据
+    # 2. 加载验证数据
     tool_verify_map = {}
     global_verify_set = set()
-
     if args.verify_dir:
         tool_verify_map, global_verify_set = load_verification_data(args.verify_dir)
 
-    # 3. 扫描主目录文件
-    files = [
-        f
-        for f in glob.glob(os.path.join(args.dir, "*.json*"))
-        if any(tool in os.path.basename(f) for tool in TOOLS)
-    ]
+    # 3. 处理数据
+    cactus_data, solved_sets = process_data(args, tool_verify_map, global_verify_set)
 
-    if not files:
-        print(f"No data files found in directory: {args.dir}", file=sys.stderr)
+    if not cactus_data:
+        print("No valid data found.", file=sys.stderr)
         return
 
-    # 4. 处理数据
-    current_limit = args.timeout if args.metric == "time" else args.mem_limit
-    all_tools_data = {}
+    # 4. 绘图分支
+    limit_val = args.timeout if args.metric == "time" else args.mem_limit
 
-    for filepath in files:
-        tool_name = next(
-            (tool for tool in TOOLS if tool in os.path.basename(filepath)),
-            "unknown_tool",
-        )
+    if args.plot_type == "cactus":
+        plot_cactus(cactus_data, args.output, limit_val, args.metric, mode_desc)
 
-        values = process_json_file(
-            filepath, tool_name, args, tool_verify_map, global_verify_set
-        )
-        all_tools_data[tool_name] = values
-
-    # 5. 绘图
-    if all_tools_data:
-        plot_cactus_unified(
-            all_tools_data, args.output, current_limit, args.metric, mode_desc
-        )
-    else:
-        print("No valid data extracted.", file=sys.stderr)
+    elif args.plot_type == "stackbar":
+        if not args.our_tool:
+            print("Error: --our-tool is required for stackbar plot.", file=sys.stderr)
+            return
+        plot_stacked_bar(solved_sets, args.our_tool, args.output, mode_desc)
 
 
 if __name__ == "__main__":
