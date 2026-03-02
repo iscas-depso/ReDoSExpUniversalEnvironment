@@ -36,18 +36,17 @@ def main():
         sys.exit(1)
 
     try:
-        raw_regex = base64.b64decode(base64_regex).decode("utf-8")
         # Record start time
         start_time = time.time()
 
-        cmds = [str(exec_path), "-at"]
+        cmds = [str(exec_path), "-bat"]
         if cpu_core:
             cmds = ["taskset", "-c", str(cpu_core), *cmds]
 
         # Call the modified Java program with ID parameter and enable-preview flag
         result = subprocess.run(
             cmds,
-            input=raw_regex,
+            input=base64_regex,
             capture_output=True,
             text=True,
             timeout=1200,
@@ -125,12 +124,8 @@ def convert_java_output_to_contract(java_output, elapsed_ms):
     if java_output.get("vulnerability") != "None":
         output["is_redos"] = True
 
-        prefix_b64 = base64.b64encode(
-            java_output.get("prefix", "").encode("utf-8")
-        ).decode("utf-8")
-        infix_b64 = base64.b64encode(
-            java_output.get("infix", "").encode("utf-8")
-        ).decode("utf-8")
+        prefix_b64 = java_output.get("prefix", "")
+        infix_b64 = java_output.get("infix", "")
         suffix_b64 = base64.b64encode(SUFFIX.encode("utf-8")).decode("utf-8")
         if java_output.get("vulnerability") == "Polynomial":
             repeat_times = 500000
