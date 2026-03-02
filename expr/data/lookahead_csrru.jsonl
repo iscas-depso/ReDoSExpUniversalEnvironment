@@ -1,0 +1,1393 @@
+{"pattern": "^(\\+(?=2))?2?01(?![3-4])[0-5]{1}[0-9]{8}$"}
+{"pattern": "(\\S*\\s+|)(\\w+)(?=\\s*(\\([a-zA-Z]+-[\\d]+\\)|\\s*):)"}
+{"pattern": "(?!__init__)[0-9a-zA-Z_]*(\\.py)?$"}
+{"pattern": "(^(?:ISAN )?(?:[0-9a-f]{4}-){4}[0-9a-z](?:-(?:[0-9a-f]{4}-){2}[0-9a-z])?$)|(^(?:979-?0-?|M-?)(?:\\d{9}|(?=[\\d-]{11}$)\\d+-\\d+-\\d)$)|(^ISRN .{1,36}$)|(^(?:ISWC )?T-?\\d{9}-?\\d$)"}
+{"pattern": "([A-Z])\\w+\\s([A-Z])\\w*\\s*([A-Z])*(?=,*)"}
+{"pattern": "/\\x2fDecodeParms\\s*\\x3c{2}\\s*(?=[^\\x3e]*\\/Predictor\\s+0*(1\\d|[2-9]))([^\\x3e]*\\x2fBitsPerComponent\\s+\\d{3}|[^\\x3e]*\\x2fColumns\\s+\\d{5}|[^\\x3e]*\\x2fColors\\s+\\d{5})/"}
+{"pattern": "(https?:\\/\\/)(?:(?!,).)*"}
+{"pattern": "(?=^.{7,20}$)(?=.*\\d)(?=.*[a-zA-Z])(?!.*\\s)[0-9a-zA-Z*$-+?_&=!%{}/'.]*$"}
+{"pattern": "^.*(?=.{8,32})(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!?@#$%^&*()\\-+|=}{/:;\",'\\]\\[_\\~<>\u20ac\u00a3\u00a5\u2022\\\\]).*$"}
+{"pattern": "(?x).+(?:Sub|Function)\\ (\\w+)\\( # method declaration(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)"}
+{"pattern": "^Hit((?!(\\r?\\n))\\s)http[s]?\\:\\/\\/(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+((?!(\\r?\\n))\\s|\\/)((\\w+(\\-|((?!(\\r?\\n))\\s)|\\/|\\.|\\(\\r?\\n)?))*"}
+{"pattern": "(?=^.{7,51}$)([A-Za-z]{1})([A-Za-z0-9!@#$%_\\^\\&\\*\\-\\.\\?]{5,49})$"}
+{"pattern": "(^(?!0{5})(\\d{5})(?!-?0{4})(|-\\d{4})?$)"}
+{"pattern": "((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\\W_]).{6,50})"}
+{"pattern": "(?!^0*$)(?!^0*\\.0*$)^\\d{1,5}(\\.\\d{1,5})?$"}
+{"pattern": "^(?:(?P<days>-?\\d+) )?((?:(?P<hours>\\d+):)(?=\\d+:\\d+))?(?:(?P<minutes>\\d+):)?(?P<seconds>\\d+)(?:\\.(?P<microseconds>\\d{1,6})\\d{0,6})?$"}
+{"pattern": "^(?!0{5})(?!0{4})[0-9]{5}$"}
+{"pattern": "(<param(?=[^<>]*?name\\s*=\\s*\\x22movie\\x22)[^<>]*?value\\s*=\\s*\\x22)[^<>]*?(?=\\x22[^<>]*?>)"}
+{"pattern": "^(?=.*?[0-9])(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[^\\w\\s]).{8,20}$"}
+{"pattern": "(\\w[\\w\\.]*)(?=@\\w+\\.[\\w\\.]+)\\b"}
+{"pattern": "^(?!agg_).*$"}
+{"pattern": "((((0[1-9]|[12]\\d|3[01])\\/(0[13578]|10|12))|((0[1-9]|[12]\\d|30)\\/(0[469]|11))|((0[1-9]|1[0-9]|2[0-8]))\\/02)\\/(19\\d\\d|(200\\d|201[0-5])))|(29\\/02\\/((?!1900)19([02468][048]|[13579][26])|(2000)|(2004)|(2008)|2012))"}
+{"pattern": "\\s*\\*(\\s+|(?!/))"}
+{"pattern": "^((?:[0-9]{1,3}\\.){3}[0-9]{1,3})\\n((?:.*\\s)*)(?=\\n)"}
+{"pattern": "(str)(?=(?:[^'\"]|[\"'][^'\"]*[\"'])*$)"}
+{"pattern": "(?x)# Set intent level(?(DEFINE)(?<indent>[[:space:]]{4}))# Must start at new line^# Captures following statement's description comment lines if written(?<statementDescComment>(?:# Repeat below until next line not comment(?=(?P>indent)\\/)\\V*\\v)+)?# Generic Statement Capture(?<statement># Const declaration capture(?<const>(?P>indent)const[[:space:]]*\\([[:space:]]*\\v(?:(?!(?P>indent)\\))\\V*\\v)*(?P>indent)\\))|# Full function declaration capture(?<func># Function declaration initialization(?<funcDecLine>(?P>indent)func\\V+)\\v# Repeat subcapture until line starting with close bracket(?:(?!(?P>indent)\\})\\V*\\v)*# Closing bracket(?<funcCloseBracket>(?P>indent)\\}))|(?<type># Type Declaration# Check before wasting time(?=(?P>indent)type)# Short Form(?<typeDecShort>(?P>indent)type\\V+[^\\{]\\v)|# Longer Form (Brackted)(?<typeDecLong>(?P>indent)type\\V+)\\v# Repeat subcapture until line starting with close bracket(?:(?!(?P>indent)\\})\\V*\\v)*# Closing bracket(?<typeCloseBracket>(?P>indent)\\})))"}{"pattern": "^.+?(?=W[0-9][0-9]?)(W[0-9][0-9]?)(W[0-9][0-9]?).*$"}
+{"pattern": "\"(?=(?:(?:[^<](?!%>))*(?:<%[^%]+%>)(?:[^<](?!%>))*)*$)"}
+{"pattern": "\\\\(?:.(?!\\\\))+$"}
+{"pattern": "(([\\S\\s](?:(?!`{3})))*)([\\r\\n]|$)"}
+{"pattern": "/\\x2fDecodeParms\\s*\\x3c{2}\\s*(?=[^\\x3e]*\\/Predictor\\s+0*(1\\d{1}|[2-9]))([^\\x3e]*\\x2fBitsPerComponent\\s+\\d{3}|[^\\x3e]*\\x2fColumns\\s+(\\d{5}|[6-9]\\d{3})|[^\\x3e]*\\x2fColors\\s+(\\d{5}|[6-9]\\d{3}))/"}
+{"pattern": "(^(?!000)\\d{3}) ([- ]?) ((?!00)\\d{2}) ([- ]?) ((?!0000)\\d{4})"}
+{"pattern": "(^/)|^(https?://)?(?:www\\.)?sirac\\.fr/?.*$|(^(?!http://|/|www).*$)"}
+{"pattern": "(?:(?s)\\/\\*((?:(?!\\*\\/).)*?)\\*\\/)"}
+{"pattern": "^(?=.*\\d)(?=.*[a-zA-Z])(?!.*[\\W_\\x7B-\\xFF]).{6,15}$"}
+{"pattern": "(?=[\\\"])"}
+{"pattern": "^(?!first-blacklisted-file)(?!second-blacklisted-file)$"}
+{"pattern": "\\b(([\\w-]+)=([\\w.: -]+))(?= |$)"}
+{"pattern": "^(?=^.{6,9}$)(?=.*\\d)(?=.*[!@#$%^&]+)(?=.*[0-9])(?=.*[a-z]).*$"}
+{"pattern": "^(?=.*\\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\\w\\d\\s:])([^\\s]){8,16}$"}
+{"pattern": "(?!^[0-9]*$)(?!^[a-zA-Z]*$)^([a-zA-Z0-9]{6,15})$"}
+{"pattern": "grey (?=[a-z]+)"}
+{"pattern": "/\\x09033\\x3a(?=[^\\s]+\\x40[^\\s]+)[^\\x20\\x09]{33}/"}
+{"pattern": "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\\W)(?!.*\\s).{8,}$"}
+{"pattern": "(<(?!\\/)[a-zA-Z\\-0-9]+?(?:[\\s]*?[a-zA-Z\\-0-9]+?(?:=(?:\"[\\s\\S]*?\"|'[\\s\\S]*?')){0,1})*?[\\s]*?\\/{0,1}>)|(<\\/[\\S\\s]+?>)|(<!--[\\s\\S]*?-->)"}
+{"pattern": "^(https:\\/\\/)*(localhost|airhelp.com)\\/(?!en|nl|pt).*\\/.*$"}
+{"pattern": "^(?=([A-Za-z0-9]|[^\\x00-\\x7F])([A-Za-z0-9@._%+-]|[^\\x00-\\x7F]){5,253}$)([A-Za-z0-9._%+-]|[^\\x00-\\x7F]){1,64}@(?:(?=([A-Za-z0-9-]|[^\\x00-\\x7F]){1,63}\\.)([A-Za-z0-9]|[^\\x00-\\x7F])+(?:-([A-Za-z0-9]|[^\\x00-\\x7F])+)*\\.){1,8}([A-Za-z]|[^\\x00-\\x7F]){2,63}$"}
+{"pattern": "([^\\s,]+.(?!\\s)\\w*[^,]\\b)"}
+{"pattern": "/^(?=[^\\x29]*\\x5c{2}[\\x22\\x27])[^\\x29]*\\x5b[^\\x5d]*\\x5c{2}[\\x22\\x27]/R"}
+{"pattern": "SID_W_MAX_TRAN_DT.+?=(?=\\s) (?<SID_W_MAX_TRAN_DT>[^\\s]+)"}
+{"pattern": "\\s(?=([^\"]*\"[^\"]*\")*[^\"]*$)"}
+{"pattern": "^(?=.*[1-9])\\d{0,11}(\\.\\d{1,4})?$"}
+{"pattern": "^((?![azAZ]).)*$"}
+{"pattern": "((?:\\d*(?=\\,?|\\.?))+)(\\.\\d\\d$|\\,\\d\\d$)?"}
+{"pattern": "^( +)(?=\\S)"}
+{"pattern": "^.*?(?=:)"}
+{"pattern": "((?!^[0-4])^(\\d+))$"}
+{"pattern": "^(?=.*?[0-9].*?[0-9])(?=.*[!@#$%])[0-9a-zA-Z!@#$%0-9]{8,}$"}
+{"pattern": "(\\s+)(\\S+)=[\"']?((?:.(?![\"']?\\s+(?:\\S+)=|[>\"']))+.)[\"']?"}
+{"pattern": "^(?!\\s)(?=\\w*[A-Z]\\w*[A-Z])(?!\\s)(?=\\w*[a-z]\\w*[a-z])(?=\\w*[0-9]\\w*[0-9])\\w*$"}
+{"pattern": "^(?!\\s*$).+"}
+{"pattern": "(?=^[^@\\/\\?]*$)(\\w+\\.)+([A-Za-z]+){2}$"}
+{"pattern": "\\((?=([^\\(\\)\\[\\]]*(\\b)(ARR|ARRANGEMENT|ARRANGEMENTS|ARRANGED|CHOPPED|DUB|EDIT|FT|FEAT|FEATURING|INSTRUMENTAL|MASH UP|MASHUP|MASH-UP|MIX|REMIX|REPRISE|SCREWED|TITLE|VERSION)(\\b)[^\\(\\)\\[\\]]*)).*?\\)"}
+{"pattern": "^.+(?=\\.[^.]+$)"}
+{"pattern": "[\\w\\-]{3,}(?=[.])"}
+{"pattern": "(?![A-z0-9_])"}
+{"pattern": "(?=(?:(?:[^\"]*\"){2})*[^\"]*$)\\\\n"}
+{"pattern": "/[^>]*\\x26lt\\x3bCanonicalizationMethod[^>]*\\x26lt\\x3bDigestValue\\x26gt\\x3b(?P<DV>[^\\x26]+).*[^\\x2f]DigestValue>(?!P=DV)/smR"}
+{"pattern": "((NUP?\\s?\\d{3,5}(\\W?(E(C[AJKLMP]{1,2})?|M[AL\\d]?))?(\\W+(C\\d|TVP\\d|M\\d|P\\d{2}))?((\\-|\\+|\\/)(C\\d|H\\s?\\d{3,4}|R\\d{3}))?)|(2\\d{3,5}((\\s|\\-)?(CA?C?(K(JA|\\d{2})?|N2|JA)?|MB|TN\\d|E\\d?([A\u0e4bCJKMWX]{1,2})?(TN9|D1)?|2RS|TVH?|SK?|KM?|M|TN))?((\\/|\\+|\\-|\\.)?(C\\d8?(W\\d{2,3})?|HA?\\s?(\\d{3,4}X?|\\dC\\dW\\d{2})|2RS1K?TN9|TVH?|K(D1)?|M|W+\\d{2,3}|VA\\s?\\d{3}))?((\\-|\\.|\\s|\\+)?(C\\d|([AO]{1,2})?HX?\\s?\\d{3,5}\\s?[GHX]?|VA\\s?\\d{3}))?)|(S[NLO]{2,3}(\\s?\\d{3,4}(\\-\\d{3})?(\\s?TA)?)(\\W*((2X)?FRB\\s?\\d{1,2}\\/\\d{2,3}|2\\d{3,4}(EK)?(\\/C\\d)?|(2X)?TS[ON]\\s?\\d{3}C?))?(\\W*(TSO?\\s?\\d{2,3}(\\/\\d{3})?|H\\d{3}|FRB\\s?\\d{1,2}\\/\\d{3}|[LND]{1,2}))?(\\W*(2X)?TSN\\s?\\d{3}(\\s?(C|ND|L))?)?)|([AO]?[HO][AEHX]?\\s?\\d{3,5}(\\s?[BEGH])?)|(CUKF\\d{3}C?(\\W*H\\s?\\d{3,4})?)|(PDN\\s?\\d{3}(\\W*(2X)?\\d{3,4}(\\/C\\d)?)?)|(7\\d{3,4}((\\s|\\-)?(CDGA|BG?([A-GJMNPY]{2,4})?(\\dGAP)?(L\\dG)?|ACD|UCG))?(\\-XL)?((\\/|\\-)(P\\dA|GNP\\d|TVP|MP)(\\-UA)?)?)|([CFKLPSUX]{1,3}\\-?\\d{2,4}((\\+|\\-)?(H\\d{3,4}|(\\d{3}|L)?D\\dN?|\\d{2}|C\\dHR[S5])?))|(B[458])|((AS+|SER)\\d{3}N?)|((NU)?KR([EV]{1,2})?\\s?\\d{2}(\\s?(P+X?A|B|A))?)|(C\\s?\\d{4,5}(\\s(KTN\\d|K))?(\\/(C\\d|HA\\dC\\d))?)|(N(F|JG?|NU?)?(?!\\,)\\W?\\d{3,4}(\\W?(E(C[JMP]|X)?L?|MA|VH|K?TN9?|[ABD][ABDK]{1,2}))?(\\-XL)?((\\-|\\.)(TVP\\d|M\\d?|\\dLSV))?((\\-|\\/)(C\\d|SPW\\d{2}))?)|(RNU\\s?\\d{3,4}(\\s?(TN\\d|ECP))?)|(BC\\d\\-\\d{4})|(W?[1-46]\\d{2,6}((\\s|\\-|\\/)(C\\d|2?(R(SI?|Z)[HLR]?((TN)?\\d)?|R?Z+R?)(NR)?|N?R|Z|[AE]?K?TN\\d|DFC\\d{3}|MA?|VA\\d{3}|A|K|B+D?|\\d{1,4}|K\\-TVH?))?(\\W?((JRXL+B)?C\\d(GJN|V[LT]\\d{3,5}|HT|ELTHT\\d{2}|B\\d{2})?|V[AL]\\d{3,4}|2RS(R|\\dTN\\d)|(L+B|JRX(Z+)?|JRXL+B|Z+)?(CM|C\\d?|S?NR|ZU\\d|Z)|XL|TVH?|S(C\\d|K)?|H\\s?\\d{3,4}))?((\\/|\\-|\\+)(A?HX?\\s?\\d{3,4}X?|TVH?|L285|\\d(K|AS|H?RS\\d?|ZR?(TN\\d)?)|(C\\d)?(MT\\d{2})?|L\\d{3}|\\d\\-\\dZ))?((\\-|\\/)(TVH|(C\\d)?(MT\\d{2})?))?)|(6\\d\\/\\d{2}))"}
+{"pattern": "(?:(?!.{1,30}(?:\\.\\s|\\.$|\\?\\s|\\?$|;\\s|;$|\u3002|\uff1f|\uff1b))(?:.{30}))|(?:.{1,30}(?:\\.\\s|\\.$|\\?\\s|\\?$|;\\s|;$|\u3002|\uff1f|\uff1b))"}
+{"pattern": "(?=display_url\":\"https)(\\n|\\s|\\w|\\W|\\b|\\B)*?(?=\\?)"}
+{"pattern": "^(?=.*\\d)(?=.*[A-Z])(?=.*[a-z]).{8,10}$"}
+{"pattern": "nz\\.co\\.trimble\\.((?!bsg).*).*"}
+{"pattern": "(?:console\\.(?!log))"}
+{"pattern": "^((?!hello|goodby)[\\s\\w]+) ((?!word|cosmos)[\\s\\w]+)!"}
+{"pattern": "\\b(10\\.[0-9]{4,}(?:\\.[0-9]+)*\\/(?:(?![\\\"&\\'])\\S)+)\\b"}
+{"pattern": "^(0(?=,(0[1-9]|[1-9]\\d?))|[1-9]\\d?|100(?=,0{1,2}$)|100(?!,\\d{2}))(,\\d{1,2})?$"}
+{"pattern": "(?!(.(?!<a))*?<\\/a>)((http|ftp|https):\\/\\/)?([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:\\/~+#-]*[\\w@?^=%&\\/~+#-])"}
+{"pattern": "(?:(?:[a-zA-Z0-9/;\\?&=:\\-_\\$\\+!\\*'\\(\\|\\\\~\\[\\]#%\\.](?!www))+(?:\\.[Cc]om|\\.[Ee]du|\\.[gG]ov|\\.[Ii]nt|\\.[Mm]il|\\.[Nn]et|\\.[Oo]rg|\\.[Bb]iz|\\.[Ii]nfo|\\.[Nn]ame|\\.[Pp]ro|\\.[Aa]ero|\\.[cC]oop|\\.[mM]useum|\\.[Cc]at|\\.[Jj]obs|\\.[Tt]ravel|\\.[Aa]rpa|\\.[Mm]obi|\\.[Aa]c|\\.[Aa]d|\\.[aA]e|\\.[aA]f|\\.[aA]g|\\.[aA]i|\\.[aA]l|\\.[aA]m|\\.[aA]n|\\.[aA]o|\\.[aA]q|\\.[aA]r|\\.[aA]s|\\.[aA]t|\\.[aA]u|\\.[aA]w|\\.[aA]z|\\.[aA]x|\\.[bB]a|\\.[bB]b|\\.[bB]d|\\.[bB]e|\\.[bB]f|\\.[bB]g|\\.[bB]h|\\.[bB]i|\\.[bB]j|\\.[bB]m|\\.[bB]n|\\.[bB]o|\\.[bB]r|\\.[bB]s|\\.[bB]t|\\.[bB]v|\\.[bB]w|\\.[bB]y|\\.[bB]z|\\.[cC]a|\\.[cC]c|\\.[cC]d|\\.[cC]f|\\.[cC]g|\\.[cC]h|\\.[cC]i|\\.[cC]k|\\.[cC]l|\\.[cC]m|\\.[cC]n|\\.[cC]o|\\.[cC]r|\\.[cC]s|\\.[cC]u|\\.[cC]v|\\.[cC]x|\\.[cC]y|\\.[cC]z|\\.[dD]e|\\.[dD]j|\\.[dD]k|\\.[dD]m|\\.[dD]o|\\.[dD]z|\\.[eE]c|\\.[eE]e|\\.[eE]g|\\.[eE]h|\\.[eE]r|\\.[eE]s|\\.[eE]t|\\.[eE]u|\\.[fF]i|\\.[fF]j|\\.[fF]k|\\.[fF]m|\\.[fF]o|\\.[fF]r|\\.[gG]a|\\.[gG]b|\\.[gG]d|\\.[gG]e|\\.[gG]f|\\.[gG]g|\\.[gG]h|\\.[gG]i|\\.[gG]l|\\.[gG]m|\\.[gG]n|\\.[gG]p|\\.[gG]q|\\.[gG]r|\\.[gG]s|\\.[gG]t|\\.[gG]u|\\.[gG]w|\\.[gG]y|\\.[hH]k|\\.[hH]m|\\.[hH]n|\\.[hH]r|\\.[hH]t|\\.[hH]u|\\.[iI]d|\\.[iI]e|\\.[iI]l|\\.[iI]m|\\.[iI]n|\\.[iI]o|\\.[iI]q|\\.[iI]r|\\.[iI]s|\\.[iI]t|\\.[jJ]e|\\.[jJ]m|\\.[jJ]o|\\.[jJ]p|\\.[kK]e|\\.[kK]g|\\.[kK]h|\\.[kK]i|\\.[kK]m|\\.[kK]n|\\.[kK]p|\\.[kK]r|\\.[kK]w|\\.[kK]y|\\.[kK]z|\\.[lL]a|\\.[lL]b|\\.[lL]c|\\.[lL]i|\\.[lL]k|\\.[lL]r|\\.[lL]s|\\.[lL]t|\\.[lL]u|\\.[lL]v|\\.[lL]y|\\.[mM]a|\\.[mM]c|\\.[mM]d|\\.[mM]g|\\.[mM]h|\\.[mM]k|\\.[mM]l|\\.[mM]m|\\.[mM]n|\\.[mM]o|\\.[mM]p|\\.[mM]q|\\.[mM]r|\\.[mM]s|\\.[mM]t|\\.[mM]u|\\.[mM]v|\\.[mM]w|\\.[mM]x|\\.[mM]y|\\.[mM]z|\\.[nN]a|\\.[nN]c|\\.[nN]e|\\.[nN]f|\\.[nN]g|\\.[nN]i|\\.[nN]l|\\.[nN]o|\\.[nN]p|\\.[nN]r|\\.[nN]u|\\.[nN]z|\\.[oO]m|\\.[pP]a|\\.[pP]e|\\.[pP]f|\\.[pP]g|\\.[pP]h|\\.[pP]k|\\.[pP]l|\\.[pP]m|\\.[pP]n|\\.[pP]r|\\.[pP]s|\\.[pP]t|\\.[pP]w|\\.[pP]y|\\.[qP]a|\\.[rR]e|\\.[rR]o|\\.[rR]u|\\.[rR]w|\\.[sS]a|\\.[sS]b|\\.[sS]c|\\.[sS]d|\\.[sS]e|\\.[sS]g|\\.[sS]h|\\.[Ss]i|\\.[sS]j|\\.[sS]k|\\.[sS]l|\\.[sS]m|\\.[sS]n|\\.[sS]o|\\.[sS]r|\\.[sS]t|\\.[sS]v|\\.[sS]y|\\.[sS]z|\\.[tT]c|\\.[tT]d|\\.[tT]f|\\.[tT]g|\\.[tT]h|\\.[tT]j|\\.[tT]k|\\.[tT]l|\\.[tT]m|\\.[tT]n|\\.[tT]o|\\.[tT]p|\\.[tT]r|\\.[tT]t|\\.[tT]v|\\.[tT]w|\\.[tT]z|\\.[uU]a|\\.[uU]g|\\.[uU]k|\\.[uU]m|\\.[uU]s|\\.[uU]y|\\.[uU]z|\\.[vV]a|\\.[vV]c|\\.[vV]e|\\.[vV]g|\\.[vV]i|\\.[vV]n|\\.[vV]u|\\.[wW]f|\\.[wW]s|\\.[yY]e|\\.[yY]t|\\.[yY]u|\\.[zZ]a|\\.[zZ]m|\\.[zZ]w))"}
+{"pattern": "^((?!-))(xn--)?[a-z0-9][a-z0-9-_]{0,61}[a-z0-9]{0,1}\\.(xn--)?([a-z0-9\\-]{1,61}|[a-z0-9-]{1,30}\\.[a-z]{2,})$"}
+{"pattern": "/^RNTO(?!\\n)\\s[^\\n]{200}/smi"}
+{"pattern": "\\n                                (?P<pre_sep>[ _.-]*)\\n                                ((?:s(?:eason|eries)?\\s*)?%0?S(?![._]?N))\\n                                (.*?)\\n                                (%0?E(?![._]?N))\\n                                (?P<post_sep>[ _.-]*)\\n"}
+{"pattern": "&lt;a\\s*.*?href\\s*=\\s*['&quot;](?!http:\\/\\/).*?&gt;(.*?)&lt;\\/a&gt;"}
+{"pattern": "^[-+]??(\\\\d++[.]\\\\d*?|[.]\\\\d+?|\\\\d+(?=[eE]))([eE][-+]??\\\\d++)?$"}
+{"pattern": "/^ALLO(?!\\n)\\s[^\\n]{200}/smi"}
+{"pattern": "(process)+(.*)(\\n.*)*(?=Edition)"}
+{"pattern": "\\s(?=days?|months?|years?|weeks?)"}
+{"pattern": "(?: # A name with spec OR just a name(?P<NAME_AND_SPEC>(?P<NAME_WITH_SPEC># Example: De Kat in de Wijngaard# At the start of string, capture name by capitalisation(?:De;\\s|Het;\\s|Een;\\s)? (?:[A-Z\\']\\w*)(?:\\'?\\s\\w+)*?) # end group NAME_WITH_SPEC\\s(?P<NAME_SPEC>        uithangend\\sin\\shet\\sonderhuis|op\\sde\\shoek\\suithangend|        naast\\sde\\sdeur\\suithangend|in\\sde\\sbalans\\suithangend|        uithangend\\sen\\sboven\\sde\\sdeur|naast\\suithangend|        uithangend\\sof\\sin\\sde\\sgevel|voor\\suithangend|wederzijds\\suithangend|        uithangende|uithangend|uitangend|uithangt|utihangend|uihangend|        uithangen|uihangt|op\\seen\\sstok\\suitstekend|voor\\suitstekend|        uitstekend|uistekend|in\\sde\\sgevel\\sof\\sboven\\sde\\sdeur|        in\\sde\\sgevel\\svan\\shet\\sachterhuis|in\\sde\\sgevel\\sgeschilderd|        op\\sde\\sgevel\\sgeschilderd|ertegenover\\sin\\sde\\sgevel|        naast\\sde\\sgang\\sin\\sde\\sgevel|voor\\sin\\sde\\sgevel|        achter\\sin\\sde\\sgevel|in\\sde\\sgevel\\svan\\shet\\svoorste\\shuis|        onder\\sin\\sde\\sgevel|boven\\sin\\sde\\sgevel|in\\sde\\sgevel\\suitgehouwen|        uitgehouwen\\sin\\sde\\sgevel|in\\sde\\sgevel\\sgehouwen|        op\\sde\\shoek\\svan\\sde\\sgang\\sin\\sde\\sgevel|        in\\sde\\sgevel\\svan\\shet\\sachterhuis|in\\sde\\szijgevel|        boven\\sde\\strap\\sin\\sde\\sgevel|ten\\sdele\\sin\\sde\\sgevel|        in\\sde\\sgevel\\sstaat|boven\\sde\\sdeur\\sin\\sde\\sgevel|bovenin\\sde\\sgevel|        in\\sde\\sgevel|inde\\sgevel|in\\sdfe\\sgevel|bovenop\\sde\\sgevel|boven\\sop\\sde\\sgevel|        op\\sde\\sgevel|boven\\sgevel|boven\\sde\\sgevel|voor\\sde\\sgevel\\shangend|        in\\shet\\sbord\\svoor\\sde\\sgevel|voor\\sde\\sgevel\\sgespijkerd|        voor\\sde\\sgevel|voor\\saan\\sde\\sgevel|in\\sde\\svoorgevel|        in\\sde\\sachtergevel|boven\\saan\\sde\\sgevel\\s|        aan\\sde\\sgevel\\sgeschilderd|aan\\sde\\sgevel|voor\\stegen\\sde\\sgevel|        tegen\\sde\\sgevel\\saangespijkerd|tegen\\sde\\sgevel|        boven\\sde\\sdeur\\sgeschilderd|boven\\sde\\sdeur\\sgespijkerd|        boven\\sde\\sdeur\\suitgehouwen|boven\\sde\\sdeur\\svan\\sde\\spoort|        boven\\sde\\sdeur\\shangend|in\\shet\\skalf\\sboven\\sde\\sdeur|        boven\\sde\\sonderdeur|boven\\sin\\sde\\sdeur|in\\sde\\sdeur|        boven\\sde\\sdeur\\svan\\sde\\sgang|boven\\sde\\sdeur\\sgeschreven|        voor\\sof\\sboven\\sde\\sdeur|boven\\sde\\sdeur\\sen\\spoort|boven\\sde\\sdeur|        boven\\sdeur|op\\sde\\sdeur\\sgeschilderd|op\\sde\\sdeur\\sgeschreven|        op\\sde\\sdeur|voor\\sde\\sdeur\\svan\\sde\\sgang|voor\\sde\\sdeur\\sgeschilderd|        voor\\sde\\sdeur\\ss|voor\\sde\\sdeur\\s|aan\\sde\\sdeur|        boven\\sde\\singang\\svan\\sde\\sdeur|boven\\sde\\singang|bij\\sde\\singang|        op\\sde\\spoort\\svan\\sde\\sgang|voor\\sde\\spoort\\sgeschilderd|        voor\\sde\\spoort\\svan\\sde\\sgang\\sgeschilderd|voor\\sde\\spoort|        boven\\sde\\svoorpoort|bij\\sde\\sdeur\\sgeschilderd|        bij\\sde\\sdeur\\svan\\sde\\sgang|bij\\sde\\sdeur|ervoor\\sgeschilderd|        ervoor\\sgeschreven|ervoor|met\\seen\\sbord\\sop\\sde\\sluifel|        voor\\sop\\sde\\sluifel|op\\sde\\sluifel|in\\sde\\sluifel|aan\\sde\\sluifel|        tegen\\sde\\sluifel|boven\\sde\\spui|boven\\sde\\sgangdeur|        boven\\sde\\spoort\\suitgehouwen|boven\\sde\\spoort\\sof\\sdeur|        boven\\sde\\spoort|naast\\sen\\sop\\sde\\spoort\\sgeschilderd|op\\sde\\spoort|        voor\\sde\\sluifel|boven\\sde\\sluifel|uitgehouwen\\sboven\\sde\\sgang|        boven\\sde\\sgang|voor\\sde\\sgang\\sgeschilderd|voor\\sde\\sgang|        in\\sde\\sgang|op\\sde\\spakdeur\\sgeschreven|op\\sde\\spakdeuren|        op\\sde\\spakdeur|op\\sde\\sscheiding|erbovenop|erboven|        uitgedrukt\\sin\\seen\\sbrievendeur|        in\\shet\\skalf\\svan\\sde\\sdeur\\sgesneden|in\\shet\\skalf|        tegen\\sde\\spui\\sgespijkerd|tegen\\sde\\spui|boven\\sde\\sstaat|        voor\\shet\\shuis\\sgespijkerd|voor\\shet\\shuis|op\\sde\\sstok|        in\\sde\\spuibalk|in\\sde\\spui|op\\sde\\shoek\\svan\\sde\\sgang|        voor\\sde\\slooierij|op\\shet\\shuis|erop\\sgeschilderd|erop|        boven\\sde\\spost\\svan\\sde\\sdeur|voor\\shet\\shek\\sgeschilderd|        tegen\\sde\\szijgevel|op\\shet\\szoldervenster|        aan\\shet\\sdakvenster\\sgeschilderd|voor\\saan\\sde\\spoort|aan\\sde\\spoort|        voor\\seen\\sdeel|tegen\\shet\\spakvenster\\sgeschilderd|aan\\selke\\szijde|        ertegen|aan\\shet\\spoortje|geschilderd|tegen\\sde\\sschutting|        op\\sde\\sloods|in\\shet\\szolderraam|in\\shet\\szoldervenster|belend|        uitgestoken|boven\\shet\\shuis|aan\\selke\\szijde|voor\\sde\\s\\deur|        voor\\sde\\sdeur\\svan\\sde\\sgang        ) # end group NAME_SPEC(?:;?\\s)?)+? # end group NAME_AND_SPEC| # or # But if it starts with Huis, Erf etc. it is not a name(?!(?:Huis\\sen\\serf|Hui|Koetsh|Wagenh|Winkel|Stal|Tent|\\w*buurt|Manege|Achtererf|Erf|Weiland|    Werf|Ramen|Hoekerf|Schip|Obligatie|Koopmanshuis|Poort|Gang|Scheiding|Park|Gebouwd|Strook|Kavel|    Laagte|\\w*weer|\\w*pad|Sint|Erven|Stuk|Opstal|Fortificatie\\w*|    Achterhuis|Obligatie|Dubbel|Achter\\s(?:de|het)|Leeg|Ledig|Gebruik|Streek|\\w*gebouw|\\w*brief|\\w*molen|\\w*winkel|Bouwvallig|Sloot|Vrije\\s\\w*gang|    Gedeelte|Spijker|Schans|Kamer|Rente|Warmoes|Graf|Molen|Grond|\\w*\\sen\\serf|    Raam|Houten|Timmerloods|Loods|Getimmer|Land|Woning|Korte|Een\\sstuk\\sland|    Contract|Overeenkomst|Tuin|Plantage|Pakhuis|Kromme|Sloep|\\w*veer|\\w*raam|Afbraak|Snijding|Afgebrand|Gehoogd\\w*|Helft\\svan|\\w*poort|    Actie|(?:(?:Klein|Kleine|Een|Twee|Drie|Vier|Vijf|Zes|Zeven|Acht|Negen|    Tien)\\s)?\\w*(?:hui(?:sjes|sen|zinge|zing|zen|js)|roeden|woning|voet|    kampjes|opstallen|erven|erfjes)|\\w*plaats|\\w*straat|\\w*gracht\\w*poort|\\w*werf|\\w*sluis|\\w*wal|\\w*erij|\\w*gang|\\w*woning|\\w*kerk|\\w*tuin\\b|\\w*stalling|\\w*stal|Eerste|Tweede|[A-HK-Z]{2})\\w*\\s?)(?P<NAME_NO_SPEC> # Only name, without the location of the name in house# Example: De Koe# At the start of string, capture name by capitalisation# and use this ugly positive negative lookaheads to filter names ending# in 'straat' 'steeg' etc. (?:(?:De|Het|Een|de|het|een);\\s)?[A-Z\\'][\\w\\s\\']{2,30}\\b) # end group NAME_NO_SPEC) # end name| # or(?P<LEGAL_TYPE>(?:(?:(?P<LEGAL>(?:(?:\\d+\\/\\d+)|(?:\\d+))(?:(?:\\s(?:in|van)\\s\\d+)?|\\spart)|dubbel            ) # end group LEGAL\\s)?(?:van\\s)?(?P<TYPE># Example: 1/2(?:(?:\\s(?:en|met)\\s)?\\b[a-z]*(?:(?:Stal|Huis|Huisje|Kavel|Opstal|Lijfrentebrief|Obligatie|Tent|Manege|Weiland|Scheiding|Hoekerf|                Contract|Erf|Sloot|Sloep|Molen|huis|\\w*huis|huisje|huisjes|hof|hoven|gang|schip|                schuit|schuiten|stallen|stalling|stal|beplanting|schuur|getimmerte|erf|erij|erven|vallig|                Ledig|herberg|pri\u00eblen|kolfbanen|lakenraam|molen|Woning|woning|woningen|oven|loods|loodsen|baan|keet|land|logement|schuttingen|\\w*akerij|\\w*winkel|                rije\\s\\w*gang|sloep|aljoot|hok|veld|scheepje|schuit|kof|eiker|                bligatie|wal|Snijding|fregat|wijd|Leeg\\serf)\\b|(?:(?:Huiz|                huiz|tuin|\\w*tuin|(?:(?:in\\s)?de\\s\\w*\\s*)gereedschappen)\\w*)))+)+ # end group TYPE)+)+ # end group LEGAL_TYPE| # or(?:,?\\s)+?(?P<LOCATION># Example: tussen Prinsengracht en Noordse Bos(?:(?:grenzend|op|in|aan|tussen|onder|WZ|tusen|recht|over|naast|achter|grenzend|bij|buiten|    benoorden|bezuiden|bewesten|tegenover|beoosten|voorbij|schuin|park|hoek|    ten\\seinde|(?:het\\s(?:eerste|tweede|derde|vierde|vijfde|zesde|zevende|    achtste|negende|tiende))|(?:noord|oost|zuid|west)\\w*)\\s)+?(?:de|het)? [^\\/]*?$) # end LOCATION"}{"pattern": "([^*{}\\s]@|[^*{}@\\s]|\\*(?!/))+"}
+{"pattern": "((?=[^147]*([147][^147]*[147][^147]*[147][^147]*)*$)[^258]*([258][^258]*[258][^258]*[258][^258]*)*)|((?=[^147]*([147][^147]*[147][^147]*[147][^147]*)*[147][^147]*$)[^258]*([258][^258]*[258][^258]*[258][^258]*)*[258][^258]*)|((?=[^147]*([147][^147]*[147][^147]*[147][^147]*)*[147][^147]*[147][^147]*$)[^258]*([258][^258]*[258][^258]*[258][^258]*)*[258][^258]*[258][^258]*)"}
+{"pattern": "^\\[\\s*(((-?([_a-z]|(?![\\u0000-\\u0239]).*|((\\\\[0-9a-f]{1,6}(\\r\\n|[ \\t\\r\\n\\f])?)|\\\\[^\\r\\n\\f0-9a-f]))([_a-z0-9-]|(?![\\u0000-\\u0239]).*|((\\\\[0-9a-f]{1,6}(\\r\\n|[ \\t\\r\\n\\f])?)|\\\\[^\\r\\n\\f0-9a-f]))*)|\\\\*)?|)?(-?([_a-z]|(?![\\u0000-\\u0239]).*|((\\\\[0-9a-f]{1,6}(\\r\\n|[ \\t\\r\\n\\f])?)|\\\\[^\\r\\n\\f0-9a-f]))([_a-z0-9-]|(?![\\u0000-\\u0239]).*|((\\\\[0-9a-f]{1,6}(\\r\\n|[ \\t\\r\\n\\f])?)|\\\\[^\\r\\n\\f0-9a-f]))*)\\s*((\\^=|\\$=|\\*=|=|~=|\\|=)\\s*((-?([_a-z]|(?![\\u0000-\\u0239]).*|((\\\\[0-9a-f]{1,6}(\\r\\n|[ \\t\\r\\n\\f])?)|\\\\[^\\r\\n\\f0-9a-f]))([_a-z0-9-]|(?![\\u0000-\\u0239]).*|((\\\\[0-9a-f]{1,6}(\\r\\n|[ \\t\\r\\n\\f])?)|\\\\[^\\r\\n\\f0-9a-f]))*)|((\\\"([^\\n\\r\\f\\\"]|\\\\n|\\r\\n|\\r|\\f|(?![\\u0000-\\u0239]).*|((\\\\[0-9a-f]{1,6}(\\r\\n|[ \\t\\r\\n\\f])?)|\\\\[^\\r\\n\\f0-9a-f]))*\\\")|(\\'([^\\n\\r\\f\\']|\\\\n|\\r\\n|\\r|\\f|(?![\\u0000-\\u0239]).*|((\\\\[0-9a-f]{1,6}(\\r\\n|[ \\t\\r\\n\\f])?)|\\\\[^\\r\\n\\f0-9a-f]))*\\')))\\s*)?\\]$"}
+{"pattern": "(?P<cusip>(\\d{3}[a-zA-Z0-9]{6}|\\d{3}[a-zA-Z0-9]{5}))(\\s*([:-]?\\s*))(?P<price>((\\$)?\\s{0,2}\\d{2,3})((?=\\s)|(\\.\\d+)|(\\-(([0-2]\\d)|(3[0-2])))))"}
+{"pattern": "(me)(?!([^<]+)?>)"}
+{"pattern": "(?=Replace|toner|waste)(.*)(?= S| \\[)"}
+{"pattern": "((?=.*?)(Google|Amazon)( (.+?))? is the largest( web)? service( of its kind)? in the world)*"}
+{"pattern": "&(?!\\#)"}
+{"pattern": "^(?!.*\\?)(.*?)\\&(.*?)$"}
+{"pattern": "^((?!Chat).)*$"}
+{"pattern": "/^((Messngr|Alerter)\\x00|(?!.*\\x00))/Ri"}
+{"pattern": "((?=.)^\\$?(([1-9][0-9]{0,2}(\\.[0-9]{3})*)|[0-9]+)?(\\,[0-9]{0,2})?$|(?=.)^\\$?(([1-9][0-9]{0,2}(,[0-9]{3})*)|[0-9]+)?(\\.[0-9]{0,2})?$)"}
+{"pattern": "(?=^\\s*DETECTORES SELECCIONADOS HABILITADOS).{40}"}
+{"pattern": "(\\d[\\w\\W]*?(?=(?:\\d\\d*\\. )|$))"}
+{"pattern": "(?!^\\$0[1-9])(?=^(\\$[0-9]+(\\,[0-9]{3})*)+(\\.[0-9]+)?$)^.{1,19}$|(?!^0[1-9])(?=^([0-9]+(\\,[0-9]{3})*)+(\\.[0-9]+)?$)^.{1,18}$"}
+{"pattern": "^(?=.*\\d)(?=.*[^\\w\\s]).{8,}$"}
+{"pattern": "(?=.*\\d)(?=.*[A-Z])(?=.*[a-z]).{8,15}"}
+{"pattern": "^(?:([0-9]*)(?=[Dd]))?[Dd]?([0-9]+)*(?:([+-]?[0-9]*))$"}
+{"pattern": "^(LTE|RS[A-Z]+)\\s*([^:]+):\\s+(.*?)(?=\\s*$)"}
+{"pattern": "^(?!\\.)(?!.*\\.$)(?!.*?\\.\\.)([a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+)@((?!\\.)(?!.*\\.$)[a-zA-Z0-9._-]+.[a-zA-Z]{2,6})$"}
+{"pattern": "\\w+(?=\\s*\\([-+]\\))"}
+{"pattern": "(?-i)(?=^.{8,}$)((?!.*\\s)(?=.*[A-Z])(?=.*[a-z]))(?=(1)(?=.*\\d)|.*[^A-Za-z0-9])^.*$"}
+{"pattern": "^\\s+|\\s+$|\\s+(?=\\s)"}
+{"pattern": "/^STAT(?!\\n)\\s[^\\n]{190}/mi"}
+{"pattern": "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d@#$ *&^%!]{6,}$"}
+{"pattern": "/name\\s*=\\s*[\\x22\\x27]skinFile[\\x22\\x27]\\x3b((?!^--).)*?filename\\s*=\\s*[\\x22\\x27]\\S+?\\x2easpx?[\\x22\\x27][\\r\\n]{2,}/Psim"}
+{"pattern": "(?ims)<p[^>]*>.*?</p>|<li(?!n)[^>]*>.*?</li>"}
+{"pattern": "\\b(?:(?!\\bper)(?!\\bdef).)*"}
+{"pattern": "(?:(^[1-9]\\d*)(\\.\\d*[1-9])?|(^0)(\\.\\d*[1-9]))([eE][+-](?!0+$)\\d+)?$"}
+{"pattern": "(Ja):\\s*(?=x|\\?|.*ja)|(Nei):\\s*(?=x|\\?|n)"}
+{"pattern": "<(?!!)[^>]+>"}
+{"pattern": "udp\\s+.\\d+\\s+\\d+\\s+(?!127.0.0.1)\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3}:514\\s+0\\.0\\.0\\.0:\\*\\s+(\\d+)\\/syslog-ng"}
+{"pattern": "^(?=.{5,15}$)(?![_.-])(?!.*[_.-]{2})[a-zA-Z0-9._-]+$"}
+{"pattern": "(request|response|session|cache|redirect|local_import|HTTP|TR|XML|URL|BEAUTIFY|A|BODY|BR|B|CAT|CENTER|CODE|COL|COLGROUP|DIV|EM|EMBED|FIELDSET|LEGEND|FORM|H1|H2|H3|H4|H5|H6|IFRAME|HEAD|HR|HTML|I|IMG|INPUT|LABEL|LI|LINK|MARKMIN|MENU|META|OBJECT|OL|ON|OPTION|P|PRE|SCRIPT|SELECT|SPAN|STYLE|TABLE|THEAD|TBODY|TFOOT|TAG|TD|TEXTAREA|TH|TITLE|TT|T|UL|XHTML|IS_SLUG|IS_STRONG|IS_LOWER|IS_UPPER|IS_ALPHANUMERIC|IS_DATETIME|IS_DATETIME_IN_RANGE|IS_DATE|IS_DATE_IN_RANGE|IS_DECIMAL_IN_RANGE|IS_EMAIL|IS_EXPR|IS_FLOAT_IN_RANGE|IS_IMAGE|IS_INT_IN_RANGE|IS_IN_SET|IS_IPV4|IS_LIST_OF|IS_LENGTH|IS_MATCH|IS_EQUAL_TO|IS_EMPTY_OR|IS_NULL_OR|IS_NOT_EMPTY|IS_TIME|IS_UPLOAD_FILENAME|IS_URL|CLEANUP|CRYPT|IS_IN_DB|IS_NOT_IN_DB|DAL|Field|SQLFORM|SQLTABLE|xmlescape|embed64)(?![a-zA-Z0-9_])"}
+{"pattern": "(\\d+)\\s+(\\w{2})\\s*(\\w{2,5})\\s+(\\w{5})(?:\\s+|\\s+(.)\\s+)(\\w{3})(\\w{3})(?:\\s+|(?:\\s|\\*)(\\w{3})\\s+)(\\w{4,5})\\s+(\\w{4,5})(?:\\s+(\\w{5}))?.*(?:\\n|$)((?:.|\\n)*?)(\\n\\s*\\n)?(?=\\d+\\s+\\w{2}\\s*\\w{2,5}\\s+\\w{5}(?:\\s+|\\s+.\\s+)\\w{3}\\w{3}(?:\\s+|(?:\\s|\\*)\\w{3}\\s+)\\w{4,5}\\s+\\w{4,5}(?:\\s+\\w{5})?|$)"}
+{"pattern": "(zbx|zorbix)_(?:(?!(blog|helper)).)*::"}
+{"pattern": "(?:([^\\:]*)\\:\\/\\/)?(?:([^\\:\\@]*)(?:\\:([^\\@]*))?\\@)?(?:([^\\/\\:]*)\\.(?=[^\\.\\/\\:]*\\.[^\\.\\/\\:]*))?([^\\.\\/\\:]*)(?:\\.([^\\/\\.\\:]*))?(?:\\:([0-9]*))?(\\/[^\\?#]*(?=.*?\\/)\\/)?([^\\?#]*)?(?:\\?([^#]*))?(?:#(.*))?"}
+{"pattern": "<a href=\"https:.*(\\/)([^\\/]+)(?:(?=\\/\"))\\/"}
+{"pattern": "\\s*(and|or)?\\s*(\\w*)\\s*(>=|<=|<>|=|>|<)\\s*([\"])?[^(?!(\"|\\\\\"))*]*([\"])?"}
+{"pattern": "/\\x2falertcloud\\x2findex\\.php[^\\n\\s]*?[?&](height|width)(?!%26)[^&\\n\\s]*?%22(\\x7d\\x7d|%7D%7D)(\\x3b|%3b)/i"}
+{"pattern": "^(?=.{8,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\u00a7'\\\"|;\u00a5\u00a8<>?,`\u20ac!\u00a3\u00b0@#:$%{}\\-_~^&+=*\\/()\\[\\]]).*$"}
+{"pattern": "^(?!Andrea)(?:[\\S\\s](?!Andrea))*+$"}
+{"pattern": "[\\t ]+(?![^{]*})"}
+{"pattern": "(?i)\\..*? (?P<error>\\w+)(?= )"}
+{"pattern": "^.*(?=.{0,10})(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).*$"}
+{"pattern": "(?!^0*$)(?!^0*\\.0*$)^\\d{1,16}(\\.\\d{1,2})?$"}
+{"pattern": "(?!00[02-5]|099|213|269|34[358]|353|419|42[89]|51[789]|529|53[36]|552|5[67]8|5[78]9|621|6[348]2|6[46]3|659|69[4-9]|7[034]2|709|715|771|81[789]|8[3469]9|8[4568]8|8[6-9]6|8[68]7|9[02]9|987)\\d{5}(-\\d{4}){0,1}"}
+{"pattern": "(?:^.*\\r*\\n*)*?(?:(?=^\\s*GO\\s*$)|$)"}
+{"pattern": "&(?!amp;)"}
+{"pattern": "^\\-?\\d+(\\.(?=\\d))?\\d*$"}
+{"pattern": "((?![0-9]).{0,1}(12)(?![0-9]).{0,1})|(^12)[,\\s]"}
+{"pattern": "^(?!\\.git\\b)(.*)"}
+{"pattern": "v6\\/[0-9]{3}[a-z]?\\/(?!(elodie|bacchus|sophie)).*$"}
+{"pattern": "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\\s).{5,10}$"}
+{"pattern": "(?<email>(?![ ])(\\w|[.])*@(\\w|[.])*)"}
+{"pattern": "^(?!0?2/3)(?!0?2/29/.{3}[13579])(?!0?2/29/.{2}[02468][26])(?!0?2/29/.{2}[13579][048])(?!(0?[469]|11)/31)(?!0?2/29/[13579][01345789]0{2})(?!0?2/29/[02468][1235679]0{2})(0?[1-9]|1[012])/(0?[1-9]|[12][0-9]|3[01])/([0-9]{4})$"}
+{"pattern": "%(?!\\()"}
+{"pattern": "\\b(?!\\d)([ELX0-9-])\\w{1,}"}
+{"pattern": "^(?!(978))([0-9]{13})(-extrait|-nouveaute|-specimen|-complet)*.(epub|json)"}
+{"pattern": "\\b[A-Za-z']+\\b(?=,)"}
+{"pattern": "(?:^|\\s)([a-z]{3,6}(?=://))?(://)?((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))(?::(\\d{2,5}))?(?:\\s|$)"}
+{"pattern": "^(?!hello|you$)"}
+{"pattern": "^([a-zA-Z0-9_\\u0080-\\u02AF\\u0300-\\u07FF\\u0900-\\u18AF\\u1900-\\u19FF\\u1A00-\\u1A1F\\u1B00-\\u1B7F\\u1D00-\\u1FFF\\u20D0-\\u214F\\u2C00-\\u2DDF\\u2F00-\\u2FDF\\u2FF0-\\u2FFF\\u3040-\\u319F\\u31C0-\\uA4CF\\uA700-\\uA71F\\uA800-\\uA82F\\uA840-\\uA87F\\uAC00-\\uD7AF\\uF900-\\uFAFF]+[a-zA-Z0-9_\\u0080-\\u02AF\\u0300-\\u07FF\\u0900-\\u18AF\\u1900-\\u19FF\\u1A00-\\u1A1F\\u1B00-\\u1B7F\\u1D00-\\u1FFF\\u20D0-\\u214F\\u2C00-\\u2DDF\\u2F00-\\u2FDF\\u2FF0-\\u2FFF\\u3040-\\u319F\\u31C0-\\uA4CF\\uA700-\\uA71F\\uA800-\\uA82F\\uA840-\\uA87F\\uAC00-\\uD7AF\\uF900-\\uFAFF\\-\\+!\\?\\$#%&'\\*=\\^`/\\|\\.]*\\@((?!-)[a-zA-Z0-9\\-]+[^\\-]\\.){1,}[a-zA-Z]{2,})$"}
+{"pattern": "desc\\s*\"(((?!\").)*)((?!\\n).)*\\n{1}task\\s*:(((?!\\n).)*)do(((?!\\nend).)*)\\nend"}
+{"pattern": "^((?!screen).)*\\.css"}
+{"pattern": "^(?!NOT FOUND    \\*\\*\\*\\*\\* ).*$"}
+{"pattern": "[^.!?\\s][^.!?]*(?:[.!?](?!['\"]?\\s|$)[^.!?]*)*[.!?]?['\"]?(?=\\s|$)"}
+{"pattern": "https:\\/\\/(www.|nysinternships.)?cs.ny.gov\\/(?!(([a-z]*\\/)*(cal_db\\.cfm\\?date=|list\\.cfm\\?Exam=|scheduler\\?monthyear=))).*"}{"pattern": "^[%]?([B])(.+?(?=\\^))[\\^](.+?(?=\\^))[\\^](\\d\\d)(\\d\\d)(\\d)(\\d)(\\d)(.*)$"}
+{"pattern": "\\s|=|,|:|\\((?!.*\\))|\\[(?!.*\\])|\\{(?!.*\\})"}
+{"pattern": "(?ix)(?:^[A-Z\\W]*\\W+(?!bnd|cnr)\\W+)?(?:(?!\\b(?:RD|HWY|TRAIL|St|R)\\b)(?P<numbers>\\d+-\\d+|\\d+[A-Z]?)\\W+)*?(?:\\W+(?:AND|&)\\W+)*(?:(?:(?P<geo>BND|CNR)(?:\\WOF|\\WBY)?)\\W+)*(?P<name>(?:(?!\\b(?:RD|HWY|TRAIL|St|R)\\b)[A-Z]+\\W*)+)\\W+(?:(?P<type>RD|HWY|TRAIL|St|R)\\W)+"}
+{"pattern": "^.*(?=.{8,})(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).*$"}
+{"pattern": "/^(?!GET|PUT|HEAD|POST)[^\\x00\\r\\n]{128}/"}
+{"pattern": "(?!666)\\d{3}"}
+{"pattern": ".* \\w+ (?=\\()|(\\(\\d{4}_\\d{2}_\\d{2}\\s\\d{2}_\\d{2}_\\d{2}\\s\\w{3}\\))"}
+{"pattern": "(src|href|action)\\s*=\\s*('|\"|(?!\"|'))(?!(http:|ftp:|mailto:|https:|#))"}
+{"pattern": "^.*?\\b(?!www\\.)((?:[\\w-]+\\.)+[\\w-]+).*$"}
+{"pattern": "(\\r\\n|^).{16,}(?=(\\r\\n|$))"}
+{"pattern": "ForAll(?=\\s)"}
+{"pattern": "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[-\\w!$%^&*()_+|~=`{}\\[\\]:\";'<>?,.\\/]+$"}
+{"pattern": "(?=(From:|Return\\-Path:)(.*\\@.*\\.[a-z]{5,24}$)\\b)(?!.*\\b(world)\\b)(.+)"}
+{"pattern": "/^(?=.*\\d)(?=.*[!@#$%^&*_<>?|])(?=.*[a-z])(?=.*[A-Z])[A-Za-z\\d][A-Za-z\\d!@#$%^&*_<>?|]{6,}[A-Za-z\\d]$/"}
+{"pattern": "/<script((?!<\\/script).)*?(var|function)\\s*\\w+\\s*(=\\s*function\\s*\\x28\\s*\\x29)?((?!<\\/script).)*?(var\\s*)?(?P<var>\\w+)(\\s*=\\s*\\w+)?\\.(onclick|onfocus|onload)\\.(call|apply)\\x28\\s*(0x)?\\d+/ims"}
+{"pattern": "(.*)(-)([02468](?!.*\\d))(.*)"}
+{"pattern": "%(?![0-9A-Fa-f]{2})"}
+{"pattern": "(?:(?:(\\d*(?:\\d*(?:.?,?)*?)*?)(.?|,?)(\\d*)) ?(k|m|g|c|d|p)?(mi|bbl.|cu.|doz.|fl.? ?oz|F|ft|gal|gr|in|k|lb|mph|n.m|oz|pt|qt|sq|rpm|tablespoon|teaspoon|tbsp|tsp|td|l |m|m|b|g|kl|l |C |g|m|mt|w)(?:\\/?(h|s|m)?).? *?(?:\\^ *?(\\d+))?)(?= |\\n|\\r)"}
+{"pattern": "(?=^.{1,}$)(?!.*\\s)[0-9a-zA-Z!@#$%*()_+^&\\[\\]]*$"}
+{"pattern": "\\d+\\.\\d*(?!\\d*d)"}
+{"pattern": "^\\s*[a-zA-Z0-9_%+#&'*/=^`{|}~-](?:\\.?[a-zA-Z0-9_%+#&'*/=^`{|}~-])*@(?!yahoo.|hotmail.|gmail.|outlook.|aol.|email.)(?:[a-zA-Z0-9_-]+\\.)*(?:[a-zA-Z]{2,9}|\\[(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)])\\s*$"}
+{"pattern": "^(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[\\()@#$\u00a3%^!&*+=-_]).*$"}
+{"pattern": "(?=^[A-Z])(?=.{1,4}\\d)(?=.*[A-Za-z])[A-Za-z\\d]{8,}"}
+{"pattern": "/^SITE(?!\\n)\\s[^\\n]{100}/smi"}
+{"pattern": "([A-Z]+)(?=[a-z0-9])"}
+{"pattern": "^(?=.*[^\\.]$)((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.?){4}$"}
+{"pattern": "^(?P<Alias>\\s\\s\\-.*?)\\s{2,}(?P<Desc>.*?)(?=^\\s\\s\\-)"}
+{"pattern": "^(?:(?:(?:https?|ftp):)?\\/\\/)(?:\\S+(?::\\S*)?@)?(?:(?!(?:10|127)(?:\\.\\d{1,3}){3})(?!(?:169\\.254|192\\.168)(?:\\.\\d{1,3}){2})(?!172\\.(?:1[6-9]|2\\d|3[0-1])(?:\\.\\d{1,3}){2})(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z0-9\\u00a1-\\uffff][a-z0-9\\u00a1-\\uffff_-]{0,62})?[a-z0-9\\u00a1-\\uffff]\\.)+(?:[a-z\\u00a1-\\uffff]{2,}\\.?))(?::\\d{2,5})?(?:[/?#]\\S*)?$"}
+{"pattern": "(?s)( class=\\w+(?=([^&lt;]*&gt;)))|(&lt;!--\\[if.*?&lt;!\\[endif\\]--&gt;)|(&lt;!\\[if !\\w+\\]&gt;)|(&lt;!\\[endif\\]&gt;)|(&lt;o:p&gt;[^&lt;]*&lt;/o:p&gt;)|(&lt;span[^&gt;]*&gt;)|(&lt;/span&gt;)|(font-family:[^&gt;]*[;'])|(font-size:[^&gt;]*[;'])(?-s)"}
+{"pattern": "(\\n|\\\\n)(?!$)"}
+{"pattern": "<\\/[^>]>[\\s]*(<div [^>]* ((?!o-block).)*><iframe[^>]*>(?:.|\\n)*?<\\/iframe><\\/div>)"}
+{"pattern": "^((?!\\sid: '(.*?)',).)+$"}
+{"pattern": "_(?=[^_]*$)"}
+{"pattern": "/^(?:IR)(?=.{24}$)[0-9]*$/gi"}
+{"pattern": "^[-+]?(?!0?\\.00)(?=.+(\\.|$))(?!0(?!\\,))\\d{1,3}((| )\\d{3})*(\\,\\d+)?$|^[+-]?((\\d{1}(\\,\\d*)?)|(\\,\\d+))$"}
+{"pattern": "^(0[1-9]|1\\d|2[1-8]|29(?=-\\d\\d-(?!1[26]00|2[048]00)\\d\\d(?:[02468][048]|[13579][26]))|30(?!-02)|31(?=-0[13578]|-1[02]))-(0[1-9]|1[0-2])-[12]\\d{3} ([01]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)$"}
+{"pattern": "^(?=.{8,})(?=.*\\d)(?![.\\n])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=_-]).*$"}
+{"pattern": "(?m)(^[0-9]+)([\\s\\S]*?)(?=\\n\\n)"}
+{"pattern": "(?=^.{8,15}$)((?!.*\\s)(?=.*[A-Z])(?=.*[a-z])(?=(.*\\d){1,}))((?!.*[\",;&|'])|(?=(.*\\W){1,}))(?!.*[\",;&|'])^.*$"}
+{"pattern": ":(?![\\\\/])"}
+{"pattern": "^(\\/\\/)(?![\\ ])(\\w)*"}
+{"pattern": "^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]+$"}
+{"pattern": "^(?=(?:\\D*.\\D*){10,15}$)\\+?\\d{1,4}?[-.\\x20]?\\(?\\d{1,3}?\\)?[-.\\x20]?\\d{1,4}[-.\\x20]?\\d{1,4}[-.\\x20]?\\d{1,9}$"}
+{"pattern": "\\d(?![SLOIBZ])([A-Z]){2}\\d\\-(?![SLOIBZ])([A-Z]){2}\\d\\-(?![SLOIBZ])([A-Z]){2}\\d{2}"}
+{"pattern": "^(?=.*[1-9].*)((?!SS)[AHJ-NPR-UW-Z]{2})\\-[0-9]{3}\\-[AHJ-NPR-UW-Z]{2}$"}
+{"pattern": "\\n                (?xm)  # verbose identify URLs in text (and multiline)\\n             (?=^.{11} # Mail header matcher\\n     (?<!Message-ID:|  # rule out Message-ID\\'s as best possible\\n        In-Reply-To))  # ...and also In-Reply-To\\n               (.*?)(  # must grab to email to allow prior lookbehind\\n   ([A-Za-z0-9-]+\\.)?  # maybe an initial part: DAVID.mertz@gnosis.cx\\n        [A-Za-z0-9-]+  # definitely some local user: MERTZ@gnosis.cx\\n                    @  # ...needs an at sign in the middle\\n         (\\w+\\.?){2,}  # at least two domain groups, e.g. (gnosis.)(cx)\\n    (?=[\\s\\.,>)\\'\"\\]])  # assert: followed by white or clause ending\\n                     ) # end of match group\\n"}
+{"pattern": "(?s)(?i)^(?!^.*(dont match me).*$).*$"}
+{"pattern": "/filename=(?![a-f]{24}|\\d{24})[a-f\\d]{24}\\.exe\\r\\n/"}
+{"pattern": "(?!^[~!@#$%^&*().]+$)^([\\u4e00-\\u9fa5]*|[\\da-zA-Z~!@#$%^&*.]){0,30}$"}
+{"pattern": "((?!\\]+)(?!\\[+).)*"}
+{"pattern": "^((?!hede).)*$"}
+{"pattern": "^(Win|PPC Mac OS X|Linux(?! x86_64))"}
+{"pattern": "1\\.\\s\\[(.*?)(?s).+?(?=^$)"}
+{"pattern": "([A-Z][a-z]+(?=\\s[A-Z])(?:\\s[A-Z][a-z]+)+)"}
+{"pattern": "(^[\\S]+)(?!^[\\S]+)\\s+.*"}
+{"pattern": ".*\\r(?=[^\\n])"}
+{"pattern": "^(?=[\\d-]{3,18}$)\\d{1,6}-\\d*[-]?\\d+$"}
+{"pattern": "^\\((.*,\\s*\\d+(?!,\\s*'\\d{1,2}-\\d{1,2}-\\d{1,4}'))\\);$"}
+{"pattern": "^.*(?=.{8,})(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[`~!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).*$"}
+{"pattern": "on\\w+\\s?=\\s?+(\"|')?[^\"'>]*(\"|')?(?=>)"}
+{"pattern": "(?=(?!Sf\\.\\sTreime))(?=(?!Sf\\.\\sVineri))(?=(Sf\\.\\s.*[^a]$|Sf\\.\\sMina|Sf\\.\\sLuca|Sf\\.\\sBoca|Sf\\.\\sToma))"}
+{"pattern": "^[1-9][0-9]{3} ?(?!sa|sd|ss)[a-z]{2}$"}
+{"pattern": "^\\/([0-9]{6})((?!.*\\.php(?:[\\?#].*|$)).*)$"}
+{"pattern": "^\\d{2}[1-3]{1}(?!0{4}|9{4})\\d{4}[0-6]{1}(?=42)\\d{2}$"}
+{"pattern": "(?=-|--|/)"}
+{"pattern": "(trekking)(?![\\w\\s\\t]*=?[\\s\\t]*\"{1}[^\"]*\"{1}[^<>\"]*>{1})(?![^>\"]*\"{1}[\\s\\t]*>{1})(?!<\\/strong>)"}
+{"pattern": "/rra_id=(?!(\\d+|all|)([\\x26\\s]|$))/smi"}
+{"pattern": "^(?!9{9})(?!0{9})[0-9]{9}$"}
+{"pattern": "^(?!ss|ww)[a-hj-np-tv-z]{2}(?:\\s|-)?[0-9]{3}(?:\\s|-)?(?!ss)[a-hj-np-tv-z]{2}$"}
+{"pattern": "OTHER REFERENCE:\\s\\d{8}\\D{4}\\s(?!\\b(SHOPIFY)\\b)\\w+"}
+{"pattern": "/^CEL(?!\\n)\\s[^\\n]{100}/smi"}
+{"pattern": "privatmarket\\.ua\\/(?!business|\\d+)"}
+{"pattern": "(<|>|\\+(?!\\s*\\+|$))"}
+{"pattern": "(\\D)\\.(?!\\s)(\\D)"}
+{"pattern": "^(?!^(PRN|AUX|CLOCK\\$|NUL|CON|COM\\d|LPT\\d|\\..*)(\\..+)?$)[^\\x00-\\x1f\\\\?*&lt;&gt;:\\;|\\&quot;/]+$"}
+{"pattern": "(^(?=.*\\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[a-z\\!.@$%&*+=\\-\\_?]).{8,20}$)"}
+{"pattern": "^((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\\/\\*\\-\\+\\.\\)\\(\\&\\%\\$\\#\\@\\!]).{6,32})$"}
+{"pattern": "(^[%@]\\tfor\\t)(.*[\\w\\s:]??)(?![\u2192\u2190].*)(\\[sound.*)"}
+{"pattern": "^(?=[a-zA-Z])(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{6,13}$"}
+{"pattern": "^(?<full>(?<part1>[ABCEGHJKLMNPRSTVXY]{1}\\d{1}[A-Z]{1})(?:[ ](?=\\d))?(?<part2>\\d{1}[A-Z]{1}\\d{1}))$"}
+{"pattern": "([^*{}\\s]@|[^*{}@]|\\*(?!/))+"}
+{"pattern": "\\$primary-light(?![\\w\\d-])"}
+{"pattern": "(?!^[0-9]*$)(?!^[a-zA-Z]*$)^([a-zA-Z0-9]{8,10})$"}
+{"pattern": ", |(?= (?:\\d{5}|[A-Z]{2}))"}
+{"pattern": "/name\\s*?=\\s*?[\\x22\\x27]?(?:user|pass)(?:(?!^--).)*?[\\r\\n]{2,}(?:(?!^--).)*?([\\x60\\x3b\\x7c]|\\x24\\x28|%60|%3b|%7c|%24%28)/Psim"}
+{"pattern": "^((?!LeA_1).)*$"}
+{"pattern": "^(?=[^&])(?:(?<scheme>[^:/?#]+):)?(?://(?<authority>[^/?#]*))?(?<path>[^?#]*)(?:\\?(?<query>[^#]*))?(?:#(?<fragment>.*))?"}
+{"pattern": "((?P<title>.+)(-)?)?\\s+(?P<season>\\d)(?P<episode>\\d\\d)(?!\\d)\\s*"}
+{"pattern": "(url\\\\?\":\\\\?\")(?!http|https)(.*?)\""}
+{"pattern": "(?=^.{7,}$)(?=.*\\d)(?=.*[A-Za-z])(?=.*[@'#.$;%^&+=!\"\"()*,-\\/:<>?]).*$"}
+{"pattern": "&(?![A-Za-z]+;)"}
+{"pattern": "^(?!join|order|complement)([^\\:]+?):(.*)$"}
+{"pattern": "Subtotal\\s{0,99}(?<Subtotal>\\D\\d+...)\\s{0,99}(?=Tax)Tax\\s{0,99}(?<Tax>\\D\\d+...)\\s{0,99}S&H\\s{0,99}(?<S_H>\\D\\d+...)\\s{0,99}S&H\\s{0,99}Tax\\s{0,99}(?<S_H_Tax>\\D\\d+...)\\s{0,99}Total\\s{0,99}(?<Total>\\D\\d+...)|Subtotal\\s{0,99}(?<Subtotal_notax>\\D\\d+...)\\s{0,99}(?=S&H)\\s{0,99}S&H\\s{0,99}(?<S_H_notox>\\D\\d+...)\\s{0,99}S&H\\s{0,99}Tax\\s{0,99}(?<S_H_Tax_notax>\\D\\d+...)\\s{0,99}Total\\s{0,99}(?<Total_notax>\\D\\d+...)"}
+{"pattern": ".+(?=((\\\\|\\/).+){2})"}
+{"pattern": "(?-i)(?=^.{8,}$)((?!.*\\s)(?=.*[A-Z])(?=.*[a-z]))((?=(.*\\d){1,})|(?=(.*\\W){1,}))^.*$"}
+{"pattern": "(?:\\[|(?!^))((?P<number>[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?)\\s*\\,?\\s*)(?=(?:(?:[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?)\\s*\\,?\\s*)*\\])"}
+{"pattern": "(?=[a-zA-Z])(?=[A-Z])"}
+{"pattern": "^(?!.*ionicons\\.svg).*(jpeg|jpg|png|gif|svg)$"}
+{"pattern": "# Adding password requirements are as easy as tacking on# another (?=...) group.^(?=(?:[^a-z]*[a-z]){1}) # At least {1} lowercase 'a-z' letter(?=(?:[^A-Z]*[A-Z]){2}) # At least {2} uppercase 'A-Z' letters(?=(?:[^0-9]*[0-9]){3}) # At least {3} digits(?=(?:[^\\s]*[\\s]){1}) # At least {1} whitespace(?=(?:[^[:punct:]]*[[:punct:]]){1}) # At least {1} special char(?=.{9}) # A minimum of 9 characters"}
+{"pattern": "<field>[\\s\\S]+?(?=<\\/field>)"}
+{"pattern": "^([^}{]*?[^;,}{\\s])\\s*(?=\\n|$)"}
+{"pattern": "-?\\d+(?=\\s|\\]|,)"}
+{"pattern": ".+(?=\\\\)"}
+{"pattern": "([a-z])([A-Z])(?=[a-z])"}
+{"pattern": "(\\D)\\.(?!\\s)"}
+{"pattern": "\\n        # Source consists of a PS1 line followed by zero or more PS2 lines.\\n        (?P<source>\\n            (?:^(?P<indent> [ ]*) >>>    .*)    # PS1 line\\n            (?:\\n           [ ]*  \\.\\.\\. .*)*   # PS2 lines\\n          \\n?)\\n        # Want consists of any non-blank lines that do not start with PS1.\\n        (?P<want> (?:(?![ ]*$)    # Not a blank line\\n                     (?![ ]*>>>)  # Not a line starting with PS1\\n                     .*$\\n?       # But any other line\\n                  )*)\\n"}
+{"pattern": ",(?=([^\\\"]*\\\"[^\\\"]*\\\")*(?![^\\\"]*\\\"))"}
+{"pattern": "(https:\\/\\/provider\\.sharespaceapp\\.swisscom\\.com((?!:(443|80)(($)|(\\/))))(?:(?:(?::)(\\d*)))?(?:(?:(\\/latest)(?=\\/))|(?:(\\/latest)($)))?)"}
+{"pattern": "(?:(?![aeiou])[a-z]){3,}"}
+{"pattern": "/(?=\\x3e\\x02\\x0a\\x00.[\\x05-\\xff].{6}\\x00\\x00)/si"}
+{"pattern": "^((?:.*(?!\\d))*(?:\\D*)?)(\\d+)$"}
+{"pattern": "\\n  =\\?                   # literal =?\\n  (?P<charset>[^?]*?)   # non-greedy up to the next ? is the charset\\n  \\?                    # literal ?\\n  (?P<encoding>[qb])    # either a \"q\" or a \"b\", case insensitive\\n  \\?                    # literal ?\\n  (?P<encoded>.*?)      # non-greedy up to the next ?= is the encoded string\\n  \\?=                   # literal ?=\\n  (?=[ \\t]|$)           # whitespace or the end of the string\\n"}
+{"pattern": "^((?!\\/api\\/).)*$"}
+{"pattern": "^((?!.*//.*)(?!.*/ .*)/{1}([^\\\\(){}:\\*\\?<>\\|\\\"\\'])+\\.(csv|jpg|txt|pdf|dat|xls|doc))$"}
+{"pattern": "(?x)^(?!.*[\\s]) # this excludes whitespaces(?=.*\\d) # this matches at least one digit(?=.*[a-z]{0,}) # this matches 0 or more lowercase letters(?=.*[A-Z]) # this matches at least one uppercase character.{8,}$ # ensuring the minimum length is 8 symbols# ^(?!.*[\\s])(?=.*\\d)(?=.*[a-z]{0,})(?=.*[A-Z]).{8,}$   the whole RegEx"}
+{"pattern": "^(?![EB]#)[A-G](\\#|b)?"}
+{"pattern": "(?i)(?=.*\\b^From:\\s*\\b)(?=.*\\bwilliam\\b)(?=.*\\brhodes\\b).*"}
+{"pattern": "^(?!.*window\\.).*\\b(console\\.log|alert\\().*$"}
+{"pattern": "(?!CT)\\d{2}"}
+{"pattern": "\\(\\s*@*(\".*?[^\"\\\\]\"(?!\")||\"\")\\s*,\\s*@*(\".*?[^\"\\\\]\"(?!\")|\"\")\\s*(?:\\)|(?:,\\s*@*(\".*?[^\"\\\\]\"(?!\")||\"\")\\s*))?\\)"}
+{"pattern": "(.*)(?=\\w{4})"}
+{"pattern": "(?=:)(.*?)(?=\\/|$)"}
+{"pattern": "^(# Match one of these:[A-Z]?[a-z]+|# A possibly-capitalized identifier, or:[A-Z]+ # An ALL CAPS identifier...(?![a-z])# ...not immediately followed by lowercase)# and capture the rest of the string(.*?)$"}
+{"pattern": "((?!\\[)\\w+(?=\\]))"}
+{"pattern": "\\B[^\\s]+[a-z](?![\\W]|$)"}
+{"pattern": "/(?=^[a-z\\x2d\\x5f\\x2f]{95,}\\.php$).*?[a-z]{2,48}\\x2d[a-z]{2,48}\\x2d[a-z]{2,48}\\x2d[a-z]{2,48}\\x2d?\\.php$/U"}
+{"pattern": "^(?=.*\\broll\\b)(?=.*\\bover\\b).+|^(?=.*\\brollover\\b).+"}
+{"pattern": "((([A-z0-9]*(\\s))*[a-z.])+)*(?!([A-z0-9]*(\\s)))"}
+{"pattern": "\\A(?=.*[A-Z].*[A-Z])(?=.*[a-z].*[a-z])(?=.*[0-9].*[0-9])(?=.*[^a-zA-Z0-9].*[^a-zA-Z0-9])"}
+{"pattern": "^(R\\d*\\/)?P(\\d+([\\.,]\\d+)?Y)?(\\d+([\\.,]\\d+)?M)?(\\d+([\\.,]\\d+)?W)?(\\d+([\\.,]\\d+)?D)?((?!.$)T(\\d+([\\.,]\\d+)?H)?(\\d+([\\.,]\\d+)?M)?(\\d+(\\.\\d+)?S)?)?$"}
+{"pattern": "Resolution: \\d{1,4}(?=\\d{1,4})"}
+{"pattern": "\\b(public|private|protected|internal)\\b.*(byte|char|short|long|float|int|double|decimal|bool|string)\\b.*(?=,)"}
+{"pattern": "^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,}$"}
+{"pattern": "@((?:(?!@).)*)@((?:(?!@).)*)"}
+{"pattern": "/^\\s*\\=\\s*(?![\\x22\\x27]?http(|s|1|s1)\\x3a\\x2f{2})(\\x22[^\\x22]{449}|\\x27[^\\x27]{449}|\\S{449})/iR"}
+{"pattern": "SetVariable>[\\w\\n\\t\\s=\\\":<>\\/\\-_.]*?stringValue=\\\"([\\w\\n\\t\\s=\\\":<>\\/\\-_.]*?)\\\"\\/>[\\w\\n\\t\\s=\\\":<>\\/\\-_.]*?(?!booleanValue)[\\w\\n\\t\\s=\\\":<>\\/\\-_.]*?VariableToSet stringValue=\\\"serviceName\\\"[\\w\\n\\t\\s=\\\":<>\\/\\-_.]*?L7p:SetVariable>"}
+{"pattern": "(\\S+), (\\S+)(.*(?!,)).*?\\n"}
+{"pattern": "\\b[a-zA-Z]{2}\\s*[0-9a-zA-Z]{9}[0-9](?![0-9a-zA-Z-])"}
+{"pattern": "^(?!aem-Grid.*)"}
+{"pattern": "(\\d{2}\\/\\d{2}\\/\\d{4}),\\s(\\d(?:\\d)?:\\d{2})\\s-\\s([^:]*):\\s(.*?)(?=\\s*\\d{2}\\/|\\$)"}
+{"pattern": "([\\w\\-]+\\s*:)(?!:)\\s*"}
+{"pattern": "^(.*ext[2-4]|.*xfs)(\\s+)((([a-zA-Z\\=\\-]+)(?!noatime,nodiratime)).+)"}
+{"pattern": "(?s)\\A(?:(?!Database Expiration Date:).)*Database Expiration Date: \\d+"}
+{"pattern": "\\.(?!\\s)(\\D)"}
+{"pattern": "\\b(?!219-09-9999|078-05-1120)(?!666|000|9\\d{2})\\d{3}[ -](?!00)\\d{2}[ -](?!0{4})\\d{4}\\b|\\b(?!219099999|078051120)(?!666|000|9\\d{2})\\d{3}(?!00)\\d{2}(?!0{4})\\d{4}\\b"}
+{"pattern": "(?:bower_components\\/[\\w._-]+)(?=[\\/a-zA-Z.]+?)"}
+{"pattern": "^(?=[^\\/])"}
+{"pattern": "^(?=^abc)(?=.*xyz$)(?=.*123).*$"}
+{"pattern": "(?![^%])%s"}
+{"pattern": "-(src\\s*=\\s*['\\\"]|href\\s*=\\s*['\\\"])(((?!'|\\\"|http:\\/\\/|https:\\/\\/|\\/\\/).)*)(['\\\"])-i"}
+{"pattern": "(?:(?P<Day1>\\d{1,2})(?:\\W*(?P<Month1>[A-Z][a-z]*\\b))|(?:(?P<Month2>[A-Z][a-z]*\\b)\\W*)(?:(?P<Day2>\\d{1,2})(?:\\b|th|st|nd))?|(?P<Month3>\\d{1,2})\\W+(?P<Day3>\\d{1,2})|(?P<Month4>\\d{1,2}))?\\W+?(?P<Year>\\d{2,4}(?=$|;))"}
+{"pattern": "^((?!proposed_).)*((project|task)_details)"}
+{"pattern": "/^(PERIOD|DTSTART|DTEND|RECUR|DTSTAMP|TRIGGER|COMPLETED|DUE|FREEBUSY|RECURRENCE-ID|EXDATE|RDATE|CREATED|LAST-MODIFIED)\\x3a(?!\\s*\\d{8}T\\d{6})[^\\r\\n]*?[\\r\\n]/m"}
+{"pattern": "(E?%0?E(?![._]?N))"}
+{"pattern": "(?!<(script|code)[^>]*?>)((\\s)(\\?|\\!|\\;|\\:))(?![^<]*?<\\/(script|code)>)"}
+{"pattern": "(?=.*dbname=(.*)(?:;|$))(?=.*host=(.*)(?:;|$))"}
+{"pattern": "(src|href|action)=\"(?!http://|#|mailto:|&)([^/#\"])"}
+{"pattern": "(?!.+\\/)(.*\\.jpg$)"}
+{"pattern": "^\\[BGN\\] Copying (?!properties)"}
+{"pattern": "^(.+?)[-. ]{0,3}s?(\\d?\\d)[ex](\\d\\d)[-. ]{0,3}(.*?)[-. ]?(?:(?=pulcione|eng|ita|\\w+Mux|\\w+dl|\\d+p|XviD|NovaRip).+)?\\.([\\w]{2,3})$"}
+{"pattern": "\\'\"(?=\\w)"}
+{"pattern": "/\\/m\\/ibq(?!c)[a-p]/imsU"}
+{"pattern": "^(?=.{6,})(?=.*[0-9].*)(?=.*[a-z].*).*$"}
+{"pattern": "K(?=Y)([^\\/]*?)[0-9]{4}"}
+{"pattern": "/\\*((?!\\*/)[\\d\\D\\s])*\\*/"}
+{"pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[$@$!%*?&])[A-Za-z\\d$@$!%*?&]{8,}"}
+{"pattern": "^(?:[1-9]|0(?!0{4}))\\d{4}(?:[-\\s]\\d{4})?$"}
+{"pattern": "^(?!.*x)(?=.*y).*$"}
+{"pattern": "^(?:(?!error).)*$"}
+{"pattern": "(^[\\t\\s]*)(forgot: \"to\",)(?!\\n[\\t\\s]*insert: \"something\",)"}
+{"pattern": "^(?=^(?:(\\d\\d(?:[02468][048]|[13579][26]))-02-29|\\d{4}-(?:0[13578]|1[02])-31|\\d{4}-(?:0[13-9]|1[0-2])-30|\\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|1\\d|2[0-8])))(\\d{4})-(\\d\\d?)-(\\d\\d?)(?:\\x20(\\d{2}):(\\d{2})(?::(\\d{2})(.\\d+)?)?)?$"}
+{"pattern": "^((?![0-9.,!?:;_|+\\-*\\\\/=%\u00b0@&#\u00a7$\"'`\u00a8^\u02c7()\\[\\]<>{}])[\\S])+$"}
+{"pattern": "<\\?(?!xml)"}
+{"pattern": "(?=^.{1,254}$)(^(?:(?!\\d+\\.)[a-zA-Z0-9_\\-]{1,63}\\.?)+(?:[a-zA-Z]{2,})$)"}
+{"pattern": "(?=^[A-Z](?:\\.|\\s))[\\S\\s]+?(?=^[A-Z](?:\\s|\\.)|\\z)"}
+{"pattern": "^[01]?[- .]?\\(?(?!\\d[1]{2})[2-9]\\d{2}\\)?[- .]?(?!\\d[1]{2})\\d{3}[- .]?\\d{4}$"}
+{"pattern": "/^.{9}\\x00\\x00\\x00\\x01(?!\\x00\\x00\\x00[\\x00\\x01\\x02])/R"}
+{"pattern": "\\x26(?!((amp\\x3B)|(nbsp\\x3B)|(lt\\x3B)|(gt\\x3B)|(copy\\x3B)|(reg\\x3B)|(cent\\x3B)|(deg\\x3B)|(deg\\x3B)|(micro\\x3B)|(middot\\x3B)|(not\\x3B)|(para\\x3B)|(plusmn\\x3B)|(pound\\x3B)|(raquo\\x3B)|(sect\\x3B)|(yen\\x3B)|([\\x23][0-9]{1,3}\\x3B)|(lsquo\\x3B)|(rsquo\\x3B)|(sbquo\\x3B)|(ldquo\\x3B)|(rdquo\\x3B)|(bdquo\\x3B)|(dagger\\x3B)|(Dagger\\x3B)|(permil\\x3B)|(lsaquo\\x3B)|(rsaquo\\x3B)|(spades\\x3B)|(clubs\\x3B)|(hearts\\x3B)|(diams\\x3B)|(oline\\x3B)|(larr\\x3B)|(uarr\\x3B)|(rarr\\x3B)|(darr\\x3B)|(trade\\x3B)|([\\x23]x2122\\x3B)|(quot\\x3B)|(frasl\\x3B)|(ndash\\x3B)|(mdash\\x3B)|(iexcl\\x3B)|(cent\\x3B)|(curren\\x3B)|(brvbar\\x3B)|(brvbar\\x3B)|(uml\\x3B)|(die\\x3B)|(ordf\\x3B)|(laquo\\x3B)|(not\\x3B)|(shy\\x3B)|(macr\\x3B)|(hibar\\x3B)|(sup2\\x3B)|(sup3\\x3B)|(acute\\x3B)|(micro\\x3B)|(cedil\\x3B)|(sup1\\x3B)|(ordm\\x3B)|(raquo\\x3B)|(frac14\\x3B)|(frac12\\x3B)|(frac34\\x3B)|(iquest\\x3B)|(Agrave\\x3B)|(Aacute\\x3B)|(Acirc\\x3B)|(Atilde\\x3B)|(Auml\\x3B)|(Aring\\x3B)|(AElig\\x3B)|(Ccedil\\x3B)|(Egrave\\x3B)|(Eacute\\x3B)|(Ecirc\\x3B)|(Euml\\x3B)|(Igrave\\x3B)|(Iacute\\x3B)|(Icirc\\x3B)|(Iuml\\x3B)|(ETH\\x3B)|(Ntilde\\x3B)|(Ograve\\x3B)|(Oacute\\x3B)|(Ocirc\\x3B)|(Otilde\\x3B)|(Ouml\\x3B)|(times\\x3B)|(Oslash\\x3B)|(Ugrave\\x3B)|(Uacute\\x3B)|(Ucirc\\x3B)|(Uuml\\x3B)|(Yacute\\x3B)|(THORN\\x3B)|(szlig\\x3B)|(agrave\\x3B)|(aacute\\x3B)|(acirc\\x3B)|(atilde\\x3B)|(auml\\x3B)|(aring\\x3B)|(aelig\\x3B)|(ccedil\\x3B)|(egrave\\x3B)|(eacute\\x3B)|(ecirc\\x3B)|(euml\\x3B)|(igrave\\x3B)|(iacute\\x3B)|(icirc\\x3B)|(iuml\\x3B)|(eth\\x3B)|(ntilde\\x3B)|(ograve\\x3B)|(oacute\\x3B)|(ocirc\\x3B)|(otilde\\x3B)|(ouml\\x3B)|(divide\\x3B)|(oslash\\x3B)|(ugrave\\x3B)|(uacute\\x3B)|(ucirc\\x3B)|(uuml\\x3B)|(yacute\\x3B)|(thorn\\x3B)|(yuml\\x3B)|(Alpha\\x3B)|(Alpha\\x3B)|(Beta\\x3B)|(beta\\x3B)|(Gamma\\x3B)|(gamma\\x3B)|(Delta\\x3B)|(delta\\x3B)|(Epsilon\\x3B)|(epsilon\\x3B)|(Zeta\\x3B)|(zeta\\x3B)|(Eta\\x3B)|(eta\\x3B)|(Iota\\x3B)|(iota\\x3B)|(Kappa\\x3B)|(kappa\\x3B)|(Lambda\\x3B)|(lambda\\x3B)|(Mu\\x3B)|(mu\\x3B)|(Nu\\x3B)|(nu\\x3B)|(Xi\\x3B)|(xi\\x3B)|(Omicron\\x3B)|(omicron\\x3B)|(Pi\\x3B)|(pi\\x3B)|(Rho\\x3B)|(rho\\x3B)|(Sigma\\x3B)|(sigma\\x3B)|(Tau\\x3B)|(tau\\x3B)|(Upsilon\\x3B)|(upsilon\\x3B)|(Phi\\x3B)|(phi\\x3B)|(Chi\\x3B)|(chi\\x3B)|(Psi\\x3B)|(psi\\x3B)|(Omega\\x3B)|(omega\\x3B)))"}
+{"pattern": "#<a\\s*(?:href=[\\'\"]([^\\'\"]+)[\\'\"])?\\s*(?:title=[\\'\"]([^\\'\"]+)[\\'\"])?.*?>((?:(?!</a>).)*)</a>#i"}
+{"pattern": "^(?:[2-9]\\d\\d\\d)-(?:1[012]|0?[1-9])?-(?:31(?!.(?:0?[2469]|11))|(?:30|29)(?!.0?2)|29(?=.0?2.(?:(?:(?:1[6-9]|[2-9]\\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00)))(?:T))|(?:2[0-8]|1\\d|0?[1-9]))T(2[01234]|[01]\\d):[0-5]\\d:[0-5]\\d[+-][01]\\d:[0-5]\\d$"}
+{"pattern": "\\b0+(\\d+)(?!\\d)"}
+{"pattern": "\\b\"{0,1}[A-Z0-9_][A-Z0-9._%+-]*[A-Z0-9_]\\@(?![. \\-])(([A-Z0-9-]+\\.)+[A-Z]{2,8}|\\[{0,1}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\]{0,1})\\b"}
+{"pattern": "^(?:https:\\/\\/)*(?:localhost|airhelp.com)\\/(?!en|nl|pt).*\\/.*$"}
+{"pattern": "^((?=\\S*?[A-Z])(?=\\S*?[a-z])(?=\\S*?[0-9]).{6,})\\S$"}
+{"pattern": "\\B(\\s)(?!(?:[^\"]*\"[^\"]*\")*[^\"]*$)"}
+{"pattern": "/(?:(.):)?(?:(.*)\\\\)?((?:[^.]|.(?=[^.]*\\.))*)(?:\\.(.*))?/"}
+{"pattern": "/\\x3Cobject(?![^\\x3E]+?src)[^\\x3E]+?data\\s*\\x3D\\s*\\x22\\x22/i"}
+{"pattern": "^(((([\\(\\[](?P<series>[^\\(\\)\\],]*)[\\)\\]])?((?P<author>.*[^\\s][^\\-])[\\s]+-[\\s]*)?)?(?P<title>[^\\(\\[]*)?)?([\\(\\[](?:[\\s]*(((?P<published2>[12][\\d]{3,3})(?:(?!([^.\\)\\-a-zA-Z_]*(-+[^.\\)a-zA-Z_]+)+)))))?)?[\\s]*([,]?[\\s]*(?P<publisher>[\\s\\w\\s]*)[\\s]*)?([,]?[\\s]*(isbn:|isbn[-]?13:)?(?P<isbn>[0-9a-zA-Z-]+))?[)|\\]])?)[\\.][^ ]+$"}
+{"pattern": "^((?!mysite|google).)*$"}
+{"pattern": "Get-ChildItem  -rec -exclude *.exe,*.dll |select-string  \"\\b(?!000)(?!666)(?!9)[0-9]{3}[ |-]*[ -]?(?!00)[0-9]{2}[ |-]*[ -]?(?!0000)[0-9]{4}\\b|[0-9]{3}[-| ][0-9]{2}[-| ][0-9]{4}\""}
+{"pattern": "[ \\t]+(?=\\n)"}
+{"pattern": "/(?=^[a-z\\x2d\\x5f\\x2f]{95,}\\.php$).*?[a-z]{2,48}\\x2d[a-z]{2,48}\\x2d[a-z]{2,48}\\x2d[a-z]{2,48}\\x2d?\\.php$/"}
+{"pattern": "^((?!gtm\\.).*)$"}
+{"pattern": "^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&.])[a-zA-Z0-9!@#$%^&.]{12,20}$"}
+{"pattern": "([a-zA-Z][-.a-zA-Z0-9:_]*)(?:\\s|/(?!>))*"}
+{"pattern": "(?!000)[0-9]{3}"}
+{"pattern": "\\.(?!html?)([a-z]{0,3}|[a-z]{0,4})$"}
+{"pattern": "/[?&]arg=(?![^&]*?-)[^&]{190}/iU"}
+{"pattern": "^(?=.*\\d).{4,8}$"}
+{"pattern": "(e|d|b)-(heme|gome|jome)-([^\\/]+)(?!\\/)"}
+{"pattern": "^(?=.*[0-9])(?=.*[!@#$%^&*+<>])[a-zA-Z0-9!@#$%^&*+<>]{8,15}$"}
+{"pattern": "^(?=\\w{6,10}$)(?=[^a-z]*[a-z])(?=(?:[^A-Z]*[A-Z]){3})(?=\\D*\\d)\\D*\\d*"}
+{"pattern": "^(?:\\+)?(?=(\\d[\\(\\)\\s\\-\\.]*){7,})([0-9\\(\\)\\s\\-\\.]{5,})(?:\\s*(?:#|x\\.?|ext\\.?|extension)\\s*([0-9\\(\\)\\s\\-\\.]{2,}))?$"}
+{"pattern": "(01\\d+(?=17)|01\\d+(?=10\\w))?(17\\d+)?(10\\w+)"}
+{"pattern": "/^(?=.*[A-E]).{1,1}$|^(?=.*[A-E]).(?=.*[+-]).{1,1}$/g"}
+{"pattern": "^(?:(?:0?[13578]|1[02])|(?:0?[469]|11)(?!\\/31)|(?:0?2)(?:(?!\\/3[01]|\\/29\\/(?:(?:0[^48]|[13579][^26]|[2468][^048])00|(?:\\d{2}(?:0[^48]|[13579][^26]|[2468][^048]))))))\\/(?:0?[1-9]|[12][0-9]|3[01])\\/\\d{4}$"}
+{"pattern": "^(?!.*(word).*$)([^\\n]*)"}
+{"pattern": "^(\\+ *|- *)?((?!0+)\\d*?|(?!0{2,})\\d*?\\.(?!0+)\\d*?)('|\")$|^(\\+ *|- *)? *(?!0+)\\d+?' *-? *(\\d+?|\\d*?\\.\\d*?)\"$|^((\\+ *|- *)?((?!0+)|0 )\\d*? *(?!0+)\\d+?\\/(?!0+)\\d+?('|\"))$"}
+{"pattern": "^((?![\\d_])([\\w]){8,30})$"}
+{"pattern": "80:(?=[^a-z]{1,})"}
+{"pattern": "(\\b((?!(at))\\w)+\\b)"}
+{"pattern": "^(?:http|https):\\/\\/www.pitchup.com\\/(?P<lang>[^/]+/)?campsites/(?:(?!-/)[^/]+/){5}\\??.*$"}
+{"pattern": "/name\\s*=\\s*[\\x22\\x27]?ping_ip((?!^--).)*?[\\r\\n]{2,}((?!^--).)*?([\\x60\\x3b\\x7c\\x26]|[\\x3c\\x3e\\x24]\\x28)/Psim"}
+{"pattern": "addtask\\s+(?P<func>\\w+)\\s*((before\\s*(?P<before>((.*(?=after))|(.*))))|(after\\s*(?P<after>((.*(?=before))|(.*)))))*"}
+{"pattern": "se (revoca|rechaza|confirma|acoge|desestima)(?=.*?(?:sentencia|recurso|acci\u00f3n)).*$"}
+{"pattern": "\\d+(?=\\-)"}
+{"pattern": "function (?:(?!pixo).)* \\{"}
+{"pattern": "(\\r\\n|^).{1,18}(?=(\\r\\n|$))"}
+{"pattern": "^(\\.)?((\\]{1}(?![:\\s]).+:\\d+\\]{1})|(\\[{1}(?![:\\s]).+:\\d+\\[{1}))?[acgtnACGTN]+((\\]{1}(?![:\\s]).+:\\d+\\]{1})|(\\[{1}(?![:\\s]).+:\\d+\\[{1}))?(\\.)?$|^<(INS|DEL|DUP|INV|CNV|DUP:TANDEM|INS:NOVEL|INS:ME(:(ALU|L1))?|DEL:ME(:(ALU|L1))?)>$"}
+{"pattern": "<(?!\\s)[^<>]+>"}
+{"pattern": "^((31(?! (FEB|APR|JUN|SEP|NOV)))|(30|29)|(0[1-9])|1\\d|2[0-8]) (JAN|FEB|MAR|MAY|APR|JUL|JUN|AUG|OCT|SEP|NOV|DEC)$"}
+{"pattern": "/^(?!false|off|no|0)/iR"}
+{"pattern": "site\\.com\\/(?!fr)"}
+{"pattern": "^((?!\\.).)*\\.(py|sh)$"}
+{"pattern": "/<a[^>]{1,80}target=(\\x22|\\x27|)newwindow(\\x22|\\x27|)[^>]{1,80}href=\\s*(\\x5C[\\x22\\x27])?\\s*(?!(about|cdl|dvd|file|ftp|gopher|http|https|ipp|its|javascript|local|mailto|mhtml|mk|msdaipp|ms-its|res|sysimage|tv|vbscript|wia)).{1,10}\\:/i"}
+{"pattern": "(\\d)(?=(\\d{3})+\\b)"}
+{"pattern": "^(?!.*(NOT_THIS|OR_THIS))"}
+{"pattern": "(?:(?:.*?\\|\\s?){2})\\[(.+?)\\](?:(?=\\s?$)|(?=\\s?\\|))"}
+{"pattern": "<(?![!/]?[ABIU][>\\s])[^>]*>"}
+{"pattern": "/^GET \\x2F[^\\r\\n\\x3F]+\\.(?=[abcdehijlmnoprsvwx])(a(d[ep]|s[dfx])|c([ho]m|li|md|pp)|d(iz|ll|ot)|e(m[fl]|xe)|h(lp|sq|ta)|jse?|m(d[abew]|s[ip])|p(p[st]|if|[lm]|ot)|r(eg|tf)|s(cr|[hy]s|wf)|v(b[es]?|cf|xd)|w(m[dfsz]|p[dmsz]|s[cfh])|xl[tw]|bat|ini|lnk|nws|ocx)[\\x27\\x22\\n\\r\\s]/smi"}
+{"pattern": "(?:https?:\\/\\/)?(?:www\\.)?facebook\\.com\\/(?:(?:\\w)*#!\\/)?(?:pages\\/)?(?:[\\w\\-]*\\/)*?(?:profile.php\\?id=(?=\\d.*))?([\\w\\-]*)?(?:[\\w\\-\\.]*)?"}
+{"pattern": "(?i)(EDIResources\\/EDITradingPartnerUpdates\\/tabid((?:(?!\\?).)*))(.*)"}
+{"pattern": "\\s?\\b((?!\\b50\\b|\\b00\\b)\\w*)\\b\\s?"}
+{"pattern": "# A numeric string consists of:\\n#    \\s*\\n    (?P<sign>[-+])?           # an optional sign, followed by either...\\n    (\\n        (?=\\d|\\.\\d)           # ...a number (with at least one digit)\\n        (?P<int>\\d*)          # consisting of a (possibly empty) integer part\\n        (\\.(?P<frac>\\d*))?    # followed by an optional fractional part\\n        (E(?P<exp>[-+]?\\d+))? # followed by an optional exponent, or...\\n    |\\n        Inf(inity)?           # ...an infinity, or...\\n    |\\n        (?P<signal>s)?        # ...an (optionally signaling)\\n        NaN                   # NaN\\n        (?P<diag>\\d*)         # with (possibly empty) diagnostic information.\\n    )\\n#    \\s*\\n    $\\n"}
+{"pattern": "(<pre[^>]*?>((?:(?!pre>).|\\n)*)<\\/pre>)"}
+{"pattern": "^(?![DFIOQU])([ABCEGHJ-NPRSTVXY]\\d[A-Z][ ]\\d[A-Z]\\d)$"}
+{"pattern": "(?:(?!(La|Le|la|le|Mme|M.|Madame|Monsieur|Mademoiselle|Si\u00e8ge|Code|Et))(?P<first_name>^[A-Z][a-z\u00e0-\u00ff]+)|(?P<title>Mme|M.|Madame|Monsieur|Mademoiselle)\\s*\\:?\\s*(?P<first_name2>[A-Z][a-z\u00e0-\u00ff]+))\\s(?P<last_name>[A-Z][A-Za-z\u00e0-\u00ff]+)"}
+{"pattern": "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{4,8}$"}
+{"pattern": "/(\\x21|%21)ENTITY((?!\\x3e|%3e).)*?(SYSTEM|PUBLIC)/i"}
+{"pattern": "(?!.+\\.\\..+)^(?![\\._]|.*(?:\\.|\\.files|_files|-Dateien|_fichiers|_bestanden|_file|_archivos|-filer|_tiedostot|_pliki|_soubory|_elemei|_ficheiros|_arquivos|_dosyalar|_datoteke|_fitxers|_failid|_fails|_bylos|_fajlovi|_fitxategiak)$)[^~#%&*{}\\\\:<>?\\/|\"]+$"}
+{"pattern": "^(?![.]+$)\\d+(\\.\\d{1,})?$|^(\\.\\d{1,})?$"}
+{"pattern": "^0*(?=[01])"}
+{"pattern": "(?P<amount>-?\\d+(?:\\.\\d*)?)[^\\S\\n]*(?P<degrees>\u00b0|deg(?:rees?)?|in)?[^\\S\\n]*(?P<unit>c(?:(?=el[cs]ius\\b|entigrades?\\b|\\b))|f(?:(?=ahrenheit\\b|\\b))|k(?:(?=elvins?\\b|\\b)))"}
+{"pattern": "(?!219( |\\.|\\-|)??09( |\\.|\\-|)??9999|078( |\\.|\\-|)??05( |\\.|\\-|)??1120)(?!666|000|9\\d{2})\\d{3}( |\\.|\\-|)??(?!00)\\d{2}( |\\.|\\-|)??(?!0{4})\\d{4}"}
+{"pattern": "(01\\d{6,}(?=17)|01\\d{6,}(?=10\\w)|01\\d+)?(17\\d{6}(?=10))?(10[\\d\\w]{6,}(?=30)|10[\\d\\w]{6,})?(30\\d+)?\\+"}
+{"pattern": "/^.*logfile\\x3D(?!/var/log)|([\\x2F]?\\x2e\\x2e)/smiP"}
+{"pattern": "& (?:\\n                                          \\#(\\d+)\\n                                          | \\#x([\\da-f]+)\\n                                          | ( (?!\\d) [:\\w] [-.:\\w]+ )\\n                                          ) ;"}
+{"pattern": "^(?!0{1})\\d{6}"}
+{"pattern": "^(?!$)(?:<from>\"([\\d\\-.]*)\")?(?:<to>\"([\\d\\-.]*)\")?$"}
+{"pattern": "^(?!\\d[1]{2}|[5]{3})([2-9]\\d{2})([. -]*)\\d{4}$"}
+{"pattern": "(?=.*[A-Z]+.*)[A-Z0-9&%./-]*"}
+{"pattern": "\\w+(?=: flags)|eth[0-9](?=\\s*Link)"}
+{"pattern": "^(?!.*[@\\.\\_\\d])[A-Za-z\\x{00C0}-\\x{00FF}][A-Za-z\\x{00C0}-\\x{00FF}\\'\\-]+([\\ A-Za-z\\x{00C0}-\\x{00FF}][A-Za-z\\x{00C0}-\\x{00FF}\\'\\-]+)*"}
+{"pattern": "^(?=((0[1-9]0)|([1-7][1-7]\\d)|(00[1-9])|(0[1-9][1-9]))-(?=(([1-9]0)|(0[1-9])|([1-9][1-9]))-(?=((\\d{3}[1-9])$|([1-9]\\d{3})$|(\\d[1-9]\\d{2})$|(\\d{2}[1-9]\\d)$))))"}
+{"pattern": "/\\x3Cframe([^\\x3E]+scrolling\\s*\\x3D(?!\\s*(\\x22|\\x27)?\\s*(yes|no|auto))){2}/i"}
+{"pattern": "(?!000)[0-9]{1,3}(.(?!000)[0-9]{3}(-(?!00)[0-9]{2}(.(?!00000000)[0-9]{8})))"}
+{"pattern": "(R(?!(JN\\.P)).*)|L(?!ALT\\.OQ$).*"}
+{"pattern": "^(?=.*[A-Z].*[A-Z])(?=.*[!@#$&*_-])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{8}$"}
+{"pattern": "/\\x2f(?=[defghilmnoqrstwz])(m(ookflolfctm\\x2fnmot\\.fmu|clvompycem\\x2fcen\\.vcn)|e(etbuviaebe\\x2feqv\\.bvv|mcndvwoemn\\x2flvv\\.jde)|s(fhfksjzsfu\\x2fahm\\.uqs|rvziadzvzr\\x2fsaei\\.vvt)|n(kxlvcob\\x2fkmpk\\.ibl|pgwtjgxwthx\\x2fbyb\\.xky|hirmvtg\\x2fggqh\\.kqh)|(wlpgskmv\\x2flwzo\\.qv|gdvsotuqwsg\\x2fdxt\\.hd)g|(twfofrfzlugq\\x2feve\\.qd|doarauzeraqf\\x2fvvv\\.ul|qisezhin\\x2fiqor\\.ym)v|fowclxccdxn\\x2fuxwn\\.ddy|lnzzlnbk\\x2fpkrm\\.fin|iufilfwulmfi\\x2friuf\\.lio|(hsdszhmoshh\\x2flhr\\.cn|oakmanympnw\\x2flnkd\\.pk)h|riggiymd\\x2fwdhi\\.vhi|zmnjgmomgbdz\\x2fzzmw\\.gzt)/U"}
+{"pattern": "<a.+?href\\=(?<link>.+?)(?=[>\\s]).*?>(?<lnkText>.+?)</a>"}
+{"pattern": "^(?=.*?[1-9])[0-9\\\\,\\\\-]+$"}
+{"pattern": "(?!<a href=\\\")/litecoin(?=\\\">)"}
+{"pattern": "^(?!0*(\\.0+)?$)(\\d+|\\d*\\.\\d+)$"}
+{"pattern": "(?i-mx:[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?!json|html|xml)(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)|(?i-mx:[a-z0-9\\-]*)"}
+{"pattern": "(?P<fromall>(?P<form>\\/[A-z]+)(?<formid>\\(.*?\\))|\\/[A-z]+)(?=.*\\?\\$select)"}
+{"pattern": "(?=^.{6,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*"}
+{"pattern": "(201[0-9]-[0-9][0-9]-[0-9][0-9])(?=.*?((?i)-Test-))"}
+{"pattern": "^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])[\\w!@#$%]{6,}$"}
+{"pattern": "( *((?:[a-zA-Z]+)|(?:[.#](\\w+-*)+)|(?::(\\w+-*)+(?:\\([a-zA-Z0-9]+\\))?)|(?::{2}(\\w+-*)+)|(?:\\*)|(?:\\w*\\[ *(\\w+-*)+ *(?:[\\^$|~*]?= *\\\\?[\"']?((\\w+-*)+|(((\\w+-*)+ *: *((\\w+-*)+|((\\/?(\\w+-*))*(\\w+-*)+\\.\\w+))) *;? *)+|((\\/?(\\w+-*))*(\\w+-*)+\\.\\w+)))? *\\\\?[\"']? *\\]))(?:(?: *(?:[,~>+] *)?(?:(?:[.#](\\w+-*)+)|(?::(\\w+-*)+(?:\\([a-zA-Z0-9]+\\))?)|(?::{2}(\\w+-*)+)|(?:\\w*\\[ *(\\w+-*)+ *(?:[\\^$|~*]?= *\\\\?[\"']?((\\w+-*)+|(((\\w+-*)+ *: *((\\w+-*)+|((\\/?(\\w+-*))*(\\w+-*)+\\.\\w+))) *;? *)+|((\\/?(\\w+-*))*(\\w+-*)+\\.\\w+)))? *\\\\?[\"']? *\\])))|(?:(?:(?: *[,~>+] *)| +)(?:(?:[a-zA-Z]+)|\\*)))* *(?!.))"}
+{"pattern": ".+?(?= \\(feat\\.)"}
+{"pattern": "/^If-Modified-Since\\x3a (?!((Sun|Mon|Tue|Wed|Thu|Fri|Sat), [0-9 ]?[0-9] (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) ([0-9]{2}|[0-9]{4}) [0-9]{2}\\x3A[0-9]{2}\\x3A[0-9]{2} ([ECMP]S|GM)T|(Sun|Mon|Tues|Wednes|Thurs|Fri|Satur)day, [0-9]{2}[- ](Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[- ]([0-9]{2}|[0-9]{4}) [0-9]{2}\\x3A[0-9]{2}\\x3A[0-9]{2} ([ECMP]S|GM)T|(Sun|Mon|Tue|Wed|Thu|Fri|Sat) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9 ][0-9] [0-9]{2}\\x3A[0-9]{2}\\x3A[0-9]{2} [0-9]{4}|(Sun|Mon|Tue|Wed|Thu|Fri|Sat), [0-9]?[0-9] (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) ([0-9]{2}|[0-9]{4}) [0-9]{2}\\x3A[0-9]{2}\\x3A[0-9]{2}))/sm"}
+{"pattern": "^(?=.{6,20})(?=(?:.*\\d){2,})(?=.*[A-Z]+).*$"}
+{"pattern": "(\\d)(?=(\\d{3})+(?!\\d))"}
+{"pattern": "^P(?!$)(?:(\\d+)Y)?(?:(\\d+)M)?(?:(\\d+)W)?(?:(\\d+)D)?(?:T(?=\\d)(?:(\\d+)H)?(?:(\\d+)M)?(?:(\\d+)S)?)?$"}
+{"pattern": "(?=^.{10,}$)(?=.*?\\d)(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[^a-zA-Z\\d])"}
+{"pattern": "^(?<line1>(?!\\s+)[^\\n]+)\\n(?:(?<line2>(?!\\s+)[^\\n]+)\\n)?(?<city>[^,\\n]+), +(?<state>-i:A[LKSZRAEP]|C[AOT]|D[EC]|F[LM]|G[AU]|HI|I[ADLN]|K[SY]|LA|M[ADEHINOPST]|N[CDEHJMVY]|O[HKR]|P[ARW]|RI|S[CD]|T[NX]|UT|V[AIT]|W[AIVY]) +(?<zip>(?<zip5>\\d{5})(?:[ -]?(?<zip4>\\d{4}))?)$"}
+{"pattern": "^((31(?!(\\-)((F|f)(E|e)(B|b)|(A|a)(P|p)(R|r)|(J|j)(U|u)(N|n)|(S|s)(E|e)(P|p)|(N|n)(O|o)(V|v))))|((30|29)(?!(\\-)((F|f)(E|e)(B|b))))|(29(?=(\\-)(F|f)(E|e)(B|b)(\\-)(((1[6-9]|[2-9]\\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00)))))|(0?[1-9])|1\\d|2[0-8])(\\-)((J|j)(A|a)(N|n)|(F|f)(E|e)(B|b)|(M|m)(A|a)(R|r)|((M|m)(A|a)(Y|y))|(A|a)(P|p)(R|r)|(J|j)(U|u)(L|l)|(J|j)(U|u)(N|n)|(A|a)(U|u)(G|g)|(O|o)(C|c)(T|t)|(S|s)(E|e)(P|p)|(N|n)(O|o)(V|v)|(D|d)(E|e)(C|c))(\\-)((1[6-9]|[2-9]\\d)\\d{2})$"}
+{"pattern": "(?=[^%]*(?:%ROUTING-ISIS-5-ADJCHANGE|%.*%ROUTING-ISIS-5-ADJCHANGE))^(?:[^:\\n]*:){10}\\s+\\w+\\s+\\w+\\s+(?P<ISIS_Remote_Host>[^ ]+)\\s+\\((?P<ISIS_Local_Interface>[^\\)]+)\\)\\s\\(L2\\)\\s(?P<ISIS_State>[\\w]+),\\s(?P<ISIS_Message>[\\w+\\s+]+)\\s?$"}
+{"pattern": "\\b(?:(?:https?|ftp):\\/\\/)?(?:\\S+(?::\\S*)?@)?(?:(?!(?:10|127)(?:\\.\\d{1,3}){3})(?!(?:169\\.254|192\\.168)(?:\\.\\d{1,3}){2})(?!172\\.(?:1[6-9]|2\\d|3[0-1])(?:\\.\\d{1,3}){2})(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)(?:\\.(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)*(?:\\.(?:com|org|net|int|edu|gov|mil|arpa|biz|info|mobi|app|name|aero|jobs|museum|travel|a[c-gil-oq-uwxz]|b[abd-jmnoq-tvwyz]|c[acdf-ik-orsu-z]|d[dejkmoz]|e[ceghr-u]|f[ijkmor]|g[abd-ilmnp-uwy]|h[kmnrtu]|i[delmnoq-t]|j[emop]|k[eghimnprwyz]|l[abcikr-vy]|m[acdeghk-z]|n[acefgilopruz]|om|p[ae-hk-nrstwy]|qa|r[eosuw]|s[a-eg-or-vxyz]|t[cdfghj-prtvwz]|u[agksyz]|v[aceginu]|w[fs]|y[etu]|z[amrw]|\u0627\u0644\u062c\u0632\u0627\u0626\u0631|\u0570\u0561\u0575|\u09ac\u09be\u0982\u09b2\u09be|\u0431\u0435\u043b|\u0431\u0433|\u4e2d\u56fd|\u4e2d\u570b|\u0645\u0635\u0631|\u10d2\u10d4|\u03b5\u03bb|\u9999\u6e2f|\u092d\u093e\u0930\u0924|\u0628\u06be\u0627\u0631\u062a|\u0c2d\u0c3e\u0c30\u0c24\u0c4d|\u0aad\u0abe\u0ab0\u0aa4|\u0a2d\u0a3e\u0a30\u0a24|\u0b87\u0ba8\u0bcd\u0ba4\u0bbf\u0baf\u0bbe|\u09ad\u09be\u09b0\u09a4|\u0627\u06cc\u0631\u0627\u0646|\u0639\u0631\u0627\u0642|\u0627\u0644\u0627\u0631\u062f\u0646|\u049b\u0430\u0437|\u6fb3\u95e8|\u6fb3\u9580|\u043c\u043a\u0434|\u0645\u0644\u064a\u0633\u064a\u0627|\u043c\u043e\u043d|\u0627\u0644\u0645\u063a\u0631\u0628|\u0639\u0645\u0627\u0646|\u067e\u0627\u06a9\u0633\u062a\u0627\u0646|\u0641\u0644\u0633\u0637\u064a\u0646|\u0642\u0637\u0631|\u0440\u0444|\u0627\u0644\u0633\u0639\u0648\u062f\u064a\u0629|\u0441\u0440\u0431|\u65b0\u52a0\u5761|\u0b9a\u0bbf\u0b99\u0bcd\u0b95\u0baa\u0bcd\u0baa\u0bc2\u0bb0\u0bcd|\ud55c\uad6d|\u0dbd\u0d82\u0d9a\u0dcf|\u0b87\u0bb2\u0b99\u0bcd\u0b95\u0bc8|\u0633\u0648\u062f\u0627\u0646|\u0633\u0648\u0631\u064a\u0629|\u53f0\u6e7e|\u53f0\u7063|\u0e44\u0e17\u0e22|\u062a\u0648\u0646\u0633|\u0443\u043a\u0440|\u0627\u0645\u0627\u0631\u0627\u062a|\u0627\u0644\u064a\u0645\u0646)))(?::\\d{2,5})?(?:\\/\\S*)?\\b"}
+{"pattern": "((([A-Z][a-z]*(\\s))([a-z]*(\\s))*[a-z]*[.])(\\s)*)*(?!([A-z0-9]*(\\s)))"}
+{"pattern": "/name\\s*=\\s*[\\x22\\x27]?arg((?!^--).)*?[\\r\\n]{2,}((?!^--).)*?([\\x60\\x3b\\x7c\\x26]|\\x24\\x28)/Psim"}
+{"pattern": "\\.(?![^.]*$)"}
+{"pattern": "\\r(?!\\n)"}
+{"pattern": "&#x((?=.*[ABCDEF]))*((?=.*[0-9]))*.{2,5};"}
+{"pattern": "^(\\.)?((\\]{1}(?![:\\s]).:\\d+\\]{1})|(\\[{1}(?![:\\s]).:\\d+\\[{1}))?[acgtnryswkmbdhvnACGTNRYSWKMBDHV\\.-]+(\\.)?((\\]{1}(?![:\\s]).:\\d+\\]{1})|(\\[{1}(?![:\\s]).:\\d+\\[{1}))?$|^\\*?$|^<(INS|DEL|DUP|INV|CNV|DUP:TANDEM|INS:NOVEL|INS:ME(:(ALU|L1))?|DEL:ME(:(ALU|L1))?)>$"}
+{"pattern": "(\\w+\\((?:[^)(]+|(?R))*\\))|(?:(\\b[a-zA-Z_](?:[\\w\\-_.]+\\.?))(?=[\\s<>=!)]|$))"}
+{"pattern": "([-_a-zA-Z0-9]+)(\\s*.*?)(?=,\\s+(?:/|-|--)|$)"}
+{"pattern": "(?=[\\s\\S](MilesService OK))(?=[\\s\\S]+(PromotionsService OK))(?=[\\s\\S]+(ISearchPanelDao OK))"}
+{"pattern": "\\[(youtube )(\\s*)([http:\\/\\/(?:www\\.)?youtube.com\\/watch\\?(?=.*v=\\w+)(?:\\S+)?$]+)\\]"}
+{"pattern": "(?=perro)"}
+{"pattern": "(a(?!\\s[^a]))"}
+{"pattern": "((?!^)|(, *)).(\\(\\+\\d{1,3}\\)?)( *(,|$))"}
+{"pattern": "strong((?!ViewController).)+ViewController \\*"}
+{"pattern": "\\[\\d*\\]((?=[^\"]*(?:\"[^\"]*\"[^\"]*)*$)(?=[^']*(?:'[^']*'[^']*)*$))"}
+{"pattern": "-(?=-)"}
+{"pattern": "[^\\\\]+(?=(?:\\.[^.]+)?$)"}
+{"pattern": "^(?:(?!0000)[0-9]{4}-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1[0-9]|2[0-8])|(?:0[13-9]|1[0-2])-(?:29|30)|(?:0[13578]|1[02])-31)|(?:[0-9]{2}(?:0[48]|[2468][048]|[13579][26])|(?:0[48]|[2468][048]|[13579][26])00)-02-29)$"}
+{"pattern": "^((31(?! (FEB|APR|JUN|SEP|NOV)))|((30|29)(?! FEB))|(29(?= FEB (((1[6-9]|[2-9]\\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00)))))|(0?[1-9])|1\\d|2[0-8])-(JAN|FEB|MAR|MAY|APR|JUL|JUN|AUG|OCT|SEP|NOV|DEC)-((1[6-9]|[2-9]\\d)\\d{2})$"}
+{"pattern": "(\\d).*(?=\\s*;[s|S]erial)"}
+{"pattern": "^((?=.*[0-9])(?=.*[a-z])|(?=.*[0-9])(?=.*[A-Z])|(?=.*[A-Z])(?=.*[a-z])|(?=.*[^A-Za-z0-9\\s])(?=.*[a-z])|(?=.*[^A-Za-z0-9\\s])(?=.*[A-Z])|(?=.*[^A-Za-z0-9\\s])(?=.*[0-9])).{5,}$"}
+{"pattern": "^((?!\\.git).)*$"}
+{"pattern": "(.*)(?=@)"}
+{"pattern": "(commit [0-9a-f]{40})(\\sMerge:\\s[0-9a-f]{7}\\s[0-9a-f]{7})?\\sAuthor:\\s(\\w*)\\sDate:\\s[a-zA-Z]{3}\\s[a-zA-z]{3}\\s\\d\\d\\s\\d\\d:\\d\\d:\\d\\d\\s[\\d]{4}\\s\\+0200\\s+(?<message>(?:(?!commit .{40}).)+)"}
+{"pattern": "branch=\\\"(?!(master))[^\\\"]*?\\\""}
+{"pattern": "^(?:https?:\\/\\/)?(?:www\\.|m\\.|touch\\.)?(?:facebook\\.com|fb(?:\\.me|\\.com))\\/(?!$)(?:(?:\\w)*#!\\/)?(?:pages\\/)?(?:photo\\.php\\?fbid=)?(?:[\\w\\-]*\\/)*?(?:\\/)?(?:profile\\.php\\?id=)?([^\\/?\\s]*)(?:\\/|&|\\?)?.*$"}
+{"pattern": "(?=[a-z0-9-]*[a-z][a-z0-9-]*\\.[a-z.]+)[a-z0-9-]{1,10}\\.[a-z.]+"}
+{"pattern": "(?:^|\\t)([^\\t\\n]+(?=(?:\\t|\\n[^ ]))|[^\\t\\n]+(?=(?:\\t|\\n([ ]+))))#(|[ ]{20})#(?![ ]{3,})#|#[^\\t]+?(?=(?:\\n)([ ]+)\")"}
+{"pattern": "((?![^<]*?>)\\b[\\w\\s]{7,}\\b)"}
+{"pattern": "(?:-(?!0))?\\d+(?:(?: \\d+)?/\\d+)?"}
+{"pattern": "[a-zA-Z/]+(?!\\w)"}
+{"pattern": "(&mdash;)(?!.*\\&mdash;).*"}
+{"pattern": ".+?(?=(&|\\?))"}
+{"pattern": "^(?=.*[a-zA-Z])[^\\*\\s]{4,8}$"}
+{"pattern": "\\.(?=([^\"]*\"[^\"]*\")*(?![^\"]*\"))"}
+{"pattern": "^(?!testfile$)(.*)"}
+{"pattern": "^(?!(^$|[-]{1}[.]{1}|[0]{1}[0-9]+|[-]{1}[0]{1}[0-9]+))([\\-]{0,1}[1-9]?[0-9]*((\\.|\\,)[0-9]*)?|[0]((\\.|\\,)[0-9]*)?)$"}
+{"pattern": "^((?!000)(?!666)([0-6]\\d{2}|7[0-2][0-9]|73[0-3]|7[5-6][0-9]|77[0-1]))(\\s|\\-)((?!00)\\d{2})(\\s|\\-)((?!0000)\\d{4})$"}
+{"pattern": "@Test\\s*\\((?P<params>[^@\\n]*)\\)\\s+(@\\w+\\s*\\([^@\\n]*\\s*)*@CitrusTest\\((?P<name>[^@\\n]*)\\)((?!(public|private|protected)).*\\s*)+(public|private|protected)\\s+((?!((description|}))).*\\s*)+(description\\s*\\(\\s*\\\"\\s*(?P<NEs>.*)\\s*\\\"\\s*\\))?"}
+{"pattern": "(?:[\\?&](foo\\=[^&]*))|(?:[\\?&](foo(?=[&#])))|(?:&(foo(?!.)))"}
+{"pattern": "(?x) #asasdasssss^(?:(?!^\\.) #eeeee(?:(?:^|\\.)(?:\\d|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])){4})$"}
+{"pattern": "(\\\\*)(\\(\\?P<[^>]*>|\\((?!\\?))"}
+{"pattern": "<(.*?)>(.*?)<(?=\\/)\\/.*?>"}
+{"pattern": "/name\\s*=\\s*[\\x22\\x27]?(?:computerName|configDataID|applicationName|fileName|customerId)(?:(?!^--).)*?\\x2e\\x2e[\\x2f\\x5c]/Psim"}
+{"pattern": "(?i)((\\bfoll[\\w\u00c3\u00a1-\u00c3\u00ba]{4,10})|(\\bfoll([ae\u00c3\u00a9o\u00c3\u00b3][nsdr]?(?=[^\\w\u00c3\u00a1\u00c3\u00a9])))|(\\bfoll(?:([e\u00c3\u00a9a\u00c3\u00a1][ibsrdo][\\w\u00c3\u00a1\u00c3\u00a9])))|(folleta))"}
+{"pattern": "^(?!(.*\u770b.*|.*\u542c.*)).*\u6597\u5730\u4e3b(?!.*\u7535\u5f71|.*\u7535\u89c6\u5267|.*\u97f3\u4e50|.*\u6b4c|.*\u7efc\u827a|.*\u52a8\u6f2b|.*\u52a8\u753b\u7247).*"}
+{"pattern": "\\\\(?![nrt])"}
+{"pattern": "/ (?=[\\*&,])/"}
+{"pattern": "TR\\$.+?(?=\\n)"}
+{"pattern": "((?!<((\\/)?a))<[^>]*>)"}
+{"pattern": "Vue[\\s]*\\.[\\s]*component\\(([\"'`].*[\"'`]([\\s]*|.*)),(([\\s]*|.*)+?((\\})\\)(?!([A-Za-z0-9\\s{]*))))"}
+{"pattern": "(?:^|\\n)(\\d+:\\d{4}) (\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{3}) ([A-Za-z\\n]+) (.*?)(?=\\n\\d+:|$)"}
+{"pattern": "at .*\\.(\\w*) \\(.*js\\/(\\w*)\\/(?!logger)(\\w*)\\..{2,4}:(\\d*:\\d*)\\)"}
+{"pattern": "^((?!XXXX-XX-XX)(?!XXXX-XX-XX XX:XX:XX)((19|20|XX)[0-9X][0-9X])\\-((02\\-(-[1-9]|[1-2]\\d|XX))|((04|06|09|11)\\-(0[1-9]|[1-2]\\d|30|XX))|((01|03|05|07|08|10|12|XX)\\-(0[1-9]|[1-2]\\d|30|31|XX)))( (?!XX(:)$)([0-1]\\d|2[0-3]|XX):([0-5]\\d|XX)(:([0-5]\\d|XX)|))?)$"}
+{"pattern": "\\.(?=.+\\..+$)"}
+{"pattern": "[^\\W]((?!(word1)|(word2)).)*$"}
+{"pattern": "([^\\s\\{]+?(?=:))(:\\s)([^;]*);"}
+{"pattern": "/name\\s*=\\s*[\\x22\\x27]?arg((?!^--).)*?[\\r\\n]{2,}((?!^--).)*?([\\x60\\x3b\\x7c\\x26]|\\x24\\x28)/sim"}
+{"pattern": "(?:([a-zA-Z]+)(?=[^a-zA-Z]+|$)|(\\d+)(?=[^\\d]+|$))"}
+{"pattern": "^(?=.*[a-zA-Z])[ a-zA-Z0-9_-]{2,11}$"}
+{"pattern": "^((31(?! (FEB|APR|JUN|SEP|NOV)))|((30|29)(?! FEB))|(29(?= FEB (((1[6-9]|[2-9]\\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00)))))|(0?[1-9])|1\\d|2[0-8]) (JAN|FEB|MAR|MAY|APR|JUL|JUN|AUG|OCT|SEP|NOV|DEC) ((1[6-9]|[2-9]\\d)\\d{2})$"}
+{"pattern": "(?i):/([^:]+)(?=/lib/neo4j-kernel-\\S+\\.jar)"}
+{"pattern": "^(?<track>https:\\/\\/soundcloud.com\\/(?:(?!sets|stats|groups|upload|you|mobile|stream|messages|discover|notifications|terms-of-use|people|pages|jobs|settings|logout|charts|imprint|popular)(?:[a-z0-9\\-_]{1,25}))\\/(?:(?:(?!sets|playlist|stats|settings|logout|notifications|you|messages)(?:[a-z0-9\\-_]{1,100}))(?:\\/s\\-[a-zA-Z0-9\\-_]{1,10})?))(?:[a-z0-9\\-\\?=\\/]*)$"}
+{"pattern": "^J(ohn|\\.(?= D\\.)|(?= D )) D(aniel|\\.)? Martin I{3}$"}
+{"pattern": "^(?!.*head).*\\.scss$"}
+{"pattern": "<a((?:(?! title=)[^\">]*\"[^\">]*\")+)>([^<]+)<\\/a>"}
+{"pattern": "^(?![\\S\\s]*should not exist)"}
+{"pattern": "^/path(?!/testcontent).*$"}
+{"pattern": "^(?!.*?[.]{2})[a-zA-Z0-9][a-zA-Z0-9\\-]+\\.[a-z0-9\\.\\-]+$"}
+{"pattern": "(\\w+)\\|(?=(?:\\w+\\|)*\\w+=(\\w+))"}
+{"pattern": "\\\\((?![enr\\d]))"}
+{"pattern": "<a(?!.*<\\/a>$)"}
+{"pattern": "(\\'|\"\")My-Text(\\'|\"\"):.*?((input-src|output-src|x-src)).*?(?!(perfect-inline|perfect-eval|\\*))"}
+{"pattern": "#.*?(?=\\n)|\\n(?=$)"}
+{"pattern": "(?=^.{6,10}$)(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&amp;*()_+}{&quot;:;'?/&gt;.&lt;,])(?!.*\\s).*$"}
+{"pattern": "^(?!.*po box|care po|cma|gpo box|locked bag|ms|private bag|rsd|rmb|rms|cpa|care of post office|community mail agent|community mail bag|general post office box|locked mail bag service|mail service|post office box|poste restante|private mail bag service|roadside delivery|roadside mail bag|roadside mail box|roadside mail service|community postal agent).*$"}
+{"pattern": "\\r?\\n(?!\\s)"}
+{"pattern": "^(?!^\\/\\/third_party).*demo"}
+{"pattern": "(?=.*[A-Z])(?=.*[a-z]).*"}
+{"pattern": "POST OFFICE(?!( (STREET|ST|ROAD|RD|WAY|WY|LANE|LN|BOULEVARD|BLVD|TERRACE|TER)))"}
+{"pattern": "^(?!000)(?!666)([0-8]\\d{2}) ([ -])? (?!00)\\d\\d ([ -])? (?!0000)\\d{4}$"}
+{"pattern": "(https:\\/\\/provider.sharespaceapp.swisscom.com((?!:(443|80)(($)|(\\/))))(?:(?:(?::)(\\d*)))?(?:(?:(\\/latest)(?=\\/))|(?:(\\/latest)($)))?)"}
+{"pattern": "^(\\d+\\.)?(\\d{3})+(?=\\S+)"}
+{"pattern": "/^(?!\\d{17}|[A-F]{17})[A-F0-9]{17}/P"}
+{"pattern": "(\\/\\/[^\\n]*$|\\/(?!\\\\)\\*[\\s\\S]*?\\*(?!\\\\)\\/)"}
+{"pattern": "\\b'(?=\\d{2}s)"}
+{"pattern": "(^(?=.*\\S).*\\n)*"}
+{"pattern": "^(?!00000)(?<zip>(?<zip5>\\d{5})(?:[ -](?=\\d))?(?<zip4>\\d{4})?)$"}
+{"pattern": "(?:\\s*from\\s(?:(?:([^\\(\\n]*?)\\s)|(\\[[^\\]]*\\]))?(?:\\((?:(?:((?!HELO|EHLO)[^\\s]*)|(?:(?:EHLO)|(?:HELO)))?(?:[\\s\\w\\.]*(?:(?:\\[([^\\]]*)\\])|([^\\)\\s]*))\\))))?(?:\\{.*\\})?)?\\s*(?:(?:client\\s)?[\\(\\{\\[]+([^\\)\\}\\]]*)[\\)\\}\\]]+\\;?(?:\\{.*\\})?)?(?:[\\s\\n]*)(?:\\s*(?:by(?:(?:.*?)(?:\\;|(?:[\\r\\n]{1,2}))))(?!.*with))?(?:\\s*by\\s(?:.*(?=with)\\)?)\\s*)?(?:with\\s*(?:((?:[^\\n;]*))(?:.*\\;)?))?(?:[\\s\\n]*)?(?:\\(?envelope-from\\s*([^\\n]*)\\;?\\)?)?(?:\\s*id[^;]*\\;?)?(?:[\\s\\n]*)?(?:for\\s([^\\;]*)\\;)?(?:[\\s\\n]*)?(?:\\(.*\\)\\;)?(?:[\\s\\n])?([^\\(]+)?(?:\\(?envelope-from\\s*([^\\n]*)\\;?\\)?)?"}
+{"pattern": "/name\\s*=\\s*[\\x22\\x27]?template((?!^--).)*?\\x2e\\x2e[\\x2f\\x5c]/Psim"}
+{"pattern": "^(?!^(5|15|18|30)$)\\d+$"}
+{"pattern": "^(?!\\-)(?:[a-zA-Z\\d\\-]{0,62}[a-zA-Z\\d]\\.){1,126}(?!\\d+)[a-zA-Z\\d]{1,63}(:)\\d+$"}
+{"pattern": "\\w+(?=[r|e])"}
+{"pattern": "(?:<video[^>].*src=\\\")(?<src>[^\"].*)(?=\\?)"}
+{"pattern": "^(?![0])(([0-9]{1,10})|([0-9]{1,10}),[0-9]{2})$"}
+{"pattern": "(?:\\s*from\\s(?:(?:([^\\(\\n]*?)\\s)|(\\[[^\\]]*\\]))?(?:\\((?:(?:((?!HELO|EHLO)[^\\s]*)|(?:(?:EHLO)|(?:HELO)))?(?:[\\s\\w\\.]*(?:(?:\\[([^\\]]*)\\])|([^\\)\\s]*))\\))))?(?:\\{.*\\})?)?\\s*(?:(?:client\\s)?[\\(\\{\\[]+([^\\)\\}\\]]*)[\\)\\}\\]]+\\;?(?:\\{.*\\})?)?(?:[\\s\\n]*)(?:\\s*(?:by(?:(?:.*?)(?:\\;|(?:[\\r\\n]+))))(?!.*with))?(?:\\s*(?:by\\s[^\\;]*\\)?)(?=.*with)\\s*)?(?:with\\s*(?:((?:[^\\n;]*))(?:.*\\;)?))?(?:[\\s\\n]*)?(?:\\(?envelope-from\\s*([^\\n]*)\\;?\\)?)?(?:\\s*id[^;]*\\;?)?(?:[\\s\\n]*)?(?:for\\s([^\\;]*)\\;)?(?:[\\s\\n]*)?(?:\\(.*\\)\\;)?(?:[\\s\\n])?(?:([^\\(]+))?(?:\\s+m=\\+\\d*\\.\\d*)?(?:\\(?envelope-from\\s*([^\\n]*)\\;?\\)?)?"}
+{"pattern": "/\\.addEventListener\\s*\\x28\\s*[\\x22\\x27]DOMNodeRemoved[\\x22\\x27][^\\x29]*?function(?:(?!\\)\\x3b).)*?\\{[^}]*?\\.removeEventListener\\s*\\x28\\s*[\\x22\\x27]DOMNodeRemoved[\\x22\\x27][^}]*?getselection\\s*\\x28.*?\\x29\\.removeAllRanges\\s*\\x28.*?\\x29\\x3b[^}]*?\\}.*?getSelection\\s*\\x28.*?\\x29\\.deleteFromDocument/smi"}
+{"pattern": "(\\d{1,3})(?=(?:\\d{3})+(?:\\.\\d*)?$)"}
+{"pattern": "(<tr(?:(?!<li)[\\s\\S])*?(ContactUs)[\\s\\S]*?<\\/tr>)"}
+{"pattern": "/\\x3C{2}(?=[^\\x3E]*\\x2F(Height|Width)\\s*\\d{6})(?=[^\\x3E]*\\x2FFlateDecode)[^\\x3E]*\\x2FSubtype\\s*\\x2FImage/"}
+{"pattern": "<(?!/?TEXT)[^>]+>"}
+{"pattern": "(art\\.?|artigos?) ([0-9.]{1,7}).{1,20}?(\u00a7 ?\\d{1,3})?.{1,20}?(CPC|CPP|C[oO\u00d3\u00f3]digo de Processo Penal|C[oO\u00d3\u00f3]digo de Processo Civil|C[oO\u00d3\u00f3]digo Penal|CP(?!C)|CPC|Lei de Execu\u00e7\u00f5es Penais|Constitui\u00e7\u00e3o da Rep\u00fablica|[0-9]{1,3}.[0-9]{3}(\\/[0-9]{2,4})?)"}
+{"pattern": "N{3,}?([^N](?:(?!N{3,}?).)*)"}
+{"pattern": "^&lt;a\\s+href\\s*=\\s*&quot;http:\\/\\/([^&quot;]*)&quot;([^&gt;]*)&gt;(.*?(?=&lt;\\/a&gt;))&lt;\\/a&gt;$"}
+{"pattern": "([:\\[,])(?![+-]?\\d+\\.?\\d*)(?!false|true)(?!\".*?\")([^\\{\\[\\r\\n]*?)([,\\]\\}])"}
+{"pattern": "^(?=.{0,50}$)^((https?:\\/\\/)?(www\\.)?)?([a-zA-Z0-9&\\-\\'\\+\\$%_,\\/;#])+\\.([a-z]){2,4}$"}
+{"pattern": "(?=([\\W]*[\\w][\\W]*\\b))\\s(?=\\d\\.|\\d\\b)"}
+{"pattern": "(?!000)(?!666)^([0-8]\\d{2})(\\d{2})(\\d{4})$"}
+{"pattern": "&(?!#?[xX]?(?:[0-9a-fA-F]+|\\w+);)"}
+{"pattern": "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$"}
+{"pattern": "(?i)(?m)(?:[\\w]\\:|\\\\)(\\\\[a-z_\\-\\s0-9\\.]+)*(?=\\\\)"}
+{"pattern": "^(?=.*px\\;)([ \\S]*)"}
+{"pattern": "(\\d+:\\d{4}) (\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{3}) ([A-Za-z\\n]+) (.*?)(?=\\n\\d+:|$)"}
+{"pattern": "(?=.*is)(?=.*today)(?=.*wednesday)"}
+{"pattern": "(?::|#|are|(?:\\b|\\D)(?:\\d{1,2}|1\\d{2})?\\s?(?:and|&)|(?:\\b|\\D)(?:\\d{1,2}|1\\d{2})\\s?,)\\s?(?:\\d{1,2}|1\\d{2})\\b(?:\\s?-\\s?(?:\\d{1,2}|1\\d{2})(?=\\D))?(?:\\s?,\\s?(?:\\d{1,2}|1\\d{2})(?=\\D)(?:\\s?-\\s?(?:\\d{1,2}|1\\d{2})(?=\\D))?)*|^\\s?(?:\\d{1,2}|1\\d{2})\\b(?:\\s?-\\s?(?:\\d{1,2}|1\\d{2})(?=\\D))?\\s?(?:\\.(?=\\D)|$|:)"}
+{"pattern": "/submitForm\\s*\\x28[^\\x3b]+cURL\\s*\\x3a\\s*[\\x22\\x27]\\s*url\\s*\\x3a\\s*(?!https?)[^\\x27\\x22\\x23]*?\\x23/ims"}
+{"pattern": "/local_graph_id=(?!(\\d+|)([\\x26\\s]|$))/smi"}
+{"pattern": "then:.*(?!}])self|error:.*(?!}])self"}
+{"pattern": "\\b(?!([C-Z][Y-Z]\\d{7}[A-M]))([A-B][A-X]\\d{7}[A-X]\\b)"}
+{"pattern": "/name\\s*=\\s*[\\x22\\x27]?SMB_(LOCATION|USERNAME)((?!^--).)*?[\\r\\n]{2,}((?!^--).)*?([\\x60\\x3b\\x7c\\x26]|[\\x3c\\x3e\\x24]\\x28)/Psim"}
+{"pattern": "^(?!app\\.)wedtexts\\.com"}
+{"pattern": "/<table[^>]*?>((?!<\\/table>).)*?<t(head|body|footer) id=.*?<\\/table>.{0,256}<table[^>]*?>((?!<\\/table>).)*?<t(head|body|footer) id=.*?<\\/table>/ims"}
+{"pattern": "\\b[\\w\\.-]+@((?!gmail|yahoo|hotmail).)[\\w\\.-]+\\.\\w{2,7}\\b"}
+{"pattern": "^(?!.*for).*<label.*$"}
+{"pattern": "^((?!000)(?!666)(?:[0-6]\\d{2}|7[0-2][0-9]|73[0-3]|7[5-6][0-9]|77[0-2]))-((?!00)\\d{2})-((?!0000)\\d{4})$"}
+{"pattern": "^((?!V2).)*(- Dev|- Test)\\s*$"}
+{"pattern": "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\\s).{8,20}$"}
+{"pattern": "(\\d{2}\\/\\d{2}\\/\\d{4}),\\s(\\d(?:\\d)?:\\d{2})\\s-\\s([^:]*):\\s(.*?)(?=\\s*\\d{2}\\/|$)"}
+{"pattern": "(\\S+)=[\"']?((?:.(?![\"']?\\s+(?:\\S+)=|[>\"']))+.)[\"']?"}
+{"pattern": "\\d+_\\D+(?=_)"}
+{"pattern": "(\\s\\d\\s(?=Wochen|Tage|Monate))"}
+{"pattern": "/^MKD(?!\\n)\\s[^\\n]{150}/smi"}
+{"pattern": "(,)(?=[^\"]*\"(?:[^\"\\r\\n]*\"[^\"]*\")*[^\"\\r\\n]*$)"}
+{"pattern": "(([a-zA-Z]){3})-(\\d{3})(?=...)"}
+{"pattern": "/^RCPT TO\\x3A[^\\r\\n\\x3C]*\\x3C(?=[^\\r\\n\\x3E]*\\x3A)[^\\r\\n\\x3E]{460}/mi"}
+{"pattern": "^(0[1-9]|1\\d|2[1-8]|29(?=-\\d\\d-(?!1[01345789]00|2[1235679]00)\\d\\d(?:[02468][048]|[13579][26]))|30(?!-02)|31(?=-0[13578]|-1[02]))-(0[1-9]|1[0-2])-([12]\\d{3}) ([01]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)$"}
+{"pattern": "(?=.*[A-Za-z])(?=.*[!@#\\$%\\^&\\*])(?=.{7,})"}
+{"pattern": "For \u00c3\u00a5 ([a-zA-Z0-9]+ ){1,5}(?:\\bom\\b|\\bat\\b)((?!,).)*\\.|For \u00c3\u00a5(?:(?!\\bom\\b|\\bat\\b).)*?,.*?\\."}
+{"pattern": "(text|simple)(?![^<]*>|[^<>]*<\\/)"}
+{"pattern": "(\\w+)([.](?!$|[^\\w]))?"}
+{"pattern": "\\d+\\.\\d+\\.\\d+\\.\\d+\\/(?!32)"}
+{"pattern": "^[-]?P(?!$)(?:\\d+Y)?(?:\\d+M)?(?:\\d+D)?(?:T(?!$)(?:\\d+H)?(?:\\d+M)?(?:\\d+(?:\\.\\d+)?S)?)?$"}
+{"pattern": "(-?[1-9]*\\d*[02468])(?=\\D)"}
+{"pattern": "\\W|^(?=\\d)"}
+{"pattern": "url(\\((['\\\" ])*(?!data:|https?:\\/\\/)([^\\\"'\\)]+)['\\\" ]*)"}
+{"pattern": "^(?=.*?[+-])(?=.*?[0-9]).[0-9]+$"}
+{"pattern": "(?s)(<a[^>]+?)(?<name>\\w+)=(?:[\"']?(?<value>[^\"'>]*)[\"']?)(?=.+?>)"}
+{"pattern": "(?=qtonpi)([^>]*)(?=-)"}
+{"pattern": "(<embed\\s[^<>]*?src\\s*?=\\s*?\\x22)[^<>]*?(?=\\x22[^<>]*?>)"}
+{"pattern": "[0-9](?=.*.{4})"}
+{"pattern": "(?!00[02-5]|099|213|269|34[358]|353|419|42[89]|51[789]|529|53[36]|552|5[67]8|5[78]9|621|6[348]2|6[46]3|659|69[4-9]|7[034]2|709|715|771|81[789]|8[3469]9|8[4568]8|8[6-9]6|8[68]7|9[02]9|987)\\d{5}"}
+{"pattern": "/^Content-Type\\x3a\\s*(?=[av])(video\\/x\\-ms\\-(w[vm]x|asf)|a(udio\\/x\\-ms\\-w(m[av]|ax)|pplication\\/x\\-ms\\-wm[zd]))/smi"}
+{"pattern": "^(?=.*\\bsubject\\b)(?=.([\\s\\S]*)urgent)(?=.([\\s\\S]*)yahoo\\.com).*$"}
+{"pattern": "(View::make\\([^\\)]+\\))(?!->)"}
+{"pattern": "(^|\\s)(?!\\w*aa\\w*)(\\w+)"}
+{"pattern": "^(?=.*[a-zA-Z])(?=.*[a-zA-Z0-9]).{6,20}$"}
+{"pattern": "(?P<oxford_comma>,)(?=\\s+(and|or))"}
+{"pattern": "\\S*_((?!en)\\S{2,3}(-\\S{2,3})?)\\.properties"}
+{"pattern": "/^Date\\x3a (?!((Sun|Mon|Tue|Wed|Thu|Fri|Sat), [0-9 ]?[0-9] (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) ([0-9]{2}|[0-9]{4}) [0-9]{2}\\x3A[0-9]{2}\\x3A[0-9]{2} ([ECMP]S|GM)T|(Sun|Mon|Tues|Wednes|Thurs|Fri|Satur)day, [0-9]{2}[- ](Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[- ]([0-9]{2}|[0-9]{4}) [0-9]{2}\\x3A[0-9]{2}\\x3A[0-9]{2} ([ECMP]S|GM)T|(Sun|Mon|Tue|Wed|Thu|Fri|Sat) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9 ][0-9] [0-9]{2}\\x3A[0-9]{2}\\x3A[0-9]{2} [0-9]{4}|(Sun|Mon|Tue|Wed|Thu|Fri|Sat), [0-9]?[0-9] (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) ([0-9]{2}|[0-9]{4}) [0-9]{2}\\x3A[0-9]{2}\\x3A[0-9]{2}))/sm"}
+{"pattern": "&amp;(?!([a-zA-Z0-9#]{1,6};))"}
+{"pattern": "^(?P<repository>[\\w.\\-_]+((?::\\d+|)(?=/[a-z0-9._-]+/[a-z0-9._-]+))|)(?:/|)(?P<image>[a-z0-9.\\-_]+(?:/[a-z0-9.\\-_]+|))(:(?P<tag>[\\w.\\-_]{1,127})|)$"}
+{"pattern": "^(\\d+\\.)(.+?)(?=A\\.)"}
+{"pattern": "^(?!.*\\n.*)(?:([^:]*)(?::(.*?))?@)?([^:]*)(?::([^:]*?))?$"}
+{"pattern": "^(?!([MDS]r|Ms|Mrs)\\.).*$"}
+{"pattern": "^(?!^(PRN|AUX|CLOCK\\$|NUL|CON|COM\\d|LPT\\d|\\..*)(\\..+)?$)[^\\x00-\\x1f\\\\?*:\\\";|/]+$"}
+{"pattern": "(^[2-9]11$)|(^[01]?[2-9](?!11)[0-9]{2}(?!555)[2-9]\\d{6}$)"}
+{"pattern": "\\r?\\n(?=\\S)"}
+{"pattern": "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9]).{8,20}$"}
+{"pattern": "/^USER(?!\\n)\\s[^\\n]{100}/smi"}
+{"pattern": "/<tree.*?tree(?!children).*?<treechildren.*?<treechildren/smi"}
+{"pattern": "[a-zA-Z# ]+(?!\\w)(?!\\D)"}
+{"pattern": "https?://[^<>() ]+([ ](((?!https?://)[^<>() ])+)(?=[^<>() ]*[?!=%&-+/])[^<>() ]*)*"}
+{"pattern": "(?:A|B|C|D|E|1\\)|2\\)|3\\)|4\\)|5\\)){0,1}(?:\\:|\\.|\\ ){0,1}[^0-9]{0,2}((?:[\\d]{1,2}[\\s|\\+]{1}){0,4}[\\d]{1,2})[\\s]{0,1}\\*[\\s]{0,1}((?:[\\d]{1,2}\\+[\\s]{0,2}){0,98}[\\d]{1,2})(?![\\+|\\-|\\d])[\\s]{1,3}((?:[\\d]{1,2}\\+){0,98}[\\d]{1,2})"}
+{"pattern": "%(?:(?![0-9a-fA-F]{2}))"}
+{"pattern": "((?P<prefix>[$@%\\\\*&]+)\\s*)?(?P<scope>(::)?\\b((?!\\d)\\w*?(::|'))*)(?P<name>(?!\\d)\\w+)$"}
+{"pattern": "[;\\s\\/\\+]$|^$|(?=: )."}
+{"pattern": "^(?P<ip>.*?) - - \\[(?P<date>.*?)(?= ) (?P<timezone>.*?)\\] \\\"(?P<request_method>.*?) (?P<path>.*\\.php.*?)(?P<request_version> HTTP/.*)?\\\" (?P<status>(301|404)?) (?P<length>.*?) \\\"(?P<referrer>.*?)\\\" \\\"(?P<user_agent>.*?)\\\"$"}
+{"pattern": "^((?! [0-9*]*[0-9*]\\. ).)*$"}
+{"pattern": "(http(s)?:\\/\\/)?(.*\\\\.)?partselect.com\\/PS.*(htm|html)((?!Page=\\d{1,3}#Central_Content_PagerTop).)*$"}
+{"pattern": "^(?!\\s)password"}
+{"pattern": "&(?!#\\d+;|#x[0-9a-fA-F]+;|\\w+;)"}
+{"pattern": "^(?=.*\\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[#!*@$%^&()\\-_]+)[A-Za-z\\d#!*@$%^&()]{8,16}$"}
+{"pattern": "(?=^.{1,254}$)(^(?:[a-zA-Z0-9][a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9]\\.?)+(?:[a-zA-Z]{2,})$)"}
+{"pattern": "<xxxx\\b[^<]*(?:(?!<\\/yyyy>)<[^<]*)*<\\/yyyy>"}
+{"pattern": "^.*(?=.{6,10})(?=.*[a-zA-Z].*[a-zA-Z].*[a-zA-Z].*[a-zA-Z])(?=.*\\d.*\\d).*$"}
+{"pattern": "([^\\'\"<>]|\"[^\"]*\"(?=>|/|\\s|\\w+=)|\\'[^\\']*\\'(?=>|/|\\s|\\w+=))*(?=[<>])|.*?(?=[<>])"}
+{"pattern": "^(.*?)\\.(?=.*\\.)"}
+{"pattern": "^((?!.*-test\\.js$|.*\\.spec\\.js$))"}
+{"pattern": "(?!.?@.+)\\s+?[A-Za-z0-9\\,\\.\\!\\?\\'\\(\\)\\-\\&\\#]+"}
+{"pattern": "box(?=-shadow)"}
+{"pattern": "<(?!\\/*strong\\W|\\/*h1\\W|\\/*input\\W|\\/*b\\W).*?>"}
+{"pattern": "((?<raute>#(?<raute_content>[^\\n]*))|(?<doubleslashes>\\/\\/(?<doubleslashes_content>[^\\n]*))|(?<block>\\/\\*(?<block_content>[^*]+|\\*(?!\\/))*+\\*\\/))"}
+{"pattern": "[ ]+(incorporation|\\binc[.]*(?!\\w))"}
+{"pattern": "(<span class=\"cproComment\">((.*)\\s)*?(?=<span class=\"cproComment\">))"}
+{"pattern": "/^ACCT(?!\\n)\\s[^\\n]{200}/smi"}
+{"pattern": "(<label(?!.*preferredMaxLayoutWidth).*numberOfLines.*>)"}
+{"pattern": "<img.*?src=\"(?!cid:)(http:(\\/\\/|\\\\\\\\)|https:(\\/\\/|\\\\\\\\))[^:*?\"<>|]+\".*?>"}
+{"pattern": "(^(?!.*hours)^(?!.*classes).*)lib.*"}
+{"pattern": "[(](?!([^)]*\\b(ARR|ARRANGEMENT|ARRANGEMENTS|ARRANGED|CHOPPED|DUB|EDIT|FT|FEAT|FEATURING|INSTRUMENTAL|MASH UP|MASHUP|MASH-UP|MIX|REMIX|REPRISE|SCREWED|TITLE|VERSION)\\b[^(]*)).*?[)]"}
+{"pattern": "(?=.*[A-Z])(?=.*[0-9])(?!.\\n)(?!.*\\s)(?=.*[!$#+@%&]).{8,}"}
+{"pattern": "(\\bShe\\b)(?:(?!\\b(?:she|loves|you)\\b).)*(\\bloves\\b)(?:(?!\\b(?:she|loves|you)\\b).)*(\\byou\\b)"}
+{"pattern": "/Microsoft\\.Exchange\\.Management\\.ControlPanel\\x22\\x2C\\x22Name\\x22:\\x22[^\\x22]*\\x22(?!\\s*,\\s*\\x22Template)/P"}
+{"pattern": "(^(\\d+%((?!\\r\\n)\\s+))(\\[((\\w+)((\\-\\w+)?((?!\\r\\n)\\s+)?(\\w+)?((?!\\r\\n)\\s+)?(\\d+)?(\\,)?(\\d+)?(\\.)?(\\d?)((?!\\r\\n)\\s+)?(k?B)?)?((?!\\r\\n)\\s+)?(\\w+)?\\]))?(((((?!\\r\\n)\\s+)\\[)(.+)\\])*(((?!\\r\\n)\\s+)(\\[)(.+))?(\\r?\\n)))"}
+{"pattern": "[\u0430-\u044fA-z ]+((?:(?![\u0430-\u044fA-z])([ -])(?=[\u0430-\u044fA-z])|[\u0430-\u044fA-z]))*[\u0430-\u044fA-z ]"}
+{"pattern": "&lt;(span|font).*?(?:(?:(\\s?style=&quot;?).*?((?:\\s?font-size:.+?\\s*(?:;|,|(?=&quot;))+)|(?:\\s?color:.+?\\s*(?:;|,|(?=&quot;))+))[^&quot;]*((?:\\s?font-size:.+?\\s*(?:;|,|(?=&quot;))+)|(?:\\s?color:.+?\\s*(?:;|,|(?=&quot;))+))[^&quot;]*(&quot;?)|(\\s?size=&quot;?.*?(?:(?=\\s)|&quot;|(?=&gt;)))|(\\s?color=&quot;?.*?(?:(?=\\s)|&quot;|(?=&gt;)))|(?=&gt;)).*?){3}&gt;"}
+{"pattern": "^(?<Date>[\\d\\-]{10})? (?<Time>[\\d\\:\\.\\+\\ ]{19})? (?<Level>\\[[A-Z]{3}\\]) (?<Message>[\\s\\S]*?\\n*(?=^[\\d\\-]{10}.*?(?:[^ \\n]+ )|\\z))"}
+{"pattern": "^([a-zA-Z])(?=.*\\d)\\w{4,9}$"}
+{"pattern": "\\b(byte|char|short|long|float|int|double|decimal|bool|string)\\b.*\\s[a-zA-Z](?=;)"}
+{"pattern": "\\b([\\d\\.]+)[mkb%](?!\\S)"}
+{"pattern": "^(?!.* {2})(?=\\S)(?=.*\\S$)[a-zA-Z0-9- &]{2,100}$"}
+{"pattern": ";(?=[^\\{\\}]+(?=\\{[^\\{\\}]+\\})|[^\\{\\}]+$)"}
+{"pattern": "\\/blog\\/+^(?!.*tag).*$"}
+{"pattern": "[\\w\\s<>]*(?![\\w\\s<>]*\"+.*\"+)(trekking)"}
+{"pattern": "\\b\\d+\\b(?!%)"}
+{"pattern": "[1-9][0-9]{3}(?!SS|SA|SD)[A-Z]{2}"}
+{"pattern": "^((?!\\.).)*$"}
+{"pattern": "<img.*?src=\"(?!http://)(.*?)\".*/?>"}
+{"pattern": "^(?!(192\\.168\\.))^(?!(172\\.(1[6-9]|2[0-9]|3[0-1])\\.))^((([1-9]|1[1-9]|[2-9][0-9]|1[0-9]{2}|2[0-1][0-9]|22[0-3])\\.)((0|1[0-9]{0,2}|[2-9][0-9]|2[0-4][0-9]|25[0-5])\\.){2}(1[0-9]{0,2}|[2-9][0-9]|2[0-4][0-9]|25[0-4]))$"}
+{"pattern": "^(?=(.*[a-zA-Z].*){2,})(?=.*\\d.*)(?=.*\\W.*)[a-zA-Z0-9\\S]{8,15}$"}
+{"pattern": ",(?=(?:[^\\']*\\'[^\\']*\\')*[^\\']*$)"}
+{"pattern": "(pa)(?!([^<]+)?>)"}
+{"pattern": "\\$\\d+\\.\\d{2}(?!\\d)"}
+{"pattern": "^\\(?(?P<prefix>(?=1)|\\+|(?:0(?:0(?:0|1|9)?|1(?:0|1))?|119))[-. ]?\\(?(?P<CC>1([-. ]?)[0-9]{3}|2(?:0|[0-9]{2})|3(?:[0-469]|[0-9]{2})|4(?:[013-9]|[0-9]{2})|5(?:[1-8]|[0-9]{2})|6(?:[0-6]|[0-9]{2})|7(?:[-. ]?[67]|[0-9]{3})|8(?:[1246]|[0-9]{2})|9(?:[0-58]|[0-9]{2}))(?:\\)?[-. ])?(?P<number>(?:[0-9]+[-. ]?)+)$"}
+{"pattern": "Regex2017(?!sucedido)"}
+{"pattern": "^/(((?!/).)+)-(\\d+)\\.html$"}
+{"pattern": "(\\d+)\\s+(\\w{2})\\s*(\\w{2,5})\\s+(\\w{5})(?:\\s+|\\s+(.)\\s+)(\\w{3})(\\w{3})(?:\\s+|(?:\\s|\\*)(\\w{3})\\s+)(\\w{4,5})\\s+(\\w{4,5})(?:\\s+(\\w{5}))?.*(?:\\n|$)??((?:.|\\n)*?)(\\n\\s*\\n)?(?=\\d+\\s+\\w{2}\\s*\\w{2,5}\\s+\\w{5}(?:\\s+|\\s+.\\s+)\\w{3}\\w{3}(?:\\s+|(?:\\s|\\*)\\w{3}\\s+)\\w{4,5}\\s+\\w{4,5}(?:\\s+\\w{5})?|$)"}
+{"pattern": "(\\S+)\\x20{2,}(?=\\S+)"}
+{"pattern": "(https:\\/\\/)?(?:www\\.)?reddit\\.com(?!.*\\/rpan)(.*)"}
+{"pattern": "^(?!.*(Win64|x64))Win.*$"}
+{"pattern": "/\\x2fIT\\x2f((?!FreeText(Typewriter|Callout)).)+?\\b/"}
+{"pattern": "^\\w+(?=\\s+OBJECT-TYPE)"}
+{"pattern": "/String\\x2EfromCharCode\\s*\\x28(?=[^\\x29]*?0x\\d+)[^\\x29]*?\\d{2}/"}
+{"pattern": "/^.{0,200}(?!r[tp])\\x3c\\x2fruby.{0,200}\\x3c\\x2fnl/Rmsi"}
+{"pattern": "^(?:(?:\\w|-)+((?:, ?(?=\\w))|$))+$"}
+{"pattern": "^(?=.+\\d)(?=.+[a-z])(?=.+[A-Z])(?=.+[_\\.@\\-])[0-9a-zA-Z_\\.@\\-]{6,12}$"}
+{"pattern": "\\(?(?:(http|https|ftp):\\/\\/)?(?:((?:[^\\W\\s]|\\.|-|[:]{1})+)@{1})?((?:www.)?(?:[^\\W\\s]|\\.|-)+[\\.][^\\W\\s]{2,4}|localhost(?=\\/)|\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})(?::(\\d*))?([\\/]?[^\\s\\?]*[\\/]{1})*(?:\\/?([^\\s\\n\\?\\[\\]\\{\\}\\#]*(?:(?=\\.)){1}|[^\\s\\n\\?\\[\\]\\{\\}\\.\\#]*)?([\\.]{1}[^\\s\\?\\#]*)?)?(?:\\?{1}([^\\s\\n\\#\\[\\]]*))?([\\#][^\\s\\n]*)?\\)?"}
+{"pattern": "\\((?!([^\\(\\)\\[\\]]*(\\b)(ARR|ARRANGEMENT|ARRANGEMENTS|ARRANGED|CHOPPED|DUB|EDIT|FT|FEAT|FEATURING|INSTRUMENTAL|MASH UP|MASHUP|MASH-UP|MIX|REMIX|REPRISE|SCREWED|TITLE|VERSION)(\\b)[^\\(\\)\\[\\]]*)).*?\\)"}
+{"pattern": "([<>]|&(?![^\\s]+;))"}
+{"pattern": "^(?=(.*[a-z]){1,})(?=(.*[\\d]){1,})(?=(.*[\\W]){1,})(?!.*\\s).{7,30}$"}
+{"pattern": "skeins\\ \\=.*?(?:(?!yards).)*"}
+{"pattern": "<\\/{0,1}(?!\\/|b>|i>|p>|a\\s|a>|br|em>|ol|li|strong>)[^>]*>"}
+{"pattern": "incorporation|\\binc[.]*(?!\\w)"}
+{"pattern": "^((?=[^\\d])(?=^*[^0-9]$)(?!.*')(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\\s))?(?=.*[^\\d]$).{8,15}$"}
+{"pattern": "^(?!https:\\/\\/activate\\.careguidelines\\.com).*"}
+{"pattern": "(^|\\s)(\\w+)(?=\\s|$)"}
+{"pattern": "(?=^[.]{1}.*)"}
+{"pattern": "(?=(A[TU]G(?:.{3}){4,}(?:[TU]AG|[TU]AA|[TU]GA)))"}
+{"pattern": "%(?![0-9a-fA-F]{2})"}
+{"pattern": "^(?!Current).*Error:"}
+{"pattern": "<a (?:(?!</a>).)*mailicon4\\.gif.*?</a>"}
+{"pattern": "^(?=^(?:tel\\:)?(?:[+\\ ()]*[0-9]){3,20}\\ *$)(?:tel\\:)?\\ *\\+?[0-9\\ ]+(?:\\([0-9]{1,3}\\)[0-9\\ ]+)?$"}
+{"pattern": "(Policy Number:\\s*)([A-Z0-9]+)(?=\\s*Plan Eff\\. Date:)"}
+{"pattern": "msg-type=\"(?!(?:JOIN|INFO|TOPIC))[^\"]+\""}
+{"pattern": "(?:\\s)*<task action=\"4\" id=\"94(\\d\\d\\d)00(\\d\\d)\">(?:\\s)*<release>(?:\\s)*<item type=\"cost\" vitality=\"\\d\"(?:\\s)*\\/>((?:\\n|.)*?)<item type=\"param(?:(?:\\n|.)*?)(?=<\\/win)((?:\\n|.)*?)<\\/release>(?:\\s)*<\\/task>(?:\\s)*"}
+{"pattern": "(?:--(?:help|version)|-(?:h|v)|(?:--?\\w+:\\w+))(?!\\w)"}
+{"pattern": "<\\/?(?:\\b(?!(?:div|tag)\\b))([a-zA-Z0-9]+).*?>"}
+{"pattern": "a*?(?!-->)"}
+{"pattern": "^raw_data\\.(?!((event_record_string|event_record_binary|event_record_binary\\.event_record_binary)\\.prod\\.(18477|18478|5416|5454|5455)|storage\\.aw|codo)\\.)(?!.*(failure_permanent|failure_\\d+_\\w+)$).*"}
+{"pattern": "^([a-z-]+|[\\w]+)\\.(((?!\\.s1).+\\.)?(co1|az1|ut1|eng|au1)\\.(qprod|qops)\\.net)$"}
+{"pattern": "\\w+(?=[[:blank:]])"}
+{"pattern": "[_\\w-]+(?:\\.[_\\w-]+)*@(?:[\\w-]+\\.)+(?:[\\w-]{2,4})(?![\\w]+)"}
+{"pattern": "<field>((?:[^<]|<(?!/))*)</field>"}
+{"pattern": "(?=.*MONTIEL)(?=.*D.+?(\\s|,))(?=.*P.+?(\\s|,))"}
+{"pattern": "^(?!\\s*$).*$"}
+{"pattern": "^-?[1-9]*(?!0000)[0-9]{4}-(?:0[0-9]|1[0-2])-(?:0[1-9]|[1-2][0-9]|3[0-1])T(?:(?:[0-1][0-9]|2[0-3]):(?:[0-5][0-9]):(?:[0-5][0-9])(?:\\.[0-9]*[1-9]+)?|24:00:00)(?:(?:\\+|-)(?:(?:0[1-9]|1[0-3]):[0-5][0-9]|14:00)|Z)?"}
+{"pattern": "((ht|f)tp(s?))(:((\\/\\/)(?!\\/)))(((w){3}\\.)?)([a-zA-Z0-9\\-_]+(\\.(com|edu|gov|int|mil|net|org|biz|info|name|pro|museum|co\\.uk)))(\\/(?!\\/))(([a-zA-Z0-9\\-_\\/]*)?)([a-zA-Z0-9])+\\.((jpg|jpeg|gif|png)(?!(\\w|\\W)))"}
+{"pattern": "[^P_]\\w+(?=_)"}
+{"pattern": "(a(?=\\s[^a]*))"}
+{"pattern": "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$"}
+{"pattern": "(?!\\b(xx|yy)\\b)\\b[\\w]+\\b"}
+{"pattern": "/\\.(?![^.]*$)/"}
+{"pattern": "^((?!^City$)[a-zA-Z '])+$"}
+{"pattern": "^[\\s\\S]+?(?=[\\\\<!\\[_*`~$]|https?://| {2,}\\n|$)"}
+{"pattern": "^(?=.*(\\W.*){4,}).*$"}
+{"pattern": "^(?!666|000)(?!219-09-9999|078-05-1120)[0-8]\\d{2}-\\d[1-9]-(?!0{4})\\d{3}[1-9]$"}
+{"pattern": "\\A#!.*python(?!3).*$"}
+{"pattern": "(a(?=\\s[^a]))"}
+{"pattern": "bar(?=bar)"}
+{"pattern": "\\{(.*?)\\}(?!\\})"}
+{"pattern": "([<>]|&(?!#\\d+;|#x[0-9a-fA-F]+;|\\w+;))"}
+{"pattern": "(?=^.{1,10}$)^([A-Z]{1,4}\\s*[0-9]{1,6})$"}
+{"pattern": "(?=[^a-zA-Z0-9_.\\/\\-\\x7F-\\xFF\\n])"}
+{"pattern": "&(#[0-9][0-9]*)(?![0-9;])"}
+{"pattern": "http.+?(?:(?!\").)*"}
+{"pattern": "\\b(?=\\w)([kK]oroduje|[kK]Kwas|[kK]orozyjny|[kK]orozyjna)\\b"}
+{"pattern": "/\\x3Cobject(?![^\\x3E]+?src)[^\\x3E]+?data\\s*\\x3D\\s*\\x27\\x27/i"}
+{"pattern": "(?!000)(?!900)(?!976)(?!800)(?!855)(?!866)(?!877)(?!888)^([0-9]( |-)?)?(\\(?[0-9]{3}\\)?|[0-9]{3})( |-)?([0-9]{3}( |-)?[0-9]{4}|[a-zA-Z0-9]{7})$"}
+{"pattern": "^(?=[a-zA-Z])(?=.*[0-9])(?=.*[#\\$_])(?=.*[A-Z])(?=.*[a-z])(?!.*[^a-zA-Z0-9#\\$_])(?!.*\\s).{8,12}$"}
+{"pattern": "[:;)(?!]|(<!\\d)[,.]|[,.](?!\\d)"}
+{"pattern": "^(ssh-rsa) (?!toto)"}
+{"pattern": "^/((?!programs).+)/films/(.+)/?"}
+{"pattern": "(.+\\n.+\\n.+)\\s\\S+\\n[\\s\\S]+(?!$)"}
+{"pattern": "/^SYST(?!\\n)\\s[^\\n]{100}/smi"}
+{"pattern": "\\|(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)"}
+{"pattern": "^[-a-zA-Z0-9#$%'_]+(\\.[-a-zA-Z0-9#$%'_]+)*@(([-a-zA-Z0-9]+)\\.)+(?!\\d+$)[a-zA-Z0-9]{2,}$"}
+{"pattern": "Source/WebKit2/UIProcess/API/gtk/WebKit(?!.*Private\\.h).*\\.h$"}
+{"pattern": "^(?=.*?\\bone\\b)(?=.*?\\btwo\\b)(?=.*?\\bthree\\b)(?!\\t.*?).*$"}
+{"pattern": "/name\\s*=\\s*[\\x22\\x27]inputFilePath[\\x22\\x27]\\x3b((?!^--).)*?filename\\s*=\\s*[\\x22\\x27]\\S+?\\x2easpx?[\\x22\\x27][\\r\\n]{2,}/Psim"}
+{"pattern": "^((?!Bauxite|Iridium))+(\\w)+(\\s)(dust)+$"}
+{"pattern": "/^CWD(?!\\n)\\s[^\\n]{180}/smi"}
+{"pattern": "(?:(?:.*?\\|\\s?){3})(.+?)(?:(?=\\s?$)|(?=\\s?\\|))"}
+{"pattern": "(SAIL_Recipes\\.md)(\\#)(.*?)(?=\\))"}
+{"pattern": "^((?!hello).)*$"}
+{"pattern": "^((?=\\S*?[A-Z])(?=\\S*?[a-z])(?=\\S*?[0-9])(?=.*[!@#$&*]).{6,})\\S$"}
+{"pattern": "\\w+([-+.]\\w+)*@(?!(hotmail|gmail|yahoo|msn|excite|lycos|aol|live)\\.com$)\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*"}
+{"pattern": "(^[0-9]+)(?!.* )"}
+{"pattern": "/name\\s*=\\s*[\\x22\\x27]?ID(?:(?!^--).)*?[\\r\\n]{2,}(?:(?!^--).)*?\\x3b/Psim"}
+{"pattern": "SELECT\\s(.+)\\sFROM\\s(((?!\\sWHERE).)+)(\\sWHERE\\s(.+))?"}
+{"pattern": "(?=[^(]*\\)),"}
+{"pattern": "\\b[A-Za-z']+\\b(?=\\s) \\b[A-Za-z']+\\b(?=,)"}
+{"pattern": "\\\\x0([0-7])(?=[^0-7]|$)"}
+{"pattern": "(?!<span class='postcolor'>)[\\d\\D]+"}
+{"pattern": "##(?<name>.*?)(?<description>>.*?(?=(?:<a|##)))(?<items><a.*?(?=(?:##|\\[comment\\])))*"}
+{"pattern": "(?!\\/)\\W\\D.*"}
+{"pattern": "^(?:\\((?P<imp>[A-Z])\\)\\ )?(?P<dued>(?:2[0-1][0-9]{2}\\-(?:0[0-9]|1[0-2])\\-(?:[0-2][0-9]|3[0-1]))|\\?)\\ (?:\\+(?P<proname>[a-zA-Z0-9]+)(?:\\#(?P<pronum>[0-9]+))?\\ )?(?:\\$(?P<startd>2[0-1][0-9]{2}\\-(?:0[0-9]|1[0-2])\\-(?:[0-2][0-9]|3[0-1]))(?:\\^(?P<repeat>\\d*(?:D|W|M|Y)(?:\\,\\d*(?:D|W|M|Y)+)*))?\\ )?(?P<todo>.+?(?=(?:\\ (?:\\@|\\&))|$))(?P<contexts>(?:\\ \\@\\S+)*)(?P<tags>(?:\\ \\&\\S+)*)"}
+{"pattern": "(www\\.(?!\\.)|[a-z][a-z0-9+.-]*://)[^\\s<>\\'\\\"]+[^!,\\.\\s<>\\)\\'\\\"\\]]"}
+{"pattern": "/Identity:ECP\\x22\\x2C\\x22DisplayName\\x22:\\x22[^\\x22]*\\x22(?!\\s*,\\s*\\x22RawIdentity)/Psi"}
+{"pattern": "/^COPY(?!\\n)\\s[^\\n]{200}/smi"}
+{"pattern": "(art\\.?|artigos?) ([0-9.]{1,7})(?:[^\u00a7]{1,20})?(\u00a7\\s?\\d{1,3})?.{1,20}?(CPC|CPP|C[oO\u00d3\u00f3]digo de Processo Penal|C[oO\u00d3\u00f3]digo de Processo Civil|C[oO\u00d3\u00f3]digo Penal|CP(?!C)|CPC|Lei de Execu\u00e7\u00f5es Penais|Constitui\u00e7\u00e3o da Rep\u00fablica|[0-9]{1,3}.[0-9]{3}(\\/[0-9]{2,4})?)"}
+{"pattern": "(?!^0*$)(?!^0*\\.0*$)^\\d{1,5}(\\.\\d{1,2})?$"}
+{"pattern": "(\\:(\\w|\\+|\\-)+\\:)(?=|[\\!\\.\\?]|$)"}
+{"pattern": "^(0[1-9]|1\\d|2[0-8]|29(?=-\\d\\d-(?!1[01345789]00|2[1235679]00)\\d\\d(?:[02468][048]|[13579][26]))|30(?!-02)|31(?=-0[13578]|-1[02]))-(0[1-9]|1[0-2])-([12]\\d{3}) ([01]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)$"}
+{"pattern": "^\\/(?!pos\\/retail).*"}
+{"pattern": "(?:https?:)?(?:\\/\\/)?(?:[0-9A-Z-]+\\.)?(?:youtu\\.be\\/|youtube(?:-nocookie)?\\.com\\/\\S*?[^\\w\\s-])((?!videoseries)[\\w-]{11})(?=[^\\w-]|$)(?![?=&+%\\w.-]*(?:['\"][^<>]*>|<\\/a>))[?=&+%\\w.-]*"}
+{"pattern": "([A-Z0-9][a-z]+|[A-Z0-9]+(?![a-z])|[a-z]+)"}
+{"pattern": "(?:\\d[ \\-\\)\\(\\dx\\.]{0,2}(?!\\n)){6,12}"}
+{"pattern": ".*\\bin\\b(?!\\b.+ing\\b)"}
+{"pattern": ".*(?=tt\\d)"}
+{"pattern": "/^REST(?!\\n)\\s[^\\n]{100}/smi"}
+{"pattern": "(\\d)(?=(\\d{3})+$)"}
+{"pattern": "^(?=.{1,22}$)((?=[a-z0-9-]{1,63}\\.)(xn--+)?[a-z0-9]+(-[a-z0-9]+)*\\.)+[a-z]{2,63}"}
+{"pattern": "(?<Loop>(?<NewBlock>(?:(?:^[\\s]*\\n|^(?:(?!\\/\\*).)+\\n|^(?:(?!\\/\\*).)+))+)?(?<OldBlock>(?:\\/\\*.+\\*\\/|(?:\\/\\*.*\\n)(?:(?:^[\\s]*\\n|^(?:(?!\\*\\/).)+\\n|^(?:(?!\\*\\/).)+))+\\*\\/))?)+"}
+{"pattern": "(?!^[~!@#$%^&*().]+$)^([\\u4e00-\\u9fa5]*|[\\da-zA-Z~!@#$%^&*.\u00b7\\s]*){0,30}$"}
+{"pattern": "(?:(Dim|Public|Private) )(?:(WithEvents) )?(?:(?:(?!Declare)(?!Type)(?!Enum)(?!Const)(\\w*))(\\(\\))?)(?: As )?(?:(New) )?(\\w*)(, [\\w ,\\(\\)]*)?"}
+{"pattern": "^(?!dist\\/|bower_components\\/).+$"}
+{"pattern": "^[-+]?(?!0?\\.00)(?=.+(,|$))(?!0(?!\\.))\\d{1,3}((|\\.)\\d{3})*(,\\d+)?$|^[+-]?((\\d{1}(,\\d*)?)|(,\\d+))$"}
+{"pattern": "^ *(\\w+) *: *\"((?:[^\"]|\\\\\")+)\" *(?=\\n)"}
+{"pattern": "^((gir *0aa)|((((?![qvx])[a-z][a-hk-y]?[0-9][0-9]?)|(((?![qvx])[a-z][0-9][a-hjkstuw])|((?![qvx])[a-z][a-hk-y][0-9][abehmnprvwxy]))) *([0-9](?![cikmov])[a-z]{2}))|(((?![qvx])[a-z][a-hk-y]?[0-9][0-9]?)|((?![qvx])[a-z][0-9][a-hjkstuw])|((?![qvx])[a-z][a-hk-y][0-9][abehmnprvwxy])))$"}
+{"pattern": "(?i)^https?://(www\\.)?interphone(\\.\\w+)+(:[\\d]+)?/(\\w+)/\\w{2}-(?!it{1})"}
+{"pattern": "^(?=.*\\d)(?=.*[A-Z])(?=.*[a-z])\\S{8,16}$"}
+{"pattern": "^(?=.*(\\.((?![^\\.]$)[^\\.]*)$)|.*@(?:(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$))(?=^.{6,320}$)(?:[a-zA-Z0-9\u00e1\u00e0\u00e2\u00e4\u00e3\u00e5\u00e7\u00e9\u00e8\u00ea\u00eb\u00ed\u00ec\u00ee\u00ef\u00f1\u00f3\u00f2\u00f4\u00f6\u00f5\u00fa\u00f9\u00fb\u00fc\u00fd\u00ff\u00e6\u0153\u00c1\u00c0\u00c2\u00c4\u00c3\u00c5\u00c7\u00c9\u00c8\u00ca\u00cb\u00cd\u00cc\u00ce\u00cf\u00d1\u00d3\u00d2\u00d4\u00d6\u00d5\u00da\u00d9\u00db\u00dc\u00dd\u0178\u00c6\u0152!#$%&'*+\\/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9\u00e1\u00e0\u00e2\u00e4\u00e3\u00e5\u00e7\u00e9\u00e8\u00ea\u00eb\u00ed\u00ec\u00ee\u00ef\u00f1\u00f3\u00f2\u00f4\u00f6\u00f5\u00fa\u00f9\u00fb\u00fc\u00fd\u00ff\u00e6\u0153\u00c1\u00c0\u00c2\u00c4\u00c3\u00c5\u00c7\u00c9\u00c8\u00ca\u00cb\u00cd\u00cc\u00ce\u00cf\u00d1\u00d3\u00d2\u00d4\u00d6\u00d5\u00da\u00d9\u00db\u00dc\u00dd\u0178\u00c6\u0152!#$%&'*+\\/=?^_`{|}~-]+)*|\"(?:[\\xE1\\xE0\\xE2\\xE4\\xE3\\xE5\\xE7\\xE9\\xE8\\xEA\\xEB\\xED\\xEC\\xEE\\xEF\\xF1\\xF3\\xF2\\xF4\\xF6\\xF5\\xFA\\xF9\\xFB\\xFC\\xFD\\xFF\\xE6\\xC1\\xC0\\xC2\\xC4\\xC3\\xC5\\xC7\\xC9\\xC8\\xCA\\xCB\\xCD\\xCC\\xCE\\xCF\\xD1\\xD3\\xD2\\xD4\\xD6\\xD5\\xDA\\xD9\\xDB\\xDC\\xDD\\xC6\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f\\s]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")(?:(?=@(?:[0-9]{1,3}.){3}[0-9]{1,3})@(?:(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))$|(?!@(?:[0-9]{1,3}.){4,}$)@(?:(?:[a-zA-Z0-9\u00e1\u00e0\u00e2\u00e4\u00e3\u00e5\u00e7\u00e9\u00e8\u00ea\u00eb\u00ed\u00ec\u00ee\u00ef\u00f1\u00f3\u00f2\u00f4\u00f6\u00f5\u00fa\u00f9\u00fb\u00fc\u00fd\u00ff\u00e6\u0153\u00c1\u00c0\u00c2\u00c4\u00c3\u00c5\u00c7\u00c9\u00c8\u00ca\u00cb\u00cd\u00cc\u00ce\u00cf\u00d1\u00d3\u00d2\u00d4\u00d6\u00d5\u00da\u00d9\u00db\u00dc\u00dd\u0178\u00c6\u0152](?:[a-zA-Z0-9\u00e1\u00e0\u00e2\u00e4\u00e3\u00e5\u00e7\u00e9\u00e8\u00ea\u00eb\u00ed\u00ec\u00ee\u00ef\u00f1\u00f3\u00f2\u00f4\u00f6\u00f5\u00fa\u00f9\u00fb\u00fc\u00fd\u00ff\u00e6\u0153\u00c1\u00c0\u00c2\u00c4\u00c3\u00c5\u00c7\u00c9\u00c8\u00ca\u00cb\u00cd\u00cc\u00ce\u00cf\u00d1\u00d3\u00d2\u00d4\u00d6\u00d5\u00da\u00d9\u00db\u00dc\u00dd\u0178\u00c6\u0152-]*[a-zA-Z0-9\u00e1\u00e0\u00e2\u00e4\u00e3\u00e5\u00e7\u00e9\u00e8\u00ea\u00eb\u00ed\u00ec\u00ee\u00ef\u00f1\u00f3\u00f2\u00f4\u00f6\u00f5\u00fa\u00f9\u00fb\u00fc\u00fd\u00ff\u00e6\u0153\u00c1\u00c0\u00c2\u00c4\u00c3\u00c5\u00c7\u00c9\u00c8\u00ca\u00cb\u00cd\u00cc\u00ce\u00cf\u00d1\u00d3\u00d2\u00d4\u00d6\u00d5\u00da\u00d9\u00db\u00dc\u00dd\u0178\u00c6\u0152])?\\.)+[a-zA-Z0-9\u00e1\u00e0\u00e2\u00e4\u00e3\u00e5\u00e7\u00e9\u00e8\u00ea\u00eb\u00ed\u00ec\u00ee\u00ef\u00f1\u00f3\u00f2\u00f4\u00f6\u00f5\u00fa\u00f9\u00fb\u00fc\u00fd\u00ff\u00e6\u0153\u00c1\u00c0\u00c2\u00c4\u00c3\u00c5\u00c7\u00c9\u00c8\u00ca\u00cb\u00cd\u00cc\u00ce\u00cf\u00d1\u00d3\u00d2\u00d4\u00d6\u00d5\u00da\u00d9\u00db\u00dc\u00dd\u0178\u00c6\u0152](?:[a-zA-Z0-9\u00e1\u00e0\u00e2\u00e4\u00e3\u00e5\u00e7\u00e9\u00e8\u00ea\u00eb\u00ed\u00ec\u00ee\u00ef\u00f1\u00f3\u00f2\u00f4\u00f6\u00f5\u00fa\u00f9\u00fb\u00fc\u00fd\u00ff\u00e6\u0153\u00c1\u00c0\u00c2\u00c4\u00c3\u00c5\u00c7\u00c9\u00c8\u00ca\u00cb\u00cd\u00cc\u00ce\u00cf\u00d1\u00d3\u00d2\u00d4\u00d6\u00d5\u00da\u00d9\u00db\u00dc\u00dd\u0178\u00c6\u0152-]*[a-zA-Z0-9\u00e1\u00e0\u00e2\u00e4\u00e3\u00e5\u00e7\u00e9\u00e8\u00ea\u00eb\u00ed\u00ec\u00ee\u00ef\u00f1\u00f3\u00f2\u00f4\u00f6\u00f5\u00fa\u00f9\u00fb\u00fc\u00fd\u00ff\u00e6\u0153\u00c1\u00c0\u00c2\u00c4\u00c3\u00c5\u00c7\u00c9\u00c8\u00ca\u00cb\u00cd\u00cc\u00ce\u00cf\u00d1\u00d3\u00d2\u00d4\u00d6\u00d5\u00da\u00d9\u00db\u00dc\u00dd\u0178\u00c6\u0152])?)$)"}
+{"pattern": "^(?=^abc)(?=.*123)(?=.*xyz$)"}
+{"pattern": "(?!([\\u4e00-\\u9fa5]|\\w+))."}
+{"pattern": "^(?=^20)(?=(?:.{5}|.{7}))"}
+{"pattern": "<(a+)*(?!(?:href*=*[\"|']*sterium\\\\.com))[^>]*>(.*?)[^>]>"}
+{"pattern": "\\n    (?P<escape_hex>\\{\\#x(?P<escape_hex_val>[0-9a-fA-F]+)\\})\\n  | (?P<escape_dec>\\{\\#(?P<escape_dec_val>[0-9]+)\\})\\n  | (?P<escape_lbrace>\\{\\{)\\n  | (?P<escape_rbrace>\\}\\})\\n  | (?P<attr>\\{\\n        (?P<attr_name>[^ \\{\\}]+)\\s+\\n        (?P<attr_val>[^\\}]+)\\})\\n  | (?P<nl_hard1>\\n(?=[ \\t]))\\n  | (?P<nl_hard2>\\{\\}\\n)\\n  | (?P<nl_soft>\\n(?=\\S))\\n  | (?P<nl_para>\\n\\n+)\\n  | (?P<text>[^\\{\\}\\n]+)\\n"}
+{"pattern": "box(?!-shadow)"}
+{"pattern": "((\\w+)([.](?!$|[^\\w]))?)"}
+{"pattern": "(?s)(?:\\s)\\w*(?=\\-.*)"}
+{"pattern": "<tr[^>]*>[^<]*<td[^>]*>[^>]*>(?<No>[^<]*)<[^>]*>[^<]*<\\/td>[^<]*<td[^>]*>[^<]*(<strong>)?[^>]*>(<div[^>]*>)?([^<]*<img[^>]*>)*(?<jmeno>[^<]*)(<a[^>]*>)?[^<]([^<]*<img[^>]*>)?([^<]*<\\/a>)?(<strong>)?(<img[^>]*>)?[^<]*(<\\/span><\\/strong>)?(<font[^>]*>)?[^<]*(<a[^>]*>)?([^<]*<img[^>]*><\\/a>)?[^<]*(<\\/font[^>]*><\\/strong>[^<]*<\\/div>)?[^<]*[^<]*(<\\/span>)?[^<]*(<\\/strong>)?[^<]*<\\/td>[^<]*<td[^>]*>[^<]*<s[^>]*>(?<level>[^<]*)<\\/s[^>]*><\\/td>[^<]*<td[^>]*>[^<]*<div[^>]*>(<strong>[^<]*)?(<font[^>]*>)?([^<]*<a[^>]*>)?(?<dist_ID>[^<]*)(<\\/a>)?[^<]*(<\\/font>)?[^<]*(<\\/strong>)?[^<]*<[^i]*i[^\")]*\"[^\"]*\"[^(?=alt)]*alt[^\"]*\"(?<active>[^\"]*)[^<]*<[^<]*<\\/td>[^<]*<td[^>]*>[^<]*<span[^>]*>[^<]*(<a[^>]*>)?(?<email>[^<]*)(<\\/a>)?[^>]*><\\/td>[^<]*<td[^>]*>[^>]*>(?<phone>[^<]*)<[^>]*><\\/td>[^<]*<td[^>]*>[^>]*>(?<bus_phone>[^<]*)<[^<]*<\\/td>[^<]*<td[^>]*>[^<]*<[^<]*<[^<]*<\\/td>[^<]*<td[^>]*>[^>]*>(?<country>[^<]*)<[^<]*<\\/td>[^<]*<td[^>]*>[^>]*>(?<rank>[^<]*)<[^<]*<\\/td>[^<]*<td[^>]*>[^>]*>(?<sponzor_ID>[^<]*)[^>]*>[^<]*<\\/td>[^<]*<td[^>]*>[^>]*>(?<sponzor_name>[^<]*)[^>]*[^<]*<\\/td>[^<]*<td[^>]*>[^>]*>(?<obnova>[^<]*)[^<]*<[^<]*<\\/td>[^<]*<td[^>]*>[^>]*>(?<sleva>[^<]*)<[^<]*<\\/td>[^>]*>[^>]*>(?<PGV>[^<]*)[^>]*><\\/td>[^>]*>[^>]*>(?<OV>[^<]*)[^>]*><\\/td>"}
+{"pattern": "[^(?<!\\s*acteMedical)]\\w*Dao\\."}
+{"pattern": "([^\"\\n]*)\\n?\\n(?=[^\"|]*\")"}
+{"pattern": "^\\/?[+-]?P?([0-9]+[Yy])?([0-9]+M)?([0-9]+[Dd])?[Tt]?([0-9]+[Hh])?([0-9]+m|(?:[0-9]+m?(?![0-9]+[Ss])))?([0-9]+[Ss])?$"}
+{"pattern": "^(?=.{3,20}$)(?![_.-])(?!.*[_.-]{2})[a-zA-Z0-9_-]+([^._-])$"}
+{"pattern": "(?=^.{8,32}$)(?=.*\\d)(?=.*[!@#$%^&*]+)(?![.\\n])(?=.*[A-Z])(?=.*[a-z]).*$"}
+{"pattern": "^((?:(?!PATTERN).)*)$"}
+{"pattern": "^[A-Z](?!.*__.*)([A-Z_]*)[A-Z]$"}
+{"pattern": "(([b-df-hj-np-tv-xz][aeiou])|q(?=u)){5}|((([B-DF-HJ-NP-TV-XZ][AEIOU])|Q(?=U)){5})"}
+{"pattern": "\\d+?[^\\.]+(?!\\.)"}
+{"pattern": "(^(?!1$).*)"}
+{"pattern": "[\\s,\\(](?:_([0-9]+))(?=$|[\\s,\\)])"}
+{"pattern": "/^DELE(?!\\n)\\s[^\\n]{100}/mi"}
+{"pattern": "(?:\\\"|\\')(?<key>[^\"]*)(?:\\\"|\\')(?=:)(?:\\:\\s*)(?:\\\"|\\')?(?<value>true|false|[0-9a-zA-Z\\+\\-\\,\\.\\$]*)"}
+{"pattern": "^(?=.*[\\d])(?=.*[A-Z])(?=.*[a-z])[\\w\\d!@#$%_]{6,40}$"}
+{"pattern": ".*systemConfidenceLevel:? ?=? ?'(.*)'(?=;|,)"}
+{"pattern": "[^{\\}]+(?=})"}
+{"pattern": "(?=\\\"video\\_title\\\"\\:\\\"[a-zA-Z0-9 ]+\\\"\\,\\\"defaultQuality\\\"\\:)(.+?)(?=\\\"\\}\\]\\,\\\"video\\_unavailable\\_country\\\"\\:)"}
+{"pattern": "(?=^(?:\\+|00)?(?:[\\-\\/\\(\\)]?\\d){11}$)(?:00|\\+)[^\\d]*([\\d])[^\\d]*([\\d])[^\\d]*([\\d])[^\\d]*([\\d])[^\\d]*([\\d])[^\\d]*([\\d])[^\\d]*([\\d])[^\\d]*([\\d])[^\\d]*([\\d])[^\\d]*([\\d])[^\\d]*([\\d])$"}
+{"pattern": "(?m)^[ ]*(?=\\n)"}
+{"pattern": "^(?=.*[A-Z])(?=.*[!@#$&*])(?=.*[0-9])(?=.*[a-z]).{8,16}$"}
+{"pattern": "(https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9]\\.[^\\s]{2,})"}
+{"pattern": "/^Content-Type\\x3a\\s*(?![^\\r\\n]{0,50}boundary=\\x22Apple-Mail=)[^\\x0d\\x0a\\x3b]{77}/smi"}
+{"pattern": "^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$&\u00f9*^=]).{8,}$"}
+{"pattern": "Regex2017(?=sucedido)"}
+{"pattern": "(\\bWF(?![A-Z_]+(NR|TS|CD|TX))(?!.*MS[0-9]{4}SU)[A-Z]{3,4}_[A-Z_]*\\b)(?!\\')"}
+{"pattern": "(?<username>#?[+_a-zA-Z0-9+-]+(\\.[+_a-zA-Z0-9+-]+)*)@(?<domain>[a-zA-Z0-9]+(-(?!-)|[a-zA-Z0-9\\.])*?[a-zA-Z0-9]+\\.([0-9]{1,3}|[a-zA-Z]{2,3}|(aero|arpa|asia|coop|info|jobs|mobi|museum|name|travel)))"}
+{"pattern": "(--.+?(?=\\s--|$))"}
+{"pattern": "((?:(?=^\\S{8,}$)(?:(?=\\S*\\d)(?=\\S*[A-Z])(?=\\S*[a-z])|(?=\\S*\\d)(?=\\S*[^A-Za-z0-9])(?=\\S*[a-z])|(?=\\S*[^A-Za-z0-9])(?=\\S*[A-Z])(?=\\S*[a-z])|(?=\\S*\\d)(?=\\S*[A-Z])(?=\\S*[^A-Za-z0-9]))^\\S*){8,})"}
+{"pattern": "[ \\t]*?(?=\\r?\\n)"}
+{"pattern": "/^CMD(?!\\n)\\s[^\\n]{200}/smi"}
+{"pattern": "\\\\(?!\\s$)"}
+{"pattern": "^\\$(?!set|delset|quote| )($|.*)"}
+{"pattern": "(?!\\.)[a-z]{1,4}$"}
+{"pattern": "#### NEGATIONS #####Busy \u2202\\b(#wrapper(?:(?:from|is|i|am|at|on|it|do|to|for|a|make|the                    |that|day|time|month|exactly                    |call|meeting|lunch|breakfast|brunch)[ ])*(?:#negative words(?:busy|can'?t|can[ ]?n?ot|unavailable|except)#negated positive words|(?:not|\u2206)[ ] (?:be|\u2206)?[ ]? (?:available|free|around|do|able))#wrapper[ ]?(?:(?:from|is|i|am|at|on|it|do|to|for|a|make|the                    |that|day|time|month|exactly                    |call|meeting|lunch|breakfast|brunch)[ ])*#wrapper gets one free word(?:[ ]? (?:\\S+) [ ]?)?#Repeat wrapper so free word can be anywhere in continuation[ ]?(?:(?:from|is|i|am|at|on|it|do|to|for|a|make|the                          |that|day|time|month|exactly                          |call|meeting|lunch|breakfast|brunch)[ ])*[ ]?(\u2202|then|at[ ]that[ ]time)|#\u2202 Busy#reverse the above after everything else\u2206#am doing|at X at|on \u2202| ( ( (\\b(?:am|are|will[ ]be)\\b[ ])(at|on|doing|\\S+ing|OOO|out[ ]of[ ]office)[ ]#\"Have a\" is a special case. Can't have \"a\" in the second group.#      |  (?:have|has)[ ](?:an?)[ ]#\"Have a\" also needs a negative lookahead for various false positives#         (?! .* (?:free|open|clean?r?|fresh|blank|vacant|bare|naked) )#8 Free words, no \\s\\r\\n or \".!?\") (?:[^.\u2022 !?\\r\\n]+[ ]){0,8}#may need to come back to the below, ?'d out for now(?:at|on)?)(\u2202|then|at[ ]that[ ]time)#REVERSE EXCEPT: \"I am busy Tomorrow Except for 3-5pm\"#\"I have a 3pm\")#busy \u2202 (and also \u2202) - NO ALTERNATION[ ]? (?:(?:(?:and|maybe|also|aswell|as| [\\.,?!:;] ) [ ])* (\u2202))?#SAVIOUR STRINGS: Noone says \"we can do X\" after valid dates.They might: \"We can also do X\"|#\"a\" can't be the first word(?!a)#match continous strings made up of 2 groups of words((?:(?:we|could|how|i|a|is|it|am|be|do|can|you|would)[ ])+ )((?:(?:it|on|at|to|do|from            |have|can|able|make|about|free|exactly|say|call|take|possible|meet)[ ])+ )(\u2202)"}
+{"pattern": "^(?!_)([^\\\"#%$&*:`^+\\[\\]<>?\\/{|}~]){1,123}\\.(docx|pptx|xlsx|pdf)$"}
+{"pattern": "\\b((?![ab]*aab)[ab]*)\\b"}
+{"pattern": "#([a-fA-F0-9]{3})([a-fA-F0-9]{3})?(?=\\W?)"}
+{"pattern": "^((31(?!\\ (Feb(ruary)?|Apr(il)?|June?|(Sep(?=\\b|t)t?|Nov)(ember)?)))|((30|29)(?!\\ Feb(ruary)?))|(29(?=\\ Feb(ruary)?\\ (((1[6-9]|[2-9]\\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00)))))|(0?[1-9])|1\\d|2[0-8])\\ (Jan(uary)?|Feb(ruary)?|Ma(r(ch)?|y)|Apr(il)?|Ju((ly?)|(ne?))|Aug(ust)?|Oct(ober)?|(Sep(?=\\b|t)t?|Nov|Dec)(ember)?)\\ ((1[6-9]|[2-9]\\d)\\d{2})$"}
+{"pattern": "(\\d)(?=(\\d{3})+)"}
+{"pattern": "\\s(?:from|join)\\s*(\\[?[\\S]+)\\]?(?:\\s?)(?:(?:as)?\\s?)(?!(join|where|from|left|right|outer|inner|on))(\\w*)"}
+{"pattern": "^(\\$(?=[1-9])((\\d*\\.\\d{1,2})|\\d+\\.?)|((?=[1-9])(\\d+\\.?)|((?=([1-9]+|\\d*\\.0*[1-9]+))\\d*\\.\\d{1,4}))\\%)$"}
+{"pattern": "(?P<senhaCampo>`?senha`?(\\ *|\\s\\s*)=(\\ *|\\s\\s*))(?P<aspas>('|\\\"))(?P<senhaValue>((?!\"\\ (AND|OR|IN)).)+)(\"|')"}
+{"pattern": "\"\\'(?=\\w)"}
+{"pattern": "(?=.*\\d)^(Rp|Rp )?(([1-9]\\d{0,2}((\\.\\d{3})*|\\d+))|(0+[1-9]+(\\d+|(\\.\\d{3})*)))(,\\d{1,2})?$"}
+{"pattern": "\\$\\{(?!p\\.)([^}]*?\\.(?:description|input|label))\\}"}
+{"pattern": "([ \\t(]|^)([-a-zA-Z0-9_+]*[\\x7f-\\xff][-a-zA-Z0-9_+\\x7f-\\xff]*)(?=[ \\t)]|\\n)"}
+{"pattern": "^(?:Ala(?:(?:bam|sk)a)|American Samoa|Arizona|Arkansas|(?:^(?!Baja )California)|Colorado|Connecticut|Delaware|District of Columbia|Florida|Georgia|Guam|Hawaii|Idaho|Illinois|Indiana|Iowa|Kansas|Kentucky|Louisiana|Maine|Maryland|Massachusetts|Michigan|Minnesota|Miss(?:(?:issipp|our)i)|Montana|Nebraska|Nevada|New (?:Hampshire|Jersey|Mexico|York)|North (?:(?:Carolin|Dakot)a)|Ohio|Oklahoma|Oregon|Pennsylvania|Puerto Rico|Rhode Island|South (?:(?:Carolin|Dakot)a)|Tennessee|Texas|Utah|Vermont|Virgin(?:ia| Island(s?))|Washington|West Virginia|Wisconsin|Wyoming|A[KLRSZ]|C[AOT]|D[CE]|FL|G[AU]|HI|I[ADLN]|K[SY]|LA|M[ADEINOST]|N[CDEHJMVY]|O[HKR]|P[AR]|RI|S[CD]|T[NX]|UT|V[AIT]|W[AIVY])$"}
+{"pattern": "^(?i:IR)(?=.{24}$)[0-9]*$"}
+{"pattern": "&amp;(?![a-zA-Z]{2,6};|#[0-9]{3};)"}
+{"pattern": "e(?!.*e)"}
+{"pattern": "\\/\\*((?!\\*\\/).)*\\*\\/"}
+{"pattern": "^(?=.{0,50}$)^(https?:\\/\\/)?[0-9A-Za-z-\\\\.@:%_\\+~#=]+\\.[a-zA-Z]{2,4}$"}
+{"pattern": "((?!(This|It|He|She|[MTWFS][a-z]+day|[JF][a-z]+ary|March|April|May|June|July|August|[SOND][a-z]+ber))(?:[A-Z]+\\.\\s?)*(?:(?:[a-zA-Z]+-?)?[A-Z][a-zA-Z]+)(?:(\\b\\s?((?:[a-zA-Z]+-?)?[A-Z][a-zA-Z]+|[A-Z]+\\.|on|of|the|von|der|van|de|bin|and))*(?:\\s*(?:[a-zA-Z]+-?)?[A-Z][a-zA-Z]+))?)"}
+{"pattern": "^(?=.*[A-Z])(?=.*\\d)(?=.*[$@$!%*?&_#.^()\\s'-~])[A-Za-z\\d$@$!%*?&_#.^()\\s'-~]{6,20}"}
+{"pattern": "/^LIST(?!\\n)\\s[^\\n]{120}/smi"}
+{"pattern": "\\S+(?=\\DASM)"}
+{"pattern": "^(?=.*\\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,24}$"}
+{"pattern": "\\b(?!000)(?!666)(?!9)[0-9]{3}[ -]?(?!00)[0-9]{2}[ -]?(?!0000)[0-9]{4}\\b"}
+{"pattern": "educacao\\/busca-?([\\w%-]+)?\\/?(?!em-)([\\w%-]+)?\\/?(em-)?([\\w%-]+)?\\/?"}
+{"pattern": "(^|[\\s:#])0(?!0{7})\\d{7}([\\s:a-zA-Z]|$)"}
+{"pattern": "/^\\s+\\/(?!Btn|Tx|Ch|Sig)/R"}
+{"pattern": "/^SIP\\/2\\.0\\s+(?!\\d{3})/smi"}
+{"pattern": "^[a-z0-9]+(?!.*(?:\\+{2,}|\\-{2,}|\\.{2,}))(?:[\\.+\\-]{0,1}[a-z0-9])*@gmail\\.com$"}
+{"pattern": "(ht|f)tps?:\\/\\/[^\\\"<]*?(?=\\s|$|<\\/[^a]>)"}
+{"pattern": "\\xff(?=[\\xe0-\\xff])"}
+{"pattern": "(?P<name>post|get|url)\\:(?P<data>(?:.(?!(et\\:)|(ost\\:)|(rl\\:)))+)"}
+{"pattern": "(^(?!00)\\d{2}) ([- ]?) ((?!0000000)\\d{7})"}
+{"pattern": "(https:\\/\\/provider\\.shsp\\.swisscom\\.com((?!:(443|80)(($)|(\\/))))(?:(?:(?::)(\\d*)))?(?:(?:(\\/latest)(?=\\/))|(?:(\\/latest)($)))?)"}
+{"pattern": "(?:\\/\\*[\\W\\w]*?\\*\\/(?:\\n|.))|(?:\\/\\/\\n)|(?:[^^]\\/\\/.*(?=\\n))"}
+{"pattern": "(?=.ht).+"}
+{"pattern": "(?![aeiou])[a-z]"}
+{"pattern": "^(?=.*\\W)(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$"}
+{"pattern": "(?=^.$)(?=.*\\d)(?=.*[%&]+)(?![.\\n])(?=.*[A-Z])(?=.*[a-z]).*$"}
+{"pattern": "^(?<date>\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2})\\|\\|(?<key>[^\\|]+)\\|\\|(?<level>[^\\|]+)\\|\\|(?<info>[^\\|\\n]+)(?:\\|\\|(?<optional>[\\S\\s]*?)(?=\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\|\\|[^\\|]+\\|\\|[^\\|]+))?"}
+{"pattern": "(/(?!search|offer|dealerinfo|dealer|dealer-area|others|home|info|htm|user|payment|magazine)[^/]*/index.htm*)|(/search/index.htm\\?(.*)(query|dosearch)=.*)"}
+{"pattern": "/<window\\s+version\\s*=\\s*(?!(1\\.[02456]))/smi"}
+{"pattern": "(?=^.{8,}$)(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\\s)[0-9a-zA-Z!@#$%^&*()]*$"}
+{"pattern": "/[?&]arg=(?![^&]*?-)[^&]{190}/iP"}
+{"pattern": ",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)"}
+{"pattern": "(^\\x20*)|(\\x20*$)|(\\x20(?=\\x20))"}
+{"pattern": "(?!^\\-)\\D"}
+{"pattern": "^(?=.*[a-zA-Z])(?=.*[0-9!@#$%^&*\\?\\+])(?!.*[()_\\-\\`\\\\/\\\"\\'|\\[\\]}{:;'/>.<,])(?!.*\\s)(?!.*\\s).{8,20}$"}
+{"pattern": "(\"\"\"[^\"\\\\]*(?:(?:\\\\.|\"(?!\"\"))[^\"\\\\]*)*\"\"\")|(\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*\")"}
+{"pattern": "^(?!\\s*angular)(\\s*)(\\S+)\\.forEach\\("}
+{"pattern": "(\\d+:\\d{4}) ((\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2})\\.(\\d{3})) ([A-Za-z\\n]+) .*?(?=\\n\\d+:|$)"}
+{"pattern": "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\\s).{4,8}$"}
+{"pattern": "(?=.*p)(?=.*o.*o)(?=.*u.*u)(?=.*l)(?=.*t.*t)(?=.*r)(?=.*y)(?=.*w)(?=.*i)(?=.*s.*s)(?=.*a)(?=.*n)(\\b.{18}\\b)"}
+{"pattern": "\\b(?<password>(?=.*?[A-Z])(?=.*?[a-z])(?=.*?\\d)(?=.*?[-#?!@$%^&*]).[^ ]{12,})"}
+{"pattern": "((?:/|-|--)[-_a-zA-Z0-9]+)(\\s*.*?)(?=,\\s+(?:/|-|--)|$)"}
+{"pattern": "/^(?!RFB).[^\\x01]+/"}
+{"pattern": "https:\\/\\/((?!js\\.php\\/).)*$"}
+{"pattern": "^(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{7,}$"}
+{"pattern": "(^(?!0{5})(\\d{5})(?!-?0{4})(-?\\d{4})?$)"}
+{"pattern": "^(?!\\\\.)(?!com[0-9]$)(?!con$)(?!lpt[0-9]$)(?!nul$)(?!prn$)[^\\\\|\\\\*\\?\\\\:<>\\/$\"]*[^\\\\.\\\\|\\\\*\\\\?\\\\\\:<>\\/$\"]+$"}
+{"pattern": "(?:^(?:(?:\\+?1[\\s])|(?:\\+?1(?=(?:\\()|(?:\\d{10})))|(?:\\+?1[\\-](?=\\d)))?(?:\\([2-9]\\d{2}\\)\\ ?|[2-9]\\d{2}(?:\\-?|\\ ?))[2-9]\\d{2}[- ]?\\d{4}$)|(?:^[2-9]\\d{2}[- ]?\\d{4}$)"}
+{"pattern": "^(?!000)(?!666)(?!9)\\d{3}[- ]?(?!00)\\d{2}[- ]?(?!0000)\\d{4}$"}
+{"pattern": "^(?:[^@<>;:,.()\\s\\[\\]\\\\]+(?:\\.(?!@))?)+@(?:[\\w\\-]+(?:\\.(?!\\.))?)+\\.[A-Za-z]{2,6}$"}
+{"pattern": "^(?=.*[a-zA-Z].*[a-zA-Z])(?=.*\\d.*\\d)[a-zA-Z0-9]{6,20}$"}
+{"pattern": "/^0{8}(?=[0-9A-F]+$)((1[89]|2[0-9]|3[01]).{17}|(3[2-9]|4[0-7]).{33}|(4[89]|5[0-9]|6[0-3]).{49}|(6[4-9]7[0-9]).{65}|8[0-6].{81})0/i"}
+{"pattern": "/name\\s*=\\s*[\\x22\\x27]?path((?!^--).)*?[\\r\\n]{2,}((?!^--).)*?([\\x60\\x3b\\x7c\\x26]|[\\x3c\\x3e\\x24]\\x28)/Psim"}
+{"pattern": "(simple)(?![^<>]*>)"}
+{"pattern": "^\\s*(https?|ftp|mailto|tel|file):.*(?!\\.(js|html))$"}
+{"pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d.*)(?=.*\\W.*)[a-zA-Z0-9\\S]{8,15}$"}
+{"pattern": "\\b(?=\\w{4,}\\D)(beautif\u00c3\u00bcl tree|[\u00c3\u00a4\u00c3\u00b6\u00c3\u00bc\u00c3\u201e\u00c3\u2013\u00c3\u0153\u00c3\u0178\\w]+.*?)\\b"}
+{"pattern": "(#[A-Za-z]+(\\s+)(?=[Za-z]+))"}
+{"pattern": "(?!\\\\)(\\\\\\\\)*\""}
+{"pattern": "(.*?),.*?((?:(?:[0-2]?\\d{1})|(?:[3][01]{1}))[-:\\/.](?:[0]?[1-9]|[1][012])[-:\\/.](?:(?:[1]{1}\\d{1}\\d{1}\\d{1})|(?:[2]{1}\\d{3})))(?![\\d]).*?((?:(?:[0-1][0-9])|(?:[2][0-3])|(?:[0-9])):(?:[0-5][0-9])(?::[0-5][0-9])?(?:\\\\s?(?:am|AM|pm|PM))?)"}
+{"pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*+=?\\/\\\\_]).{8,}$"}
+{"pattern": "(?:^|\\/)(?=\\w+)(\\w+)?(?=\\/|$)"}
+{"pattern": "^(?=.*\\d)(?=.*[a-zA-Z])(?!.*\\s).{6,12}$"}
+{"pattern": "^(?:rm -r?f?|(?:cp|mv))\\b.*?\\s/((?:etc|boot|dev|lib(?:64)?|misc|mnt|net|opt|root|sbin|srv|sys|usr|var|bin)(\\s|$|/)|home(\\s|$|[/]+(?![^/]+[/+])))"}
+{"pattern": "<%[\\=\\-\\#]?(?!.*%>)"}
+{"pattern": "^(?!$)M{0,2}(?:M(?=CM(?:XC)?(?:IX)?$))?(?:C(?=M[^CD]*(?:XC)?[^CD]*$))?M?(?:C(?=D[^C]*(?:XC)?[^C]*$))?D?C{0,2}(?:C(?=XC(?:IX)?$))?(?:X(?=C[^X]*(?:IX)?[^X]*$)(?!.*L))?C?(?:X(?=L[^X]*(?:IX)?[^X]*$))?L?X{0,2}(?:X(?=IX$))?(?:I(?=[XV]$))?X?V?I{0,3}$"}
+{"pattern": "<(?![a-z/?\\$!])"}
+{"pattern": "/name\\s*=\\s*[\\x22\\x27]?url((?!^--).)*?[\\r\\n]{2,}((?!^--).)*?([\\x60\\x3b\\x7c\\x26]|[\\x3c\\x3e\\x24]\\x28)/Psim"}
+{"pattern": "^(?P<log_time>[\\dT\\-\\:]+)\\s+(?P<log_host>[\\w\\-]+)(?:\\.[\\w\\-\\.]*\\s+|\\s+)(?P<log_type>\\w+)\\s+(?:(?=\\()\\((?P<log_module>[^\\)]+)\\)\\s+|)(?:(?=\\[)\\[(?P<log_tenant>[^ ]+)\\]\\s+|)(?P<log_message>.+)"}
+{"pattern": "^.*(?=.{6,})(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\\W]).*$"}
+{"pattern": "^(?!.*(vendor|node_modules)).*\\.html?"}
+{"pattern": "src=\"(?=([^\\\"]*))"}
+{"pattern": "^((?:https?://(?:www\\.)?|www\\.)(?:(?!-)[A-Za-z0-9-]+\\.[a-z]+)(?:\\/[A-Za-z0-9-_#]+\\/?)*(?:[?&][A-Za-z0-9-\\=\\+_]+)*(?:\\.[a-z]+)*)$|^((?:\\d{1,3}\\.){3}\\d{1,3}(?:\\:\\d+)?)$"}
+{"pattern": "/name\\s*=\\s*[\\x22\\x27]?reportId((?!^--).)*?\\x2e\\x2e[\\x2f\\x5c]/Psim"}
+{"pattern": "^(([^@]|[a-zA-Z\\d.+ -]*)(?=@)@([a-zA-Z\\d-]*)\\.[a-zA-Z]+)$"}
+{"pattern": "foo - (?!AggregateTopic)(.*) - coda"}
+{"pattern": "&lt;!--((?!--&gt;).)*--&gt;"}
+{"pattern": "^(((?!\\(800\\))(?!\\(888\\))(?!\\(877\\))(?!\\(866\\))(?!\\(900\\))\\(\\d{3}\\) ?)|(?!800)(?!888)(?!877)(?!866)(?!900)(\\d{3}-))?\\d{3}-\\d{4}"}
+{"pattern": "^[A-z]{2}\\d{9}(?![Gg][Bb])[A-z]{2}$"}
+{"pattern": "(?m)^(?!$)"}
+{"pattern": "^(?=.*[a-z])(?=.*[0-9])(?=.*[A-Z])(?=.*[@#]).{4,10}$"}
+{"pattern": "(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])^[\\w!@$#.+-]{8,64}$"}
+{"pattern": "^(http|https?:\\/\\/(?:www\\.|(?!www))[^\\s\\.]+\\.[^\\s]{2,3}|www\\.[^\\s]+\\.[^\\s]{2,3})$"}
+{"pattern": "^(([+-]?)(?=\\d|\\.\\d)\\d*(\\.\\d*)?([Ee]([+-]?([12]?\\d\\d?|30[0-8])))?)?$"}
+{"pattern": "(?:http(?:s)?:\\/\\/)?(?:www.)?(formable\\.se(?!\\/almega)\\/\\S*)"}
+{"pattern": "(?<name>.+?)(?=-\\d)-(?<version>.+)"}
+{"pattern": "^(?=.{8})(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=[\\w\\d[:punct:]]+$)"}
+{"pattern": "(\\.\\.\\/)(?=fonts\\/bootstrap)"}
+{"pattern": "@[[:word:]](?:(?:[[:word:]]|(?:\\.(?!\\.))){0,28}(?:[[:word:]]))?"}
+{"pattern": "/.{4}\\x00\\x00\\x00(\\xF0|\\xEF|\\xE8|\\xF5|\\xED).{36}(?!_[^_]{1,64}_[^_]{1,64}_)/smiR"}
+{"pattern": "[&|;]?Adresa_Drzava(\\=[^&;]*)?(?=&|;|$)|^$Adresa_Drzava(\\=[^&;]*)?(&|;|$)"}
+{"pattern": "(?!.*B.*).*A.*"}
+{"pattern": "(^|\\n)\\d+-\\d+-\\d+[ \\t]+((\\w|[.-])+[ \\t]+)+<[^\\n>]+>(?=$|\\n)"}
+{"pattern": "/^STOR(?!\\n)\\s[^\\n]{200}/smi"}
+{"pattern": "(<\\?=)(((?!(htmlspecialchars|htmlentities|json_encode)).)*[\\$]{1,}(.*))(\\?>)"}
+{"pattern": "^(?<ParcelForceUK>(?:[A-z]{2}\\d{7})|(?:[A-z]{4}\\d{10}))$|^(?<ParcelForceExport>(?:[A-z]{2}\\d{9}[Gg][Bb])|(?:\\d{12}))$|^(?<ParcelForceImport>[A-z]{2}\\d{9}(?![Gg][Bb])[A-z]{2})$"}
+{"pattern": "/{1,2}.*?(?=/{1,2}|$)"}
+{"pattern": "/\"(?!\")(\"\"|[^\"])*(\"|$)|((\"\")+|[^\\s\"])+/g"}
+{"pattern": "(?=>([$0-9,\\.]*))"}
+{"pattern": "(()[0-9]{4})-([0-9]{1,2})(?=,|)"}
+{"pattern": "(?:^|\\t)([^\\t\\n]+(?=.*(^[ ]{3,})\"))"}
+{"pattern": "^(?=.*[a-z].*[a-z])(?=.*[A-Z].*[A-Z])(?=.*\\d.*\\d)(?=.*\\W.*\\W)[a-zA-Z0-9\\S]{9,}$"}
+{"pattern": "^(0[1-9]|1\\d|2[0-8]|29(?=\\/02\\/(?!1[01345789]00|2[1235679]00)\\d\\d(?:[02468][048]|[13579][26]))|29(?!\\/02)|30(?!\\/02)|31(?=\\/0[13578]|\\/1[02]))\\/(0[1-9]|1[0-2])\\/([12]\\d{3})(?: ([01]\\d|2[0-3]):([0-5]\\d)(?::([0-5]\\d))?)?$"}
+{"pattern": "((A|CA|H|JA|MA|MH|PA|PD|PH|WCA|WCD|WCH|WD|WH)[0-8][0-9]{2}(?!00)[0-9]{2}(?!0000)[0-9]{4})|([0-8][0-9]{2}(?!00)[0-9]{2}(?!0000)[0-9]{4}(A|B|Bl|B2|B3|B4|B5|B6|B7|B8|B9|BA|BD|BG|BH|BJ|BK|BL|BN|BP|BQ|BR|BT|BW|BY|Cl|C2|C3|C4|C5|C6|C7|C8|C9|CA|CB|CC|CD|CE|CF|CG|CH|CI|CJ|CK|CL|CM|CN|CO|CP|CQ|CR|CS|CT|CU|CV|CW|CX|CY|CZ|D|Dl|D2|D3|D4|D5|D6|D7|D8|D9|DA|DC|DD|DG|DH|DJ|DK|DL|DM|DN|DP|DQ|DR|DS|DT|DV|DW|DX|DY|DZ|E|El|E2|E3|E4|E5|E6|E7|E8|E9|EA|EB|EC|ED|EF|EG|EH|EJ|EK|EM|Fl|F2|F3|F4|F5|F6|F7|F8|Jl|J2|J3|J4|Kl|K2|K3|K4|K5|K6|K7|K8|K9|KA|KB|KC|KD|KE|KF|KG|KH|KJ|KL|KM|T|TA|TB|TC|TD|TE|TF|TG|TH|TJ|TK|TL|TM|TN|TP|TQ|TR|TS|TT|TU|TV|TW|TX|TY|TZ|T2|W|Wl|W2|W3|W4|W5|W6|W7|W8|W9|WB|WC|WF|WG|WJ|WR|WT))"}
+{"pattern": "/^X-MICROSOFT-CDO-MODPROPS\\x3A[^\\n]*(?P<prop>\\w+),[^\\n]*(?=prop)/Bmi"}
+{"pattern": "# Keys are pretty much \"any text before the '=' symbol\"(?P<key>[^=]+)# Match the '=' symbol=(?P<value># Lazy match.*?# Look-ahead (don't move the \"regex cursor\", just \"peek forward\")(?=# Match a '_' that has no other '_' between it and the '=' character, or...    _[^_=\\n]+=  |# ... or the end of the line$))# Actually \"consume\" the '_' character if it exists (or just match the end-of-line)(?:_|$)"}
+{"pattern": "^(?!(.+filename.ext))"}
+{"pattern": "(#(?!thankyouburger)[\\w]+)"}
+{"pattern": "(?!^[0-9]*$)(?!^[a-zA-Z]*$)^([a-zA-Z0-9]{6,8})$"}
+{"pattern": "(?m)(?=.*\\bstring\\b)(\\S+)$"}
+{"pattern": "^(?![-_.0-9])(?!.*[-_.][-_.])(?!.*[-_.]$)[A-Za-z0-9-_.]+$"}
+{"pattern": "(?:<iframe\\s((?!src)[^=]*=\"[^\"]*\"\\s){0,3}src=\"(?:https|http):\\/\\/(?!www.youtube.com\\/|youtube.com\\/|player.vimeo.com\\/)[^\"]*\"[^>]*>.*?<\\/iframe>)"}
+{"pattern": "(^\\w+(?=\\.))"}
+{"pattern": "^[A-Za-z0-9\\u0430-\\u044F\\u0410-\\u042F\\._-]+@([A-Za-z0-9\\u0430-\\u044F\\u0410-\\u042F]{1,2}|[A-Za-z0-9\\u0430-\\u044F\\u0410-\\u042F]((?!(\\.\\.))[A-Za-z0-9\\u0430-\\u044F\\u0410-\\u042F.-])+[A-Za-z0-9\\u0430-\\u044F\\u0410-\\u042F])\\.[A-Za-z\\u0430-\\u044F\\u0410-\\u042F]{2,}$"}
+{"pattern": "\\B(?=(\\d{3})+(?!\\d))"}
+{"pattern": "(.)(?:(?:0(?=1|\\b)|1(?=2|\\b)|2(?=3|\\b)|3(?=4|\\b)|4(?=5|\\b)|5(?=6|\\b)|6(?=7|\\b)|7(?=8|\\b)|8(?=9|\\b)|9(?=0|\\b)){3,})"}
+{"pattern": "<(?!\\/)"}
+{"pattern": "(\u201c[^\u201c\\n<\u201d]*?\u201d)|(\u2018[^\u2018\\n<\u2019]*?\u2019)|(?:^|[^=\"])(\"[^=\"\\n<\"]*?\")|('(?!(s|t|ll|d|m|ve|re)\\s)[^\\n<]*?')(?!(s|t|ll|d|m|ve|re))"}
+{"pattern": "^(?=.*[0-9])(?=.*[a-zA-Z])[a-zA-Z0-9\\s\\+-=;:,.'\"!@#$%^*|&?]{8,}$"}
+{"pattern": "^(?! .*$)[a-zA-Z0-9 ]+$"}
+{"pattern": "(.*)\\.S(.{2})E(.*).720p.*(?=\\.)"}
+{"pattern": "(?<t_pre_l>.+?(<a.+?))?(?<ceo_link><a .*?qrduUUdxBSY.*?>(?<txt_linka>\\s?(\\d{1,2}:)?(\\d{1,2}:)(\\d{2})\\s?)<\\/a>)(?<t_aft_l>.*?)(?=<a .*?qrduUUdxBSY.*?>.*?<\\/a>|$|\\n|\\s\\s|\\.\\s?)"}
+{"pattern": "(?!^\\d+$)^[a-zA-Z\\d\\-\\_]*$"}
+{"pattern": "(?:(?=(^[a-zA-Z]{5}\\d{4}[a-zA-Z]{1}$))|(?=(^[a-zA-Z]{4}[0-9]{5}[a-zA-Z]{1}?$)))"}
+{"pattern": "^(?!.*note).*versa.*$"}
+{"pattern": "^(?:(?:https?|ftp):\\/\\/)(?:\\S+(?::\\S*)?@)?(?:(?!10(?:\\.\\d{1,3}){3})(?!127(?:\\.\\d{1,3}){3})(?!169\\.254(?:\\.\\d{1,3}){2})(?!192\\.168(?:\\.\\d{1,3}){2})(?!172\\.(?:1[6-9]|2\\d|3[0-1])(?:\\.\\d{1,3}){2})(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\x{00a1}-\\x{ffff}0-9]+-?)*[a-z\\x{00a1}-\\x{ffff}0-9]+)(?:\\.(?:[a-z\\x{00a1}-\\x{ffff}0-9]+-?)*[a-z\\x{00a1}-\\x{ffff}0-9]+)*(?:\\.(?:[a-z\\x{00a1}-\\x{ffff}]{2,})))(?::\\d{2,5})?(?:\\/[^\\s]*)?$"}
+{"pattern": "(?=\\w{5,})(?=\\D*\\d{2}$)"}
+{"pattern": "^(\\.)?((\\]{1}(?![:\\s]).:\\d+\\]{1})|(\\[{1}(?![:\\s]).:\\d+\\[{1}))?[acgtnACGTN]+((\\]{1}(?![:\\s]).:\\d+\\]{1})|(\\[{1}(?![:\\s]).:\\d+\\[{1}))?$|^(\\*)?(\\.)?$|^<(INS|DEL|DUP|INV|CNV|DUP:TANDEM|INS:NOVEL|INS:ME(:(ALU|L1))?|DEL:ME(:(ALU|L1))?)>$"}
+{"pattern": "(a(?!\\s[abc]))"}
+{"pattern": "/^RETR(?!\\n)\\s[^\\n]{200}/smi"}
+{"pattern": "(?:\\/)([0-9a-f]+)(?=[^0-9a-f])."}
+{"pattern": "(([A-Z][a-z]*(\\s))([a-z]*(\\s))*([a-z]+)[.])*(?!([A-z0-9]*(\\s)))"}
+{"pattern": "\\b(?!any )(\\w+ Cafe)"}
+{"pattern": "/^PASV(?!\\n)\\s[^\\n]{493}/smi"}
+{"pattern": "^www\\.|^(?!http)\\w[^@]+\\.(com|edu|gov|int|mil|net|org)$"}
+{"pattern": "/^(?!\\d{17}|[A-F]{17})[A-F0-9]{17}/"}
+{"pattern": "([k,K]\u0131dem [t,T]azminat\u0131 )(?![\u00f6,\u00d6]deme)"}
+{"pattern": "(?:x?[a-h][18]=(?!K)[KNBQR]|O-O(?:-O)?|(?:[a-h]?x)?[a-h](?![18])[1-8]|[KNBQR][a-h]?[1-8]?x?[a-h][1-8])[+#]?[\\?\\!]{0,2}(?:[\\s]\\{.*\\})?"}
+{"pattern": "\\/(online%20shop|store|boutique%20en%20ligne)\\/[a-z%0-9]*\\/((?![a-z]+))"}
+{"pattern": "(?:\\s*(?=\\w+\\.|.*as\\s+|distinct\\s+|)(\\*|\\w+)(?=\\s*(?=,|from)))"}
+{"pattern": "^(?!.{67})[A-Za-z0-9.\\-\u2013\u2014_\u00de\u00c0\u00c1\u00c2\u00c3\u00c4\u00c5\u00c6\u00e0\u00e1\u00e2\u00e3\u00e4\u00e5\u00e6\u00df\u00c7\u00e7\u00a2\u00d0\u00c8\u00c9\u00ca\u00cb\u00e8\u00e9\u00ea\u00eb\u0192\u00cc\u00cd\u00ce\u00cf\u00ec\u00ed\u00ee\u00ef\u00f0\u00d1\u00f1\u00d2\u00d3\u00d4\u00d5\u00d6\u00d8\u0152\u00f2\u00f3\u00f4\u00f5\u00f6\u00f8\u0153\u0160\u0161\u00d9\u00da\u00db\u00dc\u00f9\u00fa\u00fb\u00fc\u00b5\u00fe\u0178\u00dd\u00ff\u00fd\u017e\u017d?'*/\\;=`+\u2019!^<>\\[\\]]+@(([A-Za-z0-9\\-\u2013\u2014_\u00de\u00c0\u00c1\u00c2\u00c3\u00c4\u00c5\u00c6\u00e0\u00e1\u00e2\u00e3\u00e4\u00e5\u00e6\u00df\u00c7\u00e7\u00a2\u00d0\u00c8\u00c9\u00ca\u00cb\u00e8\u00e9\u00ea\u00eb\u0192\u00cc\u00cd\u00ce\u00cf\u00ec\u00ed\u00ee\u00ef\u00f0\u00d1\u00f1\u00d2\u00d3\u00d4\u00d5\u00d6\u00d8\u0152\u00f2\u00f3\u00f4\u00f5\u00f6\u00f8\u0153\u0160\u0161\u00d9\u00da\u00db\u00dc\u00f9\u00fa\u00fb\u00fc\u00b5\u00fe\u0178\u00dd\u00ff\u00fd\u017e\u017d?'*/\\;=`+\u2019!^<>\\[\\]]+\\.[A-Za-z0-9.\\-\u2013\u2014_\u00de\u00c0\u00c1\u00c2\u00c3\u00c4\u00c5\u00c6\u00e0\u00e1\u00e2\u00e3\u00e4\u00e5\u00e6\u00df\u00c7\u00e7\u00a2\u00d0\u00c8\u00c9\u00ca\u00cb\u00e8\u00e9\u00ea\u00eb\u0192\u00cc\u00cd\u00ce\u00cf\u00ec\u00ed\u00ee\u00ef\u00f0\u00d1\u00f1\u00d2\u00d3\u00d4\u00d5\u00d6\u00d8\u0152\u00f2\u00f3\u00f4\u00f5\u00f6\u00f8\u0153\u0160\u0161\u00d9\u00da\u00db\u00dc\u00f9\u00fa\u00fb\u00fc\u00b5\u00fe\u0178\u00dd\u00ff\u00fd\u017e\u017d?'*/\\;=`+\u2019!^<>\\[\\]]*[A-Za-z0-9\u00de\u00c0\u00c1\u00c2\u00c3\u00c4\u00c5\u00c6\u00e0\u00e1\u00e2\u00e3\u00e4\u00e5\u00e6\u00df\u00c7\u00e7\u00a2\u00d0\u00c8\u00c9\u00ca\u00cb\u00e8\u00e9\u00ea\u00eb\u0192\u00cc\u00cd\u00ce\u00cf\u00ec\u00ed\u00ee\u00ef\u00f0\u00d1\u00f1\u00d2\u00d3\u00d4\u00d5\u00d6\u00d8\u0152\u00f2\u00f3\u00f4\u00f5\u00f6\u00f8\u0153\u0160\u0161\u00d9\u00da\u00db\u00dc\u00f9\u00fa\u00fb\u00fc\u00b5\u00fe\u0178\u00dd\u00ff\u00fd\u017e\u017d?'*/\\;=`+\u2019!^<>\\[\\]]{2,})|(\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\]))$"}
+{"pattern": "^[^.]+$|\\.(?!(go)$)([^.]+$)|^[\\S]+[.]$"}
+{"pattern": "\"\"\"(?:(?!\"\"\").)*(?:\"{1,2}(?!\"\"\"))?\"\"\""}
+{"pattern": "/^RMD(?!\\n)\\s[^\\n]{100}/smi"}
+{"pattern": "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{6,}$"}
+{"pattern": "((?:[^\\d\\s])+(?=\\:))"}
+{"pattern": "((?=minecraft:stone )((?!\\s{2}).)+|(?=stone )((?!\\s{2}).)+)"}
+{"pattern": "(?=.*[0-9])(?=.*[A-Z])[0-9a-zA*]{5,}"}
+{"pattern": "\\.([0-9a-z]+)(?=[?#])|(\\.)(?:[\\w]+)$"}
+{"pattern": "[:]([^()\\n]* [^()\\s]*)(?=[)\\n]|\\b)"}
+{"pattern": "<Entry>((?!<\\/Entry>).)*<\\/Entry>"}
+{"pattern": "@(?!graduan\\.com)([A-Za-z0-9]+\\.com)$"}
+{"pattern": "(?!.*\\/).+"}
+{"pattern": "/<tree .*tree(?!children).*<treechildren.*<treechildren/smi"}
+{"pattern": "^(?:(?:https?|ftp):\\/\\/)?(?:(?!(?:10|127)(?:\\.\\d{1,3}){3})(?!(?:169\\.254|192\\.168)(?:\\.\\d{1,3}){2})(?!172\\.(?:1[6-9]|2\\d|3[0-1])(?:\\.\\d{1,3}){2})(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)(?:\\.(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)*(?:\\.(?:[a-z\\u00a1-\\uffff]{2,})))(?::\\d{2,5})?(?:\\/\\S*)?$"}
+{"pattern": "Exception: (?!TRACE)"}
+{"pattern": "/__LASTFOCUS=(?!([_a-z]\\w*|)([\\x26\\x3B]|$))/i"}
+{"pattern": "^((?!.*email).)*thank(\\-|\\_|)you.*"}
+{"pattern": "^(?=.{3,30}$)[A-Za-z0-9]+(?:(\\\\s|@|#|&|_|)[A-Za-z0-9]+)?$"}
+{"pattern": "(?i)(?=^[^-]+[^-]+)^[a-z0-9][a-z0-9- ]+?[a-z0-9]$"}
+{"pattern": "^[-]?P(?!$)(?:(?<year>\\d+)+Y)?(?:(?<month>\\d+)+M)?(?:(?<days>\\d+)+D)?(?:T(?!$)(?:(?<hours>\\d+)+H)?(?:(?<minutes>\\d+)+M)? (?:(?<seconds>\\d+(?:\\.\\d+)?)+S)?)?$"}
+{"pattern": ".*\\bin\\b(?!\\b.+ing)"}
+{"pattern": "^(?=.{7,15}$)(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!@#\\.,\\/\\$%\\^&\\*\\(\\)\\\\\\-\\_=\\[\\]{}:;\"'<>\\?]).*$"}
+{"pattern": "^(?:(?:https?|ftp):\\/\\/)(?:\\S+(?::\\S*)?@)?(?:(?!(?:10|127)(?:\\.\\d{1,3}){3})(?!(?:169\\.254|192\\.168)(?:\\.\\d{1,3}){2})(?!172\\.(?:1[6-9]|2\\d|3[0-1])(?:\\.\\d{1,3}){2})(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)(?:\\.(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)*(?:\\.(?:[a-z\\u00a1-\\uffff]{2,}))\\.?)(?::\\d{2,5})?(?:[/?#]\\S*)?$"}
+{"pattern": "^((?:[^-]+|-(?![0-9]))+)-([0-9][^-]*)(?:-(.*))?$"}
+{"pattern": "([>}])(?=[<{])"}
+{"pattern": "(<.+)((?:\\n\\s*(?!<a).+)+)"}
+{"pattern": "&(?!([#\\w]*;))"}
+{"pattern": "[ ]+(corporation|\\bcorp[.]*(?!\\w))"}
+{"pattern": "((?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))(?![\\d])"}
+{"pattern": "<\\?php((?:(?:(?!php)[^?]>|(?!php)[^?]|...\\?[^?])*))\\?>"}
+{"pattern": "\\b(?!\\bDBA\\b|\\bdba\\b|\\bDbA\\b|\\bdBa\\b|\\bDBa\\b|\\bdBA\\b)[a-zA-Z0-9\" \"\\-\\&]*$"}
+{"pattern": "^(?:(((Jan(uary)?|Ma(r(ch)?|y)|Jul(y)?|Aug(ust)?|Oct(ober)?|Dec(ember)?)\\ 31)|((Jan(uary)?|Ma(r(ch)?|y)|Apr(il)?|Ju((ly?)|(ne?))|Aug(ust)?|Oct(ober)?|(Sep|Nov|Dec)(ember)?|(Sep))\\ (0?[1-9]|([12]\\d)|30))|(Feb(ruary)?\\ (0?[1-9]|1\\d|2[0-8]|(29(?=,\\ ((1[6-9]|[2-9]\\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00)))))))\\ )(?:[0-1]?[0-9]|[2][1-4]):[0-5]?[0-9]:[0-5]?[0-9]"}
+{"pattern": "/^Last-Modified\\x3a (?!((Sun|Mon|Tue|Wed|Thu|Fri|Sat), [0-9 ]?[0-9] (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) ([0-9]{2}|[0-9]{4}) [0-9]{2}\\x3A[0-9]{2}\\x3A[0-9]{2} ([ECMP]S|GM)T|(Sun|Mon|Tues|Wednes|Thurs|Fri|Satur)day, [0-9]{2}[- ](Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[- ]([0-9]{2}|[0-9]{4}) [0-9]{2}\\x3A[0-9]{2}\\x3A[0-9]{2} ([ECMP]S|GM)T|(Sun|Mon|Tue|Wed|Thu|Fri|Sat) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9 ][0-9] [0-9]{2}\\x3A[0-9]{2}\\x3A[0-9]{2} [0-9]{4}|(Sun|Mon|Tue|Wed|Thu|Fri|Sat), [0-9]?[0-9] (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) ([0-9]{2}|[0-9]{4}) [0-9]{2}\\x3A[0-9]{2}\\x3A[0-9]{2}))/sm"}
+{"pattern": "(?s)(\\w+:)\\s*\\[.*?\\](?=,\\r?\\n|$)"}
+{"pattern": "$scope.passwordRegex2 = ^(?=.*[^a-zA-Z0-9`~!@#$%^&*()-=_+,.<>?;':\"\\[\\]{}\\\\|]).{1,150}$"}
+{"pattern": "((?<raute>#(?<raute_content>.*))|(?<doubleslashes>\\/\\/(?<doubleslashes_content>.*))|(?<block>\\/\\*(?<block_content>[^*]+|\\*(?!\\/))*+\\*\\/))"}
+{"pattern": "(?=^[!@#$%\\^&*()_\\-+=\\[{\\]};:<>|\\./?a-zA-Z\\d]{7,}$)(?=([!@#$%\\^&*()_\\-+=\\[{\\]};:<>|\\./?a-zA-Z\\d]*\\W+){1,})[!@#$%\\^&*()_\\-+=\\[{\\]};:<>|\\./?a-zA-Z\\d]*$"}
+{"pattern": "^(?=[A-Za-z0-9][A-Za-z0-9@._%+-]{5,253}$)[A-Za-z0-9._%+-]{1,64}@(?:(?=[A-Za-z0-9-]{1,63}\\.)[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*\\.){1,8}[A-Za-z]{2,63}$"}
+{"pattern": "(\"(?!\")(\"\"|[^\"])*(\"|$)|\\S)+/g"}
+{"pattern": "^(?!9999)([1-9]\\d{3}|[1-5]\\d{4}|6[0-5]{2}[0-3][0-5])$"}
+{"pattern": "[^,\\[\\]]+(?=(?:\\[|,))"}
+{"pattern": "/^.{38}\\x0a\\x00..(?!(\\x40\\x1f|\\x11\\x2b|\\x80\\x3e|\\x22\\x56)\\x00\\x00)/R"}
+{"pattern": "\\{\\s*?(?=[a-z0-9-]*[A-Z]+)([^\\.]+)\\.(?:i|I)*\\s*?\\}"}
+{"pattern": ",(?=[^\\(]*\\))"}
+{"pattern": "(?!^https?:\\/\\/((gist|guides|help|raw|status|developer)\\.)?github\\.com)https?:\\/\\/.*"}
+{"pattern": "^(?=(?:\\+|0{2})?(?:(?:[\\(\\-\\)\\.\\/ \\t\\f]*\\d){7,10})?(?:[\\-\\.\\/ \\t\\f]?\\d{2,3})(?:[\\-\\s]?[ext]{1,3}[\\-\\.\\/ \\t\\f]?\\d{1,4})?$)((?:\\+|0{2})\\d{0,3})?(?:[\\-\\.\\/ \\t\\f]?)(\\(0\\d[ ]?\\d{0,4}\\)|\\(\\d{0,4}\\)|\\d{0,4})(?:[\\-\\.\\/ \\t\\f]{0,2}\\d){3,8}(?:[\\-\\s]?(?:x|ext)[\\-\\t\\f ]?(\\d{1,4}))?$"}
+{"pattern": "^(?!(Received.*88\\.99\\.88\\.99.*mail\\.bbbrucable\\.net)).*$"}
+{"pattern": "\\b(?!\\S*cat)([a-z])*\\b"}
+{"pattern": "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$"}
+{"pattern": "(?=^.{8,30}$)(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&amp;*()_+}{&quot;&quot;:;'?/&gt;.&lt;,]).*$"}
+{"pattern": "^(?:(?:https?|ftp):\\/\\/)?(?:\\S+(?::\\S*)?@)?(?:(?!(?:10|127)(?:\\.\\d{1,3}){3})(?!(?:169\\.254|192\\.168)(?:\\.\\d{1,3}){2})(?!172\\.(?:1[6-9]|2\\d|3[0-1])(?:\\.\\d{1,3}){2})(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)(?:\\.(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)*(?:\\.(?:[a-z\\u00a1-\\uffff]{2,}))\\.?)(?::\\d{2,5})?(?:[/?#]\\S*)?$"}
+{"pattern": "^(?:(((Jan(uary)?|Ma(r(ch)?|y)|Jul(y)?|Aug(ust)?|Oct(ober)?|Dec(ember)?)\\ 31)|((Jan(uary)?|Ma(r(ch)?|y)|Apr(il)?|Ju((ly?)|(ne?))|Aug(ust)?|Oct(ober)?|(Sept|Nov|Dec)(ember)?)\\ (0?[1-9]|([12]\\d)|30))|(Feb(ruary)?\\ (0?[1-9]|1\\d|2[0-8]|(29(?=,\\ ((1[6-9]|[2-9]\\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00)))))))\\,((1[6-9]|[2-9]\\d)\\d{2})) (?:[0-1]?[0-9]|[2][1-4]):[0-5]?[0-9]:[0-5]?[0-9]\\s?([apAP][Mm])?$"}
+{"pattern": "(?!^0*$)(?!^0*\\.0*$)^\\d{1,5}(\\.\\d{1,3})?$"}
+{"pattern": "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[&-+!*$@%_])([&-+!*$@%_\\w]{8,15})$"}
+{"pattern": "((?:new |\\((?!new))([A-Z][\\w]+))|([A-Z][\\w]+)::|([A-Z][\\w]+)[\\s]+\\$"}
+{"pattern": "value=\"(?=<\\?php)[^\"]+\""}
+{"pattern": "/window\\.open\\(\\s*(\\x5C[\\x22\\x27])?\\s*(?!(about|cdl|dvd|f(ile|tp)|gopher|http?|i(pp|ts)|javascript|local|m(ailto|html|k|sdaipp|s-its)|res|sysimage|tv|vbscript|wia)).{1,10}\\:\\/\\//i"}
+{"pattern": "^abc|xyz$|123|^(?:(?!456).)*$"}
+{"pattern": "\\d+(?=\\.(?:[^\\d]|$))"}
+{"pattern": "^(.*)_((?:x\\d{1,4}|\\d{1,4}x)(?:\\d{1,4})?(?=\\+|\\.).*)\\.(.+)"}
+{"pattern": "(?=^.{6,10}$)(?=.*\\$)(?=.*[a-z])(?=.*[A-Z])(?=.*[!~@#$%^&amp;*()_+}{&quot;:;'?/&gt;.&lt;,])(?!.*\\s).*$"}
+{"pattern": "/^NLST(?!\\n)\\s[^\\n]{200}/smi"}
+{"pattern": "/name\\s*=\\s*[\\x22\\x27]?command_data((?!^--).)*?[\\r\\n]{2,}((?!^--).)*?([\\x60\\x3b\\x7c\\x26]|[\\x3c\\x3e\\x24]\\x28)/Psim"}
+{"pattern": "^[a-zA-Z0-9](?:[\\._-](?=[a-zA-Z0-9])|[a-zA-Z0-9])+@(?:[\\._-](?=[a-zA-Z0-9])|[a-zA-Z0-9])+(?:[a-z]{2,4}|com|ru|by)$"}
+{"pattern": ".+?(?=[0-9])"}
+{"pattern": "^(?=.{3,30}$)[A-Za-z0-9]+(?:\\s[A-Za-z0-9]+)+(?:\\s[A-Za-z0-9]+)?$"}
+{"pattern": "5002(?!H)"}
+{"pattern": "^(?=.*[a-z])(?=.*[A-Z])((?=.*\\d)|(?=.*[!@#$%^&*()'\"]))[A-Za-z\\d!@#$%^&*()'\"](?!\\s).{5,21}$"}
+{"pattern": "(\\s+|-*\\w{2,}-(?=\\w{2,}))"}
+{"pattern": "(http:\\/\\/|www\\.).+?(?=\\s|[[:punct:]]\\s)"}
+{"pattern": "(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"}
+{"pattern": "^([a-zA-Z0-9.!#$%&\u2019*+/=?^_`{|}~-]{1,64}@(?=.{1,255}$)([a-zA-Z0-9-]+[.]{1}[a-zA-Z0-9-]{2,})){1,320}$"}
+{"pattern": "/\\xFC\\x02[\\x08\\x06]\\x00.{4}(?!\\x00\\x00)/s"}
+{"pattern": "^(?:(?![\u00d7\u00de\u00df\u00f7\u00fe\u00f8])[-0-9a-z\u00c0-\u00ff.])+\\.(?:[a-z])+?$"}
+{"pattern": "^(?!#).*example.*"}
+{"pattern": "/^(?=.{10}[\\x01\\x04\\x08\\x16\\x24\\x32]\\x00)(.{3}[\\x55-\\xFF]|.{31}[\\x80-\\xFF])/sR"}
+{"pattern": "(?!^[a-zA-Z]*[0-9]?[a-zA-Z]*$)^([a-zA-Z][a-zA-Z0-9]{4})$"}
+{"pattern": "<a href=\"([^\"]*)\"[^<]*>(?:(?!<\\/?a\\b[^<]*>)[\\s\\S])*<img src=\"([^\"]*)\"\\s*.*?<\\/a>"}
+{"pattern": "/^Content-Length\\x3a(?!\\x0d\\x0a\\x0d\\x0a).*?^Content-Length\\x3a/smiH"}
+{"pattern": "<(?i)(?=.[^>]*runat=[\\\"]?server)(?<TYPE>\\S[^>\\s]+).[^>]*id=[\\\"]?(?<NAME>\\w+).[^>]*>"}
+{"pattern": "(?=.*FULL SET  USER1)(?=.*Grp= 1)"}
+{"pattern": "(?P<changelog>(?=What)(What's new in (?P<version>[^\\n\\s\\(]+).+?)(?=What|$))"}
+{"pattern": "^(?=.*\\d)\\w+$"}
+{"pattern": "(?!__init__)[0-9a-zA-Z_]*(\\.pyc?)?$"}
+{"pattern": "^\\/(?!.*\\/\\/)([a-zA-Z-\\/]+)$"}
+{"pattern": "&(?![a-z]*;)"}
+{"pattern": "/^APPE(?!\\n)\\s[^\\n]{200}/smi"}
+{"pattern": "^(?!0000).*"}
+{"pattern": "^( )*[\\w\\\"!#$%&\u2019*+/=?`{|}~^-]+(?:\\.[\\'\\w!#$%&\u2019*+/=?`{|}~^-]+)*@{1}((?:[a-zA-Z0-9]+(\\.(?!web$)|-))+[a-zA-Z]{2,6}|\\[?([0-9]{1,3}\\.){3}[0-9]{1,3}\\]?)( )*$"}
+{"pattern": "^(?=.*\\d)(?=.*[a-zA-Z])[0-9a-zA-Z$&+,:;=?@#|'<>.-^*()%!]{6,20}$"}
+{"pattern": "\\b\\d{1}\\s\\d{3}(?!\\s\\d{3})\\b"}
+{"pattern": ".*?(?=$|\\$\\$)"}
+{"pattern": "^(?=.*?[A-Za-z])[A-Za-z+]+$"}
+{"pattern": "((?:\\b(?!\\.))(?!.*\\.\\..*)(?:[a-zA-Z0-9\\.\\-\\+_\\-]+?)?[a-zA-Z0-9]+?|\\\"\\s\\\"|\\\"[a-zA-Z0-9]+?\\.\\.[a-zA-z0-9]+?\\\")@([a-zA-Z0-9]+(?:\\-[a-zA-Z0-9])?\\.?[a-zA-Z0-9]+(?:\\.[a-zA-Z]+)?)"}
+{"pattern": "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,15}$"}
+{"pattern": "(?=/)(.*?)\\s"}
+{"pattern": "(?!<\\S)(?!\\S{11})(?!\\S*berry\\S)(\\S+berry)(?!$)"}
+{"pattern": "/^MDTM(?!\\n)\\s[^\\n]{100}/smi"}
+{"pattern": "(window\\.player\\s\\=\\snew\\sXPlayerMobile\\(\\\"video\\_box\\\"\\,\\s\\{\\\"videoId\\\"\\:[a-zA-Z0-9]+\\,\\\"poster\\\"\\:\\\")+(.*?)+(?=\\,\\\"userSettings\\\"\\:\\{\\\"override\\\"\\:\\{\\\"autoplay\\\"\\:false\\}\\}\\,\\\"debug\\\"\\:false\\}\\,\\spluginSettings\\)\\;)"}
+{"pattern": "[\\.\\-_](?!\\d)"}
+{"pattern": "^.*(?=.{8})(?=.*\\d)(?=.*[A-Z]).*$"}
+{"pattern": "https?:\\/\\/[a-z0-9-]+(.[a-z0-9-]+)*(:[0-9]+)?(\\/.*)?(?=.url.com)(.url.com)"}
+{"pattern": "^(?=.{6})(?=.*[a-z])(?=.*[A-Z])(?=.*[!\"'()\\[\\]*,-.\\/:;<>_`{}|~@#$%^&+=]).*$"}
+{"pattern": "\\n(?=-+\\n.+\\n-+\\n)"}
+{"pattern": "<[a-zA-Z][-_.:a-zA-Z0-9]*\\s*(\\s*([a-zA-Z_][-:.a-zA-Z_0-9]*)(\\s*=\\s*(\\\\'[^\\\\']*\\\\'|\"[^\"]*\"|[-a-zA-Z0-9./,:;+*%?!&$\\(\\)_#=~@]\\[][\\-a-zA-Z0-9./,:;+*%?!&$\\(\\)_#=~\\\\'\"@]*(?=[\\s>/<])))?)*\\s*/?\\s*(?=[<>])"}
+{"pattern": "<a[\\s](?!.*\\b(title)\\b)[^>]+>"}
+{"pattern": "(?=[^ ]+$)"}
+{"pattern": "/filename=(?![a-f]{24}|\\d{24})[a-f\\d]{24}\\.exe\\r\\n/H"}
+{"pattern": "/^HELP(?!\\n)\\s[^\\n]{200}/smi"}
+{"pattern": "(?!<[^>]*>)(-)(?![^<]*>)"}
+{"pattern": "(https:\\/\\/provider\\.shsp\\.swisscom\\.com(?:(?!(:443|:80)(\\/|\\s))(?:(?::)(\\d*)))*(?!:443|:80))+((?!\\/stable(?=\\/))(\\/latest(?=\\/))?)*"}
+{"pattern": "^(?!0,?\\d)([0-9]{2}[0-9]{0,}(\\.[0-9]{2}))$"}
+{"pattern": "\\w*(?!SearchResponse\\.java)"}
+{"pattern": "\\$(\\%)?((?!not[$\\s])(?!contains[$\\s])[A-Z_a-z]\\w+)"}
+{"pattern": "^(?=.*[!@#$%^&*()\\-_=+`~\\[\\]{}?|])(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,20}$"}
+{"pattern": "href=[\"'](https?:\\/\\/(?:www\\.|(?!www))[^\\s\\.]+\\.[^\\s\"']{2,}|(?!ftp:\\/\\/)[^\\s]+\\.[^\\s'\"]{2,})"}
+{"pattern": "^(?!(dist[\\/]?((.*)?[\\/]?\\b)))"}
+{"pattern": "^(?!0{3})\\d{5}(?:-?\\d{4})?$"}
+{"pattern": "\\s(?=([^\"]*\"[^\"]*\"[^\"]*)*$|[^\"]*$)"}
+{"pattern": "(?=(\\d\\d\\d))"}
+{"pattern": "(?=.*[0-9])(?=.*[a-zA-Z]).*"}
+{"pattern": "(a(?=\\s[abc]*))"}
+{"pattern": "(?![\\.\\-])dev$"}
+{"pattern": ".+}(?=[.]{2,})"}
+{"pattern": "((?!while|if|for\\b)\\b\\w+)\\s*\\((.*)\\)"}
+{"pattern": "^[_a-zA-Z0-9-]+(\\.[_a-zA-Z0-9-]+)*@(?!co.uk)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)*\\.(([0-9]{1,3})|([a-zA-Z]{2,3})|(aero|coop|info|museum|name))$"}
+{"pattern": "([A-z])((?![A-z]{2,3}$)\\w){2,3}"}
+{"pattern": "(?=[-_a-zA-Z0-9]*?[A-Z])(?=[-_a-zA-Z0-9]*?[a-z])(?=[-_a-zA-Z0-9]*?[0-9])[-_a-zA-Z0-9]{6,}"}
+{"pattern": "/\\x2fDecodeParms\\s*\\x3c{2}\\s*(?=[^\\x3e]*\\/Predictor\\s+0*(1\\d{1}|[2-9]))([^\\x3e]*\\x2fBitsPerComponent\\s+\\d{3}|[^\\x3e]*\\x2fColumns\\s+\\d{5}|[^\\x3e]*\\x2fColors\\s+\\d{5})/"}
+{"pattern": "/[^\\x3E]*?t\\x00e\\x00x\\x00t\\x00(\\s\\x00)*\\x3D\\x00(\\s\\x00)*(\\x27\\x00(?!(..){0,500}\\x27\\x00)|\\x22\\x00(?!(..){0,500}\\x22\\x00)|(?!(..){0,500}\\s\\x00))/isOR"}
+{"pattern": "((([\\w]+\\S)@([a-zA-Z]*)(?!.))|((\\d)+@([a-zA-Z]{4}+0[a-zA-Z0-9]{6}+)+.+IFSC+.NPCI))"}
+{"pattern": "([a-z]*)(?=.*[0-9])(?=.*[A-Z])(?=.*[\\W])(?!.*[\\s])(^.{8,16})"}
+{"pattern": "/graph_(start|end|height|width)=(?!(\\d+|)[\\x26\\s])/smi"}
+{"pattern": "(\\:(\\w|\\+|\\-)+\\:)(?=\\s|[\\!\\.\\?]|$)"}
+{"pattern": "^(?=.*[0-9])(?=.*[A-Za-z])(?=.*[!\\x22\\#$%&@'()*+,-./_])[\\w!\\x22\\#$%&@'()*+,-./]{8,}$"}
+{"pattern": "(?:[M|m](?:edical|EDICAL|rn|RN|r|R)|[P|p](?:atient|ATIENT))(?:\\s+(?:record|Record|RECORD))?(?:\\s+(?:id|identification|name|no|number|Id|Identification|Name|No|Number|ID|IDENTIFICATION|NAME|NO|NUMBER))?(?:[\\s#]*)?0(?!0{7})\\d{7}\\b|\\b0(?!0{7})\\d{7}\\s*(?:[M|m](?:edical|EDICAL|r|R|rn|RN)|[P|p](?:atient|ATIENT))(?:\\s+(?:record|Record|RECORD))?(?:\\s+(?:id|name|no|number|Id|Name|No|Number|ID|NAME|NO|NUMBER))?\\b"}
+{"pattern": "RDATE(?:(?:;(?<value_param>VALUE=(?<value_param_type>DATE-TIME|DATE|PERIOD)))|;(?<tzid_param>TZID=(?<tzid_param_tz>[\\w\\/-]+))|;(?:(?!VALUE|TZID)\\w+=[a-zA-Z0-9_\\-\\/]+))+:(?<value>(?:.*))"}
+{"pattern": "/&(?!\\w+;|#\\d+;)\\S*/g"}
+{"pattern": "((\\/\\*(\\r|\\n|(.(?!\\*/)))*)\\s\\*\\/|\\/\\/.*$)([\\r\\n\\s]+)?"}
+{"pattern": "/trak.{4}tkhd.{40}(?=.{20})(?!\\x00\\x01\\x00\\x00.{12}\\x00\\x01\\x00\\x00)/s"}
+{"pattern": "(?!\\W)(http(s?):\\/{2})?(www\\.)?[a-z0-9-.]+?\\.[cnoiegm][a-z]{1,2}(\\/[^\\s]*|(?=\\W))?"}
+{"pattern": "^(?:(?:\\+?1[\\s])|(?:\\+?1(?=(?:\\()|(?:\\d{10})))|(?:\\+?1[\\-](?=\\d)))?(?:\\([2-9]\\d{2}\\)\\ ?|[2-9]\\d{2}(?:\\-?|\\ ?))[2-9]\\d{2}[- ]?\\d{4}$"}
+{"pattern": "(.+\\.db)\\r\\n?(.+)(?=sh-3.00# cat /tmp/netshare)"}
+{"pattern": "^(?=.*[0-9]+.*)(?=.*[a-zA-Z]+.*)[0-9a-zA-Z]{6,}$"}
+{"pattern": "^(?=.*property=\"og:image\").*content=\"(?P<content>[^\"]+)\".*$"}
+{"pattern": "^( *)(?!# +console)(console\\.log .*)$"}
+{"pattern": "([a-z0-9*._-]+(?!.))"}
+{"pattern": "^(?=.*[[:lower:]])(?=.*[[:upper:]])(?=.*[[:digit:]])(?=.*[[:punct:] ])(.+)$"}
+{"pattern": "([\\s\\[\\{,:]+)(?!\\-?\\.?\\d|false\\W|true\\W)([^'\\\":,\\s\\]\\}]+)([,:\\s\\}\\]_\\-\\{\\[]|$)"}
+{"pattern": "(?=^\\s*([\\S\\s]+?)\\s*$)"}
+{"pattern": ".*?(?=(\\?format=.+?(?=\\?|&|$)|\\&format=.+?(?=\\?|&|$)))"}
+{"pattern": "(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9].*[0-9])(?=.*[^a-zA-Z0-9]).{8,}"}
+{"pattern": "(?=[\\r\\n]+)\\s*([0-9]+[\\/][^\\r\\n\\s])+\\s*[0-9][^\\r\\n]*[\\r\\n]+"}
+{"pattern": ".*(?=s\\d{1,2}e\\d{1,3})(s\\d{1,2}e\\d{1,3}).*(\\..*)"}
+{"pattern": "<script\\b[^<]*(?:(?!<\\/script>)<[^<]*)*<\\/script>"}
+{"pattern": "^(?:\\+971|00971|0)(?!3|8)((?:2|3|4|5|6|7|9|50|51|52|55|56)[0-9]{7,})$"}
+{"pattern": "^.*?(?=-)"}
+{"pattern": "&(?!amp|gt|lt|apos|quot)"}
+{"pattern": "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)[A-Za-z\\d$@$#!%*?&.]{5, 20}"}
+{"pattern": "^(?=.*?[A-Z])(?=.*?[a-z])(?!.*?[=?<>()'\"\\/\\&]).{8,20}$"}
+{"pattern": "^(?=(?!\\.?\\*)\\S* +DYNALLOC )(.{71}\\S.*\\n)*.*"}
+{"pattern": "([m|M]it)?\\s(\\w+[en|em|]|\\w+[e])\\s([g|G]r[\u00fc|u][\u00df|s]s?e?n?|[D|d]ank(?!en))"}
+{"pattern": "<!--(?!\\s*\\[if[^]]+]>[^<]*<!\\[endif\\]).*?-->"}
+{"pattern": "((25[0-5]|2[0-4][0-9]|[01]?[0-9]{1,2})(\\.(?=[0-9])|\\b)){4}"}
+{"pattern": "(20[0-9]{2}\\-((?=0[1-9])0[1-9]|(?=1[0-2])1[0-2])\\-((?=0[1-9])0[1-9]|(?=[1-2][0-9])[1-2][0-9]|(?=[3][0-1])[3][0-1])|(all))"}
+{"pattern": "(?=.*?\\b/\\b)(?=.*?\\bdisk0)((?!Volume).)*"}
+{"pattern": "^((?!gulpfile\\.js).)*$"}
+{"pattern": "\\b[a-zA-Z0-9]{6}[0-9](?![0-9a-zA-Z-])"}
+{"pattern": "(https\\:\\\\\\/\\\\\\/[a-zA-Z]+\\.phncdn\\.com\\\\\\/videos\\\\\\/[0-9]+\\\\\\/[0-9]+\\\\\\/[0-9]+\\\\\\/720+\\_[a-zA-Z0-9]+\\_[0-9]+\\.mp4\\?)+[a-zA-Z0-9=& ]+(?=\\\"\\})"}
+{"pattern": "(https\\:\\\\\\/\\\\\\/cm\\.phncdn\\.com\\\\\\/videos\\\\\\/[0-9]+\\\\\\/[0-9]+\\\\\\/[0-9]+\\\\\\/[a-zA-Z0-9]+\\_[a-zA-Z0-9]+\\_[0-9]+\\.mp4\\?)+[a-zA-Z0-9=&]+(?=\\\"\\})"}
+{"pattern": "[^\\\\]+(?=(\\.dwg)|(\\.pdf)|(\\.doc[^x]))"}
+{"pattern": "(?!Account Trade History)^([A-Z]{3})$"}
+{"pattern": "(?=.*displayname)(?=.*templateid).*"}
+{"pattern": "(?=(.*\\d.*){2,})(?=(.*[a-zA-Z].*){6,})"}
+{"pattern": "\\b(1(?!27\\.0\\.0\\.1)\\d{1,2}|2[0-4][0-9]|25[0-4]|\\d{1,2})\\.(?:\\d{1,3}\\.){2}(25[0-5]|2[0-4][0-9]|1\\d{2}|\\d{2}|[1-9])\\b"}
+{"pattern": "content-location:\\shttp.?://.*?(?=\\r\\n|$)"}
+{"pattern": "(K((?!\\/bc|\\/a).)*?)(\\d{4})"}
+{"pattern": "^(?:#|(?:\\.(?!\\.)))"}
+{"pattern": "[^\\s<>]+(?![^<]*>)"}
+{"pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?'\"|&\\\\/])[A-Za-z\\d@$!%*?&\"|'\\\\/]{8,}$"}
+{"pattern": "/name\\s*=\\s*[\\x22\\x27]?pingAddr((?!^--).)*?[\\r\\n]{2,}((?!^--).)*?([\\x60\\x3b\\x7c\\x26]|[\\x3c\\x3e\\x24]\\x28)/Psim"}
+{"pattern": "/(\\x21|%21)ENTITY((?!\\x3e|%3e).)*?(SYSTEM|PUBLIC)/Pi"}
+{"pattern": "/^XMD5(?!\\n)\\s[^\\n]{200}/smi"}
+{"pattern": "/\\x2f(?=[abdefijoqrsuvwxz])(d(ixqshv\\x2fqzccs|yddznydqir\\x2fevi)|f(seqepagqfphv\\x2fsfd|ulmxct\\x2fmqoyc)|i(ohgdhkzfhdzo\\x2fuwp|yxegtd\\x2fefcwg)|j((bevgezfmegwy\\x2fnt|mqnqgijmng\\x2foj)a|hjhgquqssq\\x2fpjm|pjpoptwql\\x2frlnj)|s(mtmeihf\\x2fhiuxz|vclxatmlhavj\\x2fvsy)|(aohobygi\\x2fzwiw|rprpgbnrppb\\x2fci)f|bnymomspyo\\x2fzowy|eveocczmthmmq\\x2fomzl|ocllceclbhs\\x2fgth|(qlqqlbojvii\\x2fgt|xbqyosoe\\x2fcpvm)i|urfiqileuq\\x2ftjzu|(vvvjkhmbgnbbw\\x2fqbn|wjpropqmlpohj\\x2flo)q|zzzvmkituktgr\\x2fetie)\\.exe/U"}
+{"pattern": "/^XMKD(?!\\n)\\s[^\\n]{200}/smi"}
+{"pattern": "/name\\s*?=\\s*?[\\x22\\x27]?UEnvEXT_AP_SSID((?!form-data).)*?[\\r\\n]{2,}[^\\r\\n]*?([\\x60\\x3b\\x7c]|\\x24\\x28|%60|%3b|%7c|%24%28)/Psi"}
+{"pattern": "/^XCWD(?!\\n)\\s[^\\n]{100}/smi"}
+{"pattern": "(a(?=\\s[abc]))"}
+{"pattern": "^(d{0}|(31(?!(FEB|APR|JUN|SEP|NOV)))|((30|29)(?!FEB))|(29(?=FEB(((1[6-9]|[2-9]\\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00)))))|(29(?=FEB(((0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00)))))|(0?[1-9])|1\\d|2[0-8])(JAN|FEB|MAR|MAY|APR|JUL|JUN|AUG|OCT|SEP|NOV|DEC)((1[6-9]|[2-9]\\d)\\d{2}|\\d{2}|d{0})$"}
+{"pattern": "^(?!\\s{3}\\d{1})"}
+{"pattern": "<td class=\"result_text\"> <a href=\"\\/title\\/tt([0-9]+)\\/\\?ref_=[a-zA-Z0-9_]+\" >((?:(?!<\\/a>).)*?)<\\/a>"}
+{"pattern": "(?x).+(?:Sub|Function)\\ (\\w+)\\( # method declaration(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)(?: # start of parameter pattern[\\w\\W]*?(?<=\\b) # parameter may be preceded by ByVal or Optional keywords([a-z]\\w+)+ # parameter starts with a lower case.*? # parameter may be followed by its type declaration(?:=\\ ([^\\,]+)){0,1} # optional parameters may be followed by default value, it is captured to be used in method call(?:,|\\)) # parameter is followed by , or )){0,1} # end of parameter pattern (may be copy-pasted infinitely to capture all parameters)"}
+{"pattern": "DL_CaseState[^a-zA-Z0-9_]*[\\w]+[^a-zA-Z0-9_]*(?!(and|or))"}
+{"pattern": "\"key\"[ :]+((?=\\[)\\[[^]]*\\]|(?=\\{)\\{[^\\}]*\\}|\\\"[^\"]*\\\")"}
+{"pattern": "^((?!0000)[0-9]{4}-((0[1-9]|1[0-2])-(0[1-9]|1[0-9]|2[0-8])|(0[13-9]|1[0-2])-(29|30)|(0[13578]|1[02])-31)|([0-9]{2}(0[48]|[2468][048]|[13579][26])|(0[48]|[2468][048]|[13579][26])00)-02-29)\\s+([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$"}
+{"pattern": "LIMIT .*?(?=\\)|$)"}
+{"pattern": "[\\t ]*#\\s*if(?!ndef|def)\\s*([^\\\\\\n\\r\\v\\f]+)(?:\\s*\\\\\\s*?([\\n]+)\\s*([^\\\\\\n\\r\\v\\f]+))?(?:\\s*\\\\\\s*?([\\n]+)\\s*([^\\\\\\n\\r\\v\\f]+))?"}
+{"pattern": "(\"(?:(?:(?:\\\\.)|[^\"\\\\\\r\\n])*)\"|'(?:(?:(?:\\\\.)|[^'\\\\\\r\\n])*)'|`(?:(?:(?:\\\\.)|[^`\\\\\\r\\n])*)`)|((?:-- .*)|(?:#.*)|(?:/\\*(?:(?:[^*]|\\*(?!/))*)\\*/))"}
+{"pattern": "^(?=^.{8,}$)(?=.*\\d)(?=.*\\W+)(?=.*[a-z])(?=.*[A-Z])(?i:(?!.*pass|.*password|.*word|.*god|.*\\s))(?!^.*\\n).*$"}
+{"pattern": "^(?=[^\\d_].*?\\d)\\w(\\w|[!@#$%]){7,20}"}
+{"pattern": "^[-+]?(?!0?\\.00)(?=.+(\\.|$))(?!0(?!\\,))\\d{1,3}((|,)\\d{3})*(\\.\\d+)?$|^[+-]?((\\d{1}(\\.\\d*)?)|(\\.\\d+))$"}
+{"pattern": ">(?!\\})"}
+{"pattern": "# Keys are pretty much \"any text before the '=' symbol\"(?P<key>[^=]+)# Match the '=' symbol=(?P<value># Lazy match.*?# Look-ahead (don't move the \"regex cursor\", just \"peek forward\")(?=# Match a '_' that has no other '_' between it and the '=' character, or...    _(?=[^_=\\n]+=)|# ... or the end of the line$))# Actually \"consume\" the '_' character if it exists (or just match the end-of-line)(?:_|$)"}
+{"pattern": "(?=^.{12,25}$)(?=(?:.*?\\d){2})(?=.*[a-z])(?=(?:.*?[A-Z]){2})(?=(?:.*?[!@#$%*()_+^&}{:;?.]){2})(?!.*\\s)[0-9a-zA-Z!@#$%*()_+^&]*$"}
+{"pattern": "^((?!666|000)[0-8][0-9\\_]{2}\\-(?!00)[0-9\\_]{2}\\-(?!0000)[0-9\\_]{4})*$"}
+{"pattern": "\\d{0,15}(?= \\sClaim)"}
+{"pattern": "(?=(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|\\d{4}(?=\\b)|\\d{1,2}(?=st|nd|rd|th|\\b)))\\w*\\W*(\\d{1,2}(?=st|nd|rd|th|\\b)|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\\D*(\\d{4}(?=\\b)|\\d{1,2}(?=st|nd|rd|th|\\b))"}
+{"pattern": "\\n        # Source consists of a PS1 line followed by zero or more PS2 lines.\\n        (?P<source>\\n            (?:^(?P<indent> [ ]*) >>>    .*)    # PS1 line\\n            (?:\\n           [ ]*  \\.\\.\\. .*)*)  # PS2 lines\\n        \\n?\\n        # Want consists of any non-blank lines that do not start with PS1.\\n        (?P<want> (?:(?![ ]*$)    # Not a blank line\\n                     (?![ ]*>>>)  # Not a line starting with PS1\\n                     .*$\\n?       # But any other line\\n                  )*)\\n"}
+{"pattern": "\\(?(?:(http|https):\\/\\/)(?:((?:[^\\W\\s]|\\.|-|[:]{1})+)@{1})?((?:www.)?(?:[^\\W\\s]|\\.|-)+[\\.][^\\W\\s]{2,4}|localhost(?=\\/)|\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})(?::(\\d*))?([\\/]?[^\\s\\?]*[\\/]{1})*(?:\\/?([^\\s\\n\\?\\[\\]\\{\\}\\#]*(?:(?=\\.)){1}|[^\\s\\n\\?\\[\\]\\{\\}\\.\\#]*)?([\\.]{1}[^\\s\\?\\#]*)?)?(?:\\?{1}([^\\s\\n\\#\\[\\]]*))?([\\#][^\\s\\n]*)?\\)?"}
+{"pattern": "[^\\/]+(?=\\/$|$)"}
+{"pattern": "^(?=.*\\S)[-!#$%&\\'*+\\/=?^_`{|}~,.a-z0-9]{1,64}[@]{1}[-.a-z\u00e5\u00e4\u00f60-9]{4,253}$"}
+{"pattern": "/\\x23define\\s*(?=[\\S]{57})\\S*\\x5Fwidth/"}
+{"pattern": "(def*\\W(\\w+)([\\w\\W]*?))(?=(def)|$)"}
+{"pattern": "(^|\\s)(?!\\b(?:basic|studio|asp|v[bs]|c\\#)\\.net)(\\w+)(?:\\.co\\.[a-z]{2}|\\.[a-z]{2,6})\\b"}
+{"pattern": "^.*lager(?:(?!~n\").)*$"}
+{"pattern": "(?=.*[a-z])(?=.*[A-Z])(^[a-zA-Z])(?=.*\\d)[a-zA-Z0-9]{7,}$"}
+{"pattern": "(?=^test\\s+.*|.*?\\s+test\\s+.*?|.*?\\s+test$).*"}
+{"pattern": "^\\[(?P<type>.+)\\]\\:\\ (?P<subject>(.+)\\.)(?=[\\r\\n|\\r|\\n]*Description)"}
+{"pattern": "(?!\\d\\.\\d)(\\w\\.+)(?! )(\\w?)"}
+{"pattern": "^(?!.*\\/prod\\/).*\\/cat\\/.*$"}
+{"pattern": "/(?<resource>[\\w\\-]+)(?:/(?<id>(?!actions)[\\w\\-]+))?(?:/actions/(?<action>[\\w\\-]+))?"}
+{"pattern": "!\\[[^\\]]*\\]\\((?P<filename>.*?)(?=\\\"|\\))(?P<optionalpart>\\\".*\\\")?\\)"}
+{"pattern": "(?=\\()[^)]*(?=\\))"}
+{"pattern": "\\b(\\d{1,2})(?!\\d|bit|\uae30)"}
+{"pattern": "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,10}$"}
+{"pattern": "\\b[0-9]{3}[a-zA-Z0-9]{2}[a-zA-Z0-9*@#]{3}[0-9](?![0-9a-zA-Z-])"}
+{"pattern": "^(?=.*[1-9].*)[0-9]{3}$"}
+{"pattern": "(?! )[=+\\-\\*/](?! )"}
+{"pattern": "(?!\\\"[a-zA-z0-9\\s\\.\\(\\)]*)(?:,|,\\\"|\\\",)(?![a-zA-z0-9\\s\\.\\(\\)]*\\\")"}
+{"pattern": "((\\r?\\n){2}|^)([^\\r\\n]*\\|[^\\r\\n]*(\\r?\\n)?)+(?=(\\r?\\n){2}|$)"}
+{"pattern": "((\\$|\u00a3|\u20ac|\u20b9).?\\b(\\d\\d?)(?!(,|\\.)\\d)\\b|\\b\\d\\d?\\b.?(\\$|\u00a3|\u20ac|\u20b9))"}
+{"pattern": "^P  (?=\\w*\\d)(?:(?<years>\\d+)Y|Y)?(?:(?<month>\\d+)M|M)?(?:(?<days>\\d+)D|D)?(?:    T    (?:(?<hours>\\d+)H|H)?(?:(?<minutes>\\d+)M|M)?(?:(?<seconds>\\d+(?:\\.\\d{1,2})?)S      |      S    )?)?$"}
+{"pattern": "https?://(?![^\" <>]*(?:jpg|png|gif))[^\" <>]+"}
+{"pattern": "^(?![DFIOQUWZ])[A-Z]{1}[0-9]{1}(?![DFIOQU])[A-Z]{1}[ ]{1}[0-9]{1}(?![DFIOQU])[A-Z]{1}[0-9]{1}$"}
+{"pattern": "/^\\x2Fsnort\\x2Fsnort_log_view.php\\x3F.*logfile\\x3D(?!/var/log)|([\\x2F]?\\x2e\\x2e)/smiU"}
+{"pattern": "<(a+) (?!(?:href=([\"|']+)([http:\\/\\/])*link\\.com([\\/])?(.*?)[\"|'])) *[^>]*>(.*?)[^>]>"}
+{"pattern": "/name\\s*=\\s*[\\x22\\x27]?(dir|sort)((?!^--).)*?[\\r\\n]{2,}((?!^--).)*?\\x3b/Psim"}
+{"pattern": "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=.\\-_*])([a-zA-Z0-9@#$%^&+=*.\\-_]){3,}$"}
+{"pattern": "[\u5e79\u4e7e\u6de6\u8d1b\u5e72\u808f\u64cd\u7cd9\u53bb\u8349\u585e\u8cfd]?[\u6797\u8cc3\u541d\u96f6\u9748\u9f61\u62ce\u6041\u4f60\u4ed6\u5979\u5b83\u7942\u7260]([\u99ac\u9a6c\u91cf\u6881\u826f\u7ce7\u6dbc\u5a18\u59b9\u5abd]|\u8001[\u5e2b\u8607\u8a69\u5c4d\u6fd5\u6ebc]|\u5976\u5976|\u7956?(\u5b24|\u5abd|\u7f75))(\u7684|\u6a02|\u53fb|\u5783|\u52d2|\u54a7|([\u57fa\u5527\u96de\u6a5f\u6fc0][\u63b0\u6b6a]))?|[\u9760\u5c3b\u54ed][\u676f\u500d\u80cc\u8c9d\u8f29\u6096\u5317\u76c3\u60b2\u5351\u63f9\u8170\u9080\u5996\u592d\u5e7a\u4e48]|([\u57fa\u5527\u96de\u6a5f\u6fc0](\u8eca|[\u6559\u8f4e\u7a96\u5da0\u53eb\u8f03\u8db4\u8469]|[\u63b0\u6b6a]))|(([\u9b6f\u76e7\u64c4\u865c\u76e7\u7210]|[\u5047\u5477\u5403\u7532\u8cc8\u5361]|[\u885d\u6c96\u5145\u9283\u6b09\u8b25]?[\u4e09\u6bba\u6c99\u7802\u5565])[\u5c0f\u6d28\u66c9])|(\u7834[\u9ebb\u76ee])|([\u4fd7\u5352][\u4ed4\u81d8\u8fa3])|[\u8ce4\u5c4c\u808f\u64cd\u7cd9]|(\u5e79(?![\u9ebb\u561b\u55ce]|(\u5565|[\u86c7\u795e\u4ec0\u751a]\u9ebc|[\u597d\u58de]\u4e8b)))|(\u9760(?!\u5728|\u7684|\u4ed6|\u4f60|\u59b3|\u5979))|([\u6797\u8cc3\u541d\u62ce\u6041\u4f60][\u9738\u7238\u5317\u80cc])|([\u61f6\u85cd\u89bd\u652c\u6b16][\u6559\u8f4e\u7a96\u5da0\u53eb\u8f03\u8db4\u8469])|([\u767d\u5317\u5ea6\u675c\u6e21\u809a\u864e\u552c][\u721b\u6feb\u7e9c\u85cd\u89bd\u61f6])|(\u667a[\u7f3a\u969c\u4ed7\u4e08\u7634])|(\u53bb\u4f60\u7684)|((?i)GG\\s?IN\\s?IN)|(\u60f3[\u6a13\u63c9])|(\u3108\u3108\u5c3a)|((?i)ccr|fuck|hell|shit|ass(hole)?|idiot|damn|bitch|phycho|bastard|Whore|Slut)"}
+{"pattern": "(?!(([^\"]*\"){2})*[^\"]*$)\\n+"}
+{"pattern": "href\\s*=\\s*\"((?!%TWIKIDRAW%).+?)\""}
+{"pattern": "(?!\\/content)(?!\\/news)(\\/([^\\/]{2,4}\\/)([^\\/|^.]+))"}
+{"pattern": "(NUMBER[(](\\d{1,3},\\d)[)])|(NUMBER[(]((\\d{1,3})|(\\d{1,3}[,]\\d))[)]((?=\\/DECIMAL)|(?=\\/PERCENTAGE)).*)"}
+{"pattern": "^(?!.*\\.\\.|\\..*|^_vti_|.*\\.$)([A-Za-z0-9\\-\\t _,.!'@^=+()<>`])+$"}
+{"pattern": "&(?!(\\w+|#\\d+);)"}
+{"pattern": "(?:^\\s*([+-])?|\\s*([+-])(?![+-]))\\s*(?:(\\d+(?:\\.\\d*)?)\\s*\\*)?\\s*([+-])?(?![+-])(\\d+(?:\\.\\d*)?)?([xX])?(?:\\^(\\d+))?\\s*"}
+{"pattern": "^#(?=.*?\\bmust-have\\b)#(?=.*?\\bmandatory\\b)(#(?!avoid|illegal|\\t).(?!\\t).)*$"}
+{"pattern": "(\\d+(?:[,.]\\d+)?)(?=[^>]+?<)"}
+{"pattern": "^(?:[\\w\\d\\.-_])+@(?=.{4,64}$)(?:[\\w\\d]+[-]?[\\w\\d]+\\.|[\\w\\d]\\.)+(?:\\w{2,})$"}
+{"pattern": "^((GRUB_CMDLINE_LINUX_DEFAULT|GRUB_CMDLINE_LINUX)=(?!.*elevator=noop).*)\\\""}
+{"pattern": "^\\{((?:(?:(?!\\}).)+)(?:(?:\\}\\})?(?:(?:(?!\\}).)+))+)\\}(?!\\})"}
+{"pattern": "/device(\\x3d|%3d)(\\x22|%22)((?!(\\x22|%22)).)*?([\\x60\\x3b\\x7c]|\\x24\\x28|%60|%3b|%7c|%24%28)/Pi"}
+{"pattern": "test(?!.*test)"}
+{"pattern": "[a-zA-Z/ ]+(?!\\w)(?!\\D)"}
+{"pattern": "^(?!000)([0-6]\\d{2}|7([0-6]\\d|7[012])) ([ -])? (?!00)\\d\\d([ -|])? (?!0000)\\d{4}$"}
+{"pattern": "(?!^0*\\.0*$)^\\d{1,10}(\\.\\d{1,2})?$"}
+{"pattern": "(?=^\\s+Drive\\s+at\\s+Enclosure\\s+(\\d+),\\s+Slot\\s+(\\d+)).*(Status)\\s?+:(.*)$"}
+{"pattern": "(?:\\r\\n|\\n|\\r(?!\\n))"}
+{"pattern": "\\\\(?! )"}
+{"pattern": "^(?!.*\\.d\\.tsx?$).*\\.[tj]sx?$"}
+{"pattern": "^([a-zA-Z]\\:)(\\\\{1}|((\\\\{1})[^\\\\/:*?<>\\\"|]([^\\\\/:*?<>\\\"|]*(?![ ])))+)$"}
+{"pattern": "(?=[^A]*(?:ASM:|A.*ASM:))^.*?\\s+ASM:\"(?P<asm_request_status>[^\"]+)\",\"(?P<asm_timestamp>\\d+\\-\\d+\\-\\d+\\s+\\d+:\\d+:\\d+)\",\"(?P<asm_severity>\\w+)\",\"(?P<asm_attack_types>[^\"]*)\",\"(?P<asm_violation>[^\"]*)\",\"(?P<asm_support_id>\\d+)\",\"(?P<asm_security_policy>[^\"]+)\",\"(?P<asm_src_client_ip>[^\"]+)\",\"(?P<asm_src_xffclient_ip>[^\"]+)\",\"(?P<asm_protocol>[^\"]+)\",\"(?P<asm_http_method>[^\"]+)\",\"(?P<asm_dst_server_ip>[^\"]+)\",\"(?P<asm_dst_server_port>[^\"]+)\"(?:,\"(?P<asm_requested_url>[^\"]+)\",\"(?P<asm_response_code>\\d+)\",\"(?P<asm_loadbalancer>[^\"]+)\",\"(?P<asm_ip_address_intelligence>[^\"]+)\",\"(?P<asm_sub_violation>[^\"]*)\",\"(?P<asm_violation_rating>[^\"]+)\"(?:,\"(?P<asm_violation_details>[^\"]+?(?P<asm_violation_name><viol_name>.*?<\\/viol_name>)+?.*?(?P<asm_violation_context><context>.*?<\\/context>)*.*?(?P<asm_policy_param><param_name_pattern>.*?<\\/param_name_pattern>)*[^\"]+))?)?"}
+{"pattern": "\\b(((?!\\d\\d\\d)\\d+|1\\d\\d|2[0-4]\\d|25[0-5])(\\b|\\.)){4}"}
+{"pattern": "^((31(?!([-])(Feb|Apr|June?|Sep|Nov)))|((30|29)(?!([-])Feb))|(29(?=([-])Feb([-])(((1[6-9]|[2-9]\\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00)))))|(0?[1-9])|1\\d|2[0-8])([-])(Jan|Feb|Ma(r|y)|Apr|Ju(l|n)|Aug|Oct|(Sep|Nov|Dec))([-])((1[6-9]|[2-9]\\d)\\d{2}\\s(([0-1]?[0-9])|([2][0-3])):([0-5]?[0-9])(:([0-5]?[0-9]))?)$"}
+{"pattern": "List\\sParagraph\\t\\d+\\)\\sRationale-([\\s\\S]+)?(?=List\\sParagraph\\t\\d+\\)\\sAttached\\sFiles)"}
+{"pattern": "https?://(?!\\S*?domainname\\.tld/)\\S*?/"}
+{"pattern": "(?=-)([^>]*)(?=.tar)"}
+{"pattern": "^=item\\sB<(\\w+)>\\(([^)]+)\\)\\n\\n(?=(.*?)\\n\\n)"}
+{"pattern": "^(?=.*\\d{2})(?=.*[A-Z]{2})(?=.*[\\D,\\W,\\S]{2})(?=.*[a-z]).{15,30}$"}
+{"pattern": "^(((?!-))(xn--|_{1,1})?[a-z0-9-]{0,61}[a-z0-9]{1,1}\\.)*(xn--)?([a-z0-9][a-z0-9\\-]{0,60}|[a-z0-9-]{1,30}\\.[a-z]{2,})$"}
+{"pattern": "(?!^[0-9 ]*$)(?!^[a-zA-Z ]*$)^([a-zA-Z0-9 ]{6,15})$"}
+{"pattern": "(?:\\s*from\\s(?:(?:([^\\(\\n]*?)\\s)|(\\[[^\\]]*\\]))?(?:\\((?:(?:((?!HELO|EHLO)[^\\s]*)|(?:(?:EHLO)|(?:HELO)))?(?:[\\s\\w\\.]*(?:(?:\\[([^\\]]*)\\])|([^\\)\\s]*))\\))))?(?:\\{.*\\})?)?\\s*(?:(?:client\\s)?[\\(\\{\\[]+([^\\)\\}\\]]*)[\\)\\}\\]]+\\;?(?:\\{.*\\})?)?(?:[\\s\\n]*)(?:\\s*(?:by(?:(?:.*?)(?:\\;|(?:[\\r\\n]+))))(?!.*with))?(?:\\s*(?:by\\s[^\\;]*\\)?)(?=.*with)\\s*)?(?:with\\s*(?:((?:[^\\n;]*))(?:.*\\;)?))?(?:[\\s\\n]*)?(?:\\(?envelope-from\\s*([^\\n]*)\\;?\\)?)?(?:\\s*id[^;]*\\;?)?(?:[\\s\\n]*)?(?:for\\s([^\\;]*)\\;)?(?:[\\s\\n]*)?(?:\\(.*\\)\\;)?(?:[\\s\\n])?([^\\(]+)?(?:\\(?envelope-from\\s*([^\\n]*)\\;?\\)?)?"}
+{"pattern": "<{7}[ ]HEAD[\\r\\n]{1,2}([\\S\\s]*?)(?:={7}[\\r\\n]{1,2}((?:[\\S\\s]?(?!(>{7}[ ][a-z0-9]{40})))*[\\r\\n]?)(?:>{7}[ ][a-z0-9]{40}[\\r\\n]{0,2})?)"}
+{"pattern": "^(?!.*(DE|AT|BE|BG|HR|DK|ES|EE|FI|FR|GR|HU|IE|IT|LT|LV|LU|NO|NL|PL|PT|CZ|RO|GB|SM|SK|SI|SE|CH)).*$"}
+{"pattern": "/^LIST(?!\\n)\\s[^\\n]{128}/smi"}
+{"pattern": "to=<(?P<email>\\S+)>,\\srelay=(?!10\\.10\\.10\\.)(?P<relay>\\S+),.+dsn=(?P<dsn>\\d+\\.\\d+\\.\\d+),\\sstatus=(?!sent)(?P<status>\\w)\\w+\\s\\((?:host\\s\\S+\\[\\S+\\]\\ssaid:\\s)?(?P<code>\\d{3})?"}
+{"pattern": "(<script)((?:(?!src=).)*?>)"}
+{"pattern": "(IP )((?:(?![Aa]ddress)\\w)+)"}
+{"pattern": "^(?=.*[a-z])(?=.*[0-9])[a-zA-Z]{1}(?=.*[A-Z])[0-9A-Za-z]{5,31}$"}
+{"pattern": "((?!y).+)\\s*([+-/])\\s*((?!.*x)(?=.*y).+)\\s*=.+"}
+{"pattern": "[,](?![^(]*\\))"}
+{"pattern": "(?!.*?\\/)(?P<image>.*?)(?:\\.(?:jpg|jpeg|jpe|gif|png|psd|tiff|img|png))"}
+{"pattern": "^((31(?!\\ (Apr(il)?|June?|(Sept|Nov)(ember)?)))|((30|29)(?!\\ Feb(ruary)?))|(29(?=\\ Feb(ruary)?\\ (((1[6-9]|[2-9]\\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00)))))|(0?[1-9])|1\\d|2[0-8])\\ (Jan(uary)?|Feb(ruary)?|Ma(r(ch)?|y)|Apr(il)?|Ju((ly?)|(ne?))|Aug(ust)?|Oct(ober)?|(Sept|Nov|Dec)(ember)?)\\ ((1[6-9]|[2-9]\\d)\\d{2})$"}
+{"pattern": ".*^(?=.{8,20})(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).*$"}
+{"pattern": "&(?![a-z]+;|#\\d+;)"}
+{"pattern": "\\d: (?!<)[^\\n]+(?:\\n .*)*"}
+{"pattern": "(\\n|^).*?(?=\\n|$)"}
+{"pattern": "(a)(?!\\s(abc|a))"}
+{"pattern": "/^Content-Type\\x3a\\s*(?=[av])(video\\/x\\-ms\\-(w[vm]x|asf)|a(udio\\/x\\-ms\\-w(m[av]|ax)|pplication\\/x\\-ms\\-wm[zd]))/smiH"}
+{"pattern": "^(?=.*\\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\\w\\d\\s:])([^\\s]){12,123}$"}
+{"pattern": "^ISBN\\s(?=[-0-9xX ]{13}$)(?:[0-9]+[- ]){3}[0-9]*[xX0-9]$"}
+{"pattern": "^.*reddit\\.com\\/?(?!(?:message|comments)\\/).*?$"}
+{"pattern": "&(?![^a-zA-Z0-9_#]{1,5};)"}
+{"pattern": "<\\/*?(?![^>]*?\\b(?:a|img)\\b)[^>]*?>"}
+{"pattern": "^(?i:(?=[MDCLXVI])((M{0,3})((C[DM])|(D?C{0,3}))?((X[LC])|(L?XX{0,2})|L)?((I[VX])|(V?(II{0,2}))|V)?))$"}
+{"pattern": "^(0?[1-9]|1\\d|2[0-8]|29(?=[-]\\d?\\d[-](?!1[01345789]00|2[1235679]00)\\d\\d(?:[02468][048]|[13579][26]))|30(?![-]0?2)|31(?=[-]0?[13578][-]|[-]1[02]))[-](0?[1-9]|1[0-2])[-]([12]\\d{3})$"}
+{"pattern": "^(?:(?!Windows Phone).)*(iPhone|iPad|iPod)"}
+{"pattern": "(?=^.{6,51}$)([A-Za-z]{1})([A-Za-z0-9!@#$%_\\^\\&amp;\\*\\-\\.\\?]{5,49})$"}
+{"pattern": "^(?!01000|99999)(0[1-9]\\d{3}|[1-9]\\d{4})$"}
+{"pattern": "/^(PERIOD|DTSTART|DTEND|RECUR|DTSTAMP|TRIGGER|COMPLETED|DUE|FREEBUSY|RECURRENCE-ID|EXDATE|RDATE|CREATED|LAST-MODIFIED)\\x3a(?!\\d{8}T\\d{6})/Rsmi"}
+{"pattern": "^(?=.*[a-zA-Z]{1,})(?=.*[\\d]{0,})[a-zA-Z0-9]{1,15}$"}
+{"pattern": "^(?:(?!global\\.css$).)*\\.css$"}
+{"pattern": "src=\\\"(\\S+)?\\\".+\\s.+\\s.+href=(\\S+).+ember-view\\\">\\s+(\\S+)?(?:\\s(\\S+))\\s(\\S+)\\s+.+\\s+.+\\s.+\\s\\S+\\s.+\\s.+clamp__line.+?(?=>)\\W(\\s+.+(?=<!)|.+(?=<\\/span>))"}
+{"pattern": "/^XCRC(?!\\n)\\s[^\\n]{200}/smi"}
+{"pattern": "(?=NM1\\*03\\*1\\*).*?~((REF\\*(?<refDepCode>\\w{2,3})\\*(?<refDepVal>.*?)~)*)"}
+{"pattern": "(?! )=(?! )"}
+{"pattern": "(?=((A[TU]G)(?:.{3})*?(?:[TU]AG|[TU]AA|[TU]GA)))"}
+{"pattern": "/^PASS(?!\\n)\\s[^\\n]{100}/smi"}
+{"pattern": "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_\\~\\-\\`\\\\/\\\"\\'+|\\[\\]}{:;'?/>.<,])(?!.*\\s)(?!.*\\s).{8,55}$"}
+{"pattern": "^[-a-zA-Z0-9#$%'_]+(\\.[-a-zA-Z0-9#$%'_]+)*@(([a-zA-Z0-9]+|[a-zA-Z0-9][-a-zA-Z0-9]+[a-zA-Z0-9])\\.)+(?!\\d+$)[a-zA-Z0-9]{2,}$"}
+{"pattern": "(?!^).(\\(\\+\\d{1,3}\\)?)( *(,|$))"}
+{"pattern": "([13579])(?=[13579])"}
+{"pattern": "(?![0-9 &()\uff08\uff09,\uff0c\u2019'-.;\\/\u3001]+$)(^[a-zA-Z0-9 \u3000&()\uff08\uff09,\uff0c\u2019'-.;\\/\u3001]+$)"}
+{"pattern": "^((?!\\/EHANCE).)*$"}
+{"pattern": "<span .+?(?=>)>"}
+{"pattern": "^.*(?=.{8,})(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(^[a-zA-Z0-9@\\$=!:.#%]+$)"}
+{"pattern": "^\\s*(\\d+)?\\s?([rwxSTstdcb\\-lp?]{10})\\s+(\\d+)?\\s?(\\S+)\\s+(\\S+)\\s+([0-9,]+)?\\s+(\\d+)?\\s?([0-9\\-]{10}\\s+[0-9:]{5}|[A-Z][a-z]{2}\\s+[0-9]{1,2}\\s+[0-9:]{4,5})\\s((?:(?!\\s\\->\\s).)*)(\\s\\->\\s)?(.*)"}
+{"pattern": "(?=.*\\d)(?=.*[a-zA-Z])"}
+{"pattern": "/^Via\\x3A\\s+(?!SIP\\x2F2\\x2E0)/Hsmi"}
+{"pattern": "^(?=^.{1,254}$)(^(?:(?!\\.|-)([a-z0-9\\-\\*]{1,63}|([a-z0-9\\-]{1,62}[a-z0-9]))\\.)+(?:[a-z]{2,})$)$"}
+{"pattern": "^(?:(?:(?!table).)*table){19}(.+?(?=table))"}
+{"pattern": "[\\._]|\\-(?=$)"}
+{"pattern": "(a)(?=\\s(abc|a))"}
+{"pattern": "customer name is ([\\w\\s]*?(?=(?:and|or|$)))?(?:(?:(?:and|or) customer id is )(\\d*)|c)? ?(?:(?:(?:and|or) policy id is ([a-zA-Z0-9]*)))?"}
+{"pattern": "url\\(['\"]?(?!(?:\\w{3,4}:))([^\\)'\"]+?)['\"]?\\)"}
+{"pattern": "^.{0,64}(@)(?=.+\\..+).{0,255}$"}
+{"pattern": "<a href=\"(?!http|ftp|mailto|/).*</a>"}
+{"pattern": "\\b(10[.][0-9]{4,}(?:[.][0-9]+)*/(?:(?![\"&\\'])\\S)+)\\b"}
+{"pattern": "\\w+(?= :)"}
+{"pattern": "/^[\\x0c\\x13]([\\x00-\\x7f]|\\x81.|\\x82.{2})\\x28(?=[^\\x29]*\\x7e)[^\\x29]*\\x7c/sR"}
+{"pattern": "^(?=.*\\d)(?=.*[A-Za-z])(?!.*[!@#\\$%\\^&\\*\\(\\)\\+=\\|;'\"{}<>\\.\\?\\-_\\\\/:,~`]).{6,20}$"}
+{"pattern": "(WebView|(iPhone|iPod|iPad)(?!.*Safari)|Android.*(wv|\\.0\\.0\\.0)|Linux; U; Android)"}
+{"pattern": "([\\w\u00c3\u00a1-\u00c3\u00ba])\\s(?=(\u00c2\u00bf|\u00c2\u00a1)[A-Z\u00c3\u0081-\u00c3\u0161])"}
+{"pattern": "(?<Time>^(?:0?[1-9]:[0-5]|1(?=[012])\\d:[0-5])\\d(?:[ap]m)?)"}
+{"pattern": "/<\\s*style[^>]*?(?=.{20,512}<\\s*\\/\\s*style\\s*>).{0,500}\\{\\s*\\;\\s*\\w+\\s*=\\s*expression\\s*\\x28/ims"}
+{"pattern": "^\\{((?:(?:(?!\\}).)+)(?:(?:\\}\\}|\\}')?(?:(?:(?!\\}).)*))+)\\}(?!\\})"}
+{"pattern": "((([A-Z.]+\\.)\\s([A-z]+)(?:,\\s)){1,})([^,][A-z\\s\\W]+)(?:,\\sin:\\s)((([A-Z.]+\\.)\\s([A-z]+)(?:,\\s)){1,})(([A-Z.]+\\.)\\s([A-z]+))(?:\\s)\\(Eds.\\)(?:,\\s)([A-z\\s\\W]+)(?:,\\s)(([A-z0-9\\-,\\s\u00e2\u20ac\u201c]+)(?=, [A-z]))(?:,\\s)([A-z\\.\\s]+)\\s([0-9]{1,3}\u00e2\u20ac\u201c[0-9]{1,3})\\s\\(([A-z\\s\\(\\)]+)\\)\\s\\(([0-9]{1,4})\\)\\s([0-9]{1,3}\u00e2\u20ac\u201c[0-9]{1,3})"}
+{"pattern": "(?:\"\"(?:(?:(?:\\\\.)|[^\"\"\\\\\\r\\n])*)\"\"|'(?:(?:(?:\\\\.)|[^'\\\\\\r\\n])*)'|`(?:(?:(?:\\\\.)|[^`\\\\\\r\\n])*)`|(?:\\s?(?:\\#|--\\ ).*(?=[\\r\\n]))|(?:/\\*(?:(?:[^*]|\\*(?!/))*)\\*/)|(?:[^;`'\"\"](?!(?:--\\ |\\#|/\\*)))*(?:[^;`'\"\"](?=(?:--\\ |\\#|/\\*)))?)*"}
+{"pattern": "/^(?=[abchimoprswx])(acs|bin|c(ap|ls)|h(di|ms|tb)|iex|m(oo|tx|ws)|opn|pwr|rst|s(h[di]|ms|tb|wm)|wrd|xls)\\x7C/smi"}
+{"pattern": "(^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2},\\d{3})\\s([\\s\\S]*?)\\n*(?=^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2},\\d{3}|\\z)"}
+{"pattern": "/new\\s*?RegExp\\x28(?=[^\\x29]*\\x5c{2}[\\x22\\x27])[^\\x29]*\\x5b[^\\x5d]*\\x5c{2}[\\x22\\x27]\\x29/smi"}
+{"pattern": "^[a-zA-Z_\\s\\w.]*(?![\\w\\.\\(\\[])"}
+{"pattern": "/name\\s*=\\s*[\\x22\\x27]?pingAddr((?!^--).)*?[\\r\\n]{2,}((?!^--).)*?([\\x60\\x3b\\x7c\\x26]|[\\x3c\\x3e\\x24]\\x28)/sim"}
+{"pattern": "(?!__init__).*\\.py$"}
+{"pattern": "^([a-zA-Z]:(?=\\\\)|\\\\\\\\(?:[^\\*:<>?\\\\\\/|]+\\\\[^\\*:<>?\\\\\\/|]+|\\?\\\\(?:[a-zA-Z]:(?=\\\\)|(?:UNC\\\\)?[^\\*:<>?\\\\\\/|]+\\\\[^\\*:<>?\\\\\\/|]+)))"}
+{"pattern": "\\/(?:(?![a-z]+\\/)(?![A-Z]+\\/)(?![0-9]+\\/)[a-zA-Z0-9]+\\/[A-F0-9\\/]*?){3,} HTTP"}
+{"pattern": "(\\b|[#])\u0418\u0421-5 B\\/1 D\\.06' \\(\u041e\u0431\u044a\u0435\u043a\u0442 730\\)(?=\\b|[^-])"}
+{"pattern": "^.*\\(((?:RR|RI|PC|PR|PA)R\\d{3}){0,1}\\) \\[([1-2]\\d{7}@\\d{6})\\]\\.(( <<.*>>)|( (?!<<).+)){0,1}$"}
+{"pattern": "(?:(?:(?:\")+((?:(?:[^\\\\\"]+)(?:(?:(?:\\\\)*(?!\"))?(?:\\\\\")?)*)+)(?:\"))+|([^ ]+)+)+(?: )?"}
+{"pattern": "^(?P<log_time>[\\dT\\-\\:]+)\\s+(?P<log_host>[\\w\\-]+)(?:\\.[\\w\\-\\.]*\\s+|\\s+)(?P<log_type>\\w+)\\s+(?:(?=\\()(?P<log_module>[^\\)]+\\))\\s+|)(?:(?=\\[)(?P<log_tenant>[^ ]+)\\s+|)(?P<log_message>.+)"}
+{"pattern": "(\")(?![^<>]*>)"}
+{"pattern": "^[a-zA-Z0-9\\/\\\\\\_](?!.*?[^a-zA-Z0-9]).*?[a-zA-Z0-9]$"}
+{"pattern": "^START(?=(?:.(?!END|START))*MIDDLE).*?END[^\\n]+"}
+{"pattern": "^(?:(.+)(?:(?:\\| )(--(?!-).+))|(.*))$"}
+{"pattern": "<a\\s*(?:href=[\\'\"]([^\\'\"]+)[\\'\"])?\\s*(?:title=[\\'\"]([^\\'\"]+)[\\'\"])?.*?>((?:(?!<\\/a>).)*)<\\/a>"}
+{"pattern": "^[-+]?(?!0?\\.00)(?=.+(\\.|$))(?!0(?!\\,))\\d{1,3}((| )\\d{3})*(\\.\\d+)?$|^[+-]?((\\d{1}(\\.\\d*)?)|(\\.\\d+))$"}
+{"pattern": "([0-9a-zA-Z][:0-9a-zA-Z ]+)(?= )"}
+{"pattern": "\\n        # Source consists of a PS1 line followed by zero or more PS2 lines.\\n        (?P<source>\\n            (?:^(?P<indent> [ ]*) >>>    .*)    # PS1 line\\n            (?:\\n           [ ]*  \\.\\.\\. .*)*)  # PS2 lines\\n        \\n?\\n        # Want consists of any non-blank lines that do not start with PS1.\\n        (?P<want> (?:(?![ ]*$)    # Not a blank line\\n                     (?![ ]*>>>)  # Not a line starting with PS1\\n                     .+$\\n?       # But any other line\\n                  )*)\\n"}
+{"pattern": "^(?!000)\\d{3,4}$"}
+{"pattern": "/^SIZE(?!\\n)\\s+[\\x2F\\x5C][^\\x2F\\x3A\\x5C\\n][^\\n]{526}/smi"}
+{"pattern": "^([1-9]|(?=0)0[1-9]|(?=1)1[0-2])[-/.]([1-9]|(?=[0-2])[0-2][0-9]|(?=3)3[0-1])[-/.](\\d{4}|\\d{2})( ([1-9]|(?=[0-1])[0-1][0-9]|(?=2)2[0-4]):(?=[0-5])[0-5][0-9](:(?=[0-5])[0-5][0-9])?(a|p|A|P|am|pm|AM|PM)?)?$"}
+{"pattern": "(^|\\n)svn path=[^\\n]+revision=\\d+(?=$|\\n)"}
+{"pattern": "^(?=(?:^(?:\\+?1\\s*(?:[.-]\\s*)?)?(?!(?:(?:.*\\(.*)|(?:.*\\).*)))(?:[2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))|(?:.*\\((?:[2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\\).*))(?:\\+?1\\s*(?:[.-]\\s*)?)?(?:\\(?([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\\)?)\\s*(?:[.-]\\s*)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\\s*(?:[.-]\\s*)?([0-9]{4})(?:\\s*(?:#|x\\.?|ext\\.?|extension)\\s*(\\d{1,15}))?$"}
+{"pattern": "/^\\x00.{3}\\xffSMB[\\x02\\x03\\x06\\x07\\x08\\x09\\x0f\\x29\\x2a\\x2d\\x82\\x83\\x84\\xa2\\xa5].{61}[\\x5c\\x2f]\\x00?(.\\x00?)+?[\\x5c\\x2f]\\x00?(.\\x00?){5}\\x7e\\x00?(.\\x00?){2}\\x2E\\x00?(.\\x00?){3}(?!\\x00\\x00?)/"}
+{"pattern": "^.+?@(?=[a-z0-9-_]{0,61}\\.[a-z]{2,})"}
+{"pattern": "/^(?:(?:0?[13578]|1[02])|(?:0?[469]|11)(?!\\/31)|(?:0?2)(?:(?!\\/3[01]|\\/29\\/(?:(?:0[^48]|[13579][^26]|[2468][^048])00|(?:\\d{2}(?:0[^48]|[13579][^26]|[2468][^048]))))))\\/(?:0?[1-9]|[12][0-9]|3[01])\\/(?:0?19|20)\\d{2}$/"}
+{"pattern": "^((?!-([ABC])(\\d{3})).)*$"}
+{"pattern": "to=<(?P<email>\\S+)>,\\srelay=(?!10\\.10\\.10\\.).+dsn=(?P<dsn>\\d+\\.\\d+\\.\\d+),\\sstatus=(?!sent)"}
+{"pattern": "(?=[A-Z])"}
+{"pattern": "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(\\S).{6,14}$"}
+{"pattern": "^((?:19|20)(?:(?:(?:[02468][048]|[13579][26])\\/02\\/(?:0[1-9]|[12]\\d))|(?:(?![02468][048]|[13579][26])\\d){2}\\/02\\/(?:0[1-9]|[1]\\d|2[0-8])|\\d{2}\\/(?:(?:0[469]|11)\\/(?:0[1-9]|[12]\\d|30)|(?:0[13578]|10|12)\\/(?:0[1-9]|[12]\\d|30|31))))$"}
+{"pattern": "([A-Z][a-z]+|[A-Z]+(?![a-z])|[0-9]+)"}
+{"pattern": "^(([^}]*?[^;]?)\\s*)(?=\\})"}
+{"pattern": "^(?=.*\\bmeat\\b)(?=.*\\bpasta\\b)(?=.*\\bdinner\\b).+"}
+{"pattern": "^(?i)(?!.*@text.*$).+"}
+{"pattern": "^((?=.*[a-z])(?=.*[0-9]).{8,20})$"}
+{"pattern": "^([a-z\\!\\$\\#\\*\\d]){8,64}(?=$)"}
+
+{"pattern": "^(?:((31\\/(Jan|Mar|May|Jul|Aug|Oct|Dec))|((([0-2]\\d)|30)\\/(Jan|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))|(([01]\\d|2[0-8])\\/Feb))|(29\\/Feb(?=\\/((1[6-9]|[2-9]\\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00)))))\\/((1[6-9]|[2-9]\\d)\\d{2})$"}
+{"pattern": "^(?=.{2}(.))(?=.{5}(.))(?=.{7}(.))"}
+{"pattern": "[^\\t]+|\\t(?=\\t)|\\t$"}
+{"pattern": "\\b[0-9]{1,3}(?:,[0-9]{3})*(?=\\b(?!\\S)|[\\.\\,\\!\\?])"}
+{"pattern": "(?=(?:[^\\']*\\'[^\\']*\\')*(?![^\\']*\\'))"}
+{"pattern": "/name\\s*=\\s*[\\x22\\x27]?host_name((?!^--).)*?[\\r\\n]{2,}((?!^--).)*?([\\x60\\x3b\\x7c\\x26]|[\\x3c\\x3e\\x24]\\x28)/Psim"}
+{"pattern": "^(?!.*SNAPSHOT).*$"}
+{"pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!$%&?@#\\._-]).{8,10}$"}
+{"pattern": "<tagname((.|\\n)(?!string))*?<\\/tagname>"}
+{"pattern": "q(?=u)u"}
+{"pattern": "ULong[\\s]GenerateHashValue[\\s]*\\((?!void)[\\s\\w&*]+\\)"}
+{"pattern": "^#start of line(?![^\\n!]*!{2,})(?=[^_\\n]*_[^_]*) #if _ exists, then:([^_:]+) #mandatory group 1((?=:[^:\\n]):[^:_(\\n]+|) #optional group 2(_(?!_)) #group 3 mandatory([^_\\-(\\n]+) # group 4 mandatory\\( #mandatory (([^()\\n]+) # group 5 mandatory\\) #mandatory )((?=!)!|) # group 6 optional((?=:[^!:@\\n]):[^!:@\\n]+|) # group 7 optional((?=::[^!:@\\n])::[^!:@\\n]+|) #group 8 optional((?=@[^!:@\\n])@[^!:@\\n]+|) #group 9 optional$ #end of line"}
+{"pattern": "<\\s*script\\s+.+?(?=src\\s*=\\s*['\"]).+?(?=.bundle.js).bundle.js\\s*[\"'](?:\\s*>|\\s*\\/\\s*>)(?:\\s*<\\s*\\/\\s*script\\s*>)?"}
+{"pattern": "(?=^.{3,20}$)^[a-zA-Z][a-zA-Z0-9]*[._-]?[a-zA-Z0-9]+$"}
+{"pattern": "^([0-9]{1}[ ]?)?((?!opw|lie|gez).)[a-zA-Z]+"}
+{"pattern": "^(?=(.*[0-9])+)(?=(.*[a-z])+)(?=(.*[A-Z])+)[0-9a-zA-Z]{8,12}$"}
+{"pattern": "\\bf\\b((?!')(?!\\\")(?!\\())"}
+{"pattern": "^(?=.*[0-9])(?=.*[a-zA-Z])(\\w|[~!$&+,:;=?\\[\\]@#_|<>{}()^%*\\.\\-\\+]){5,15}"}
+{"pattern": "\\A(?:(?=[a-zA-Z0-9])(?=[\\w@\\-.]{1,128}\\z)(?=[\\w.-]+[a-zA-Z0-9]@)[\\w-]+(?:\\.[\\w-]+)*@(?:[0-9a-zA-Z][-\\w]*[0-9a-zA-Z\\.]){1,2}[a-zA-Z]{2,9})\\z"}
+{"pattern": "/^RMDIR(?!\\n)\\s[^\\n]{100}/smi"}
+{"pattern": "^(?=.{3,256}$)((?:[a-z0-9-]{2,65}\\.)?[a-z0-9-]{2,256}\\.[a-z\\.]{2,6})$"}
+{"pattern": "^(?!.*error).*?subsite.*$"}
+{"pattern": "(?=\\s*?)(console)\\.(log)\\((.*?)\\)(\\;|\\s*?)"}
+{"pattern": "^(?:\\.\\s*(include|undef|error|warning|if|else|elif|endif|for|endfor)|\\s*(ifeq|ifneq|ifdef|ifndef|else|endif|-?include|define|endef|:))(?=\\s)"}
+{"pattern": "(^\\d{4}(-\\d{2}){2}([^|]+\\|){3})([\\s\\S]*?)(?=^\\d{4}|\\z)"}
+{"pattern": "\".*?[^\"\\\\]\"(?!\")|\"\""}
+{"pattern": "(?=(?:.*[a-z]){2,})(?=(?:.*[A-Z]){2,})(?=(?:.*\\d){2,})(?=(?:.*[@#$%^&+=]){2,})"}
+{"pattern": "^\\+?([87](?!95[4-79]|99[08]|907|94[^0]|336|986)([348]\\d|9[0-6789]|7[0247])\\d{8}|[1246]\\d{9,13}|68\\d{7}|5[1-46-9]\\d{8,12}|55[1-9]\\d{9}|55[12]19\\d{8}|500[56]\\d{4}|5016\\d{6}|5068\\d{7}|502[45]\\d{7}|5037\\d{7}|50[4567]\\d{8}|50855\\d{4}|509[34]\\d{7}|376\\d{6}|855\\d{8}|856\\d{10}|85[0-4789]\\d{8,10}|8[68]\\d{10,11}|8[14]\\d{10}|82\\d{9,10}|852\\d{8}|90\\d{10}|96(0[79]|17[01]|13)\\d{6}|96[23]\\d{9}|964\\d{10}|96(5[69]|89)\\d{7}|96(65|77)\\d{8}|92[023]\\d{9}|91[1879]\\d{9}|9[34]7\\d{8}|959\\d{7}|989\\d{9}|97\\d{8,12}|99[^4568]\\d{7,11}|994\\d{9}|9955\\d{8}|996[57]\\d{8}|9989\\d{8}|380[3-79]\\d{8}|381\\d{9}|385\\d{8,9}|375[234]\\d{8}|372\\d{7,8}|37[0-4]\\d{8}|37[6-9]\\d{7,11}|30[69]\\d{9}|34[67]\\d{8}|3[12359]\\d{8,12}|36\\d{9}|38[1679]\\d{8}|382\\d{8,9}|46719\\d{10})$"}
+{"pattern": "(<a(?:(?!\\/a>).|\\n)*(?=\\/a>)...)"}
+{"pattern": "/url\\(\\s*(?:(?:(\"(?!(['\"]+))(?!(((data|http(s)*):)|\\s*\"))[^'\"]*\")|(?:('(?!(['\"]+))(?!(((data|http(s)*):)|\\s*'))[^'\"]*'))|(?:((?!(['\"\\s]+))(?!(((data|http(s)*):)|\\s*')).*[^'\"]))))\\s*\\)/g"}
+{"pattern": "^-?\\d*(\\.(?=\\d))?\\d*$"}
+{"pattern": "(?=<TAGNAME.*>).*(?=</TAGNAME>)"}
+{"pattern": "(?!^0)^\\d+$"}
+{"pattern": "^[1-9]{1}[0-9]{3} ?(?!sa|sd|ss)[a-zA-Z]{2}$"}
+{"pattern": "^(?![\\._]|.*?\\.\\..*|.*(?:\\.|\\.files|_files|-Dateien|_fichiers|_bestanden|_file|_archivos|-filer|_tiedostot|_pliki|_soubory|_elemei|_ficheiros|_arquivos|_dosyalar|_datoteke|_fitxers|_failid|_fails|_bylos|_fajlovi|_fitxategiak)$)[^!#%&*{}\\:<>?\\\\\\/|\"]+$"}
+{"pattern": "(?i)\\bwhere\\b.*(((?!)(upper|lower)\\(.*?\\)\\s*?=\\s*?'.*?')|\\b.*\\b\\s*?=\\s*?')"}
+{"pattern": "/pt-br/aeroportos/(?!brasil)|/pt-br/localidades/(?!brasil)|/pt-br/locadora/[^/]+/((?!brasil).)+$"}
+{"pattern": "^((([0-9]{3}(?![0-9]))|([a-z]{3}(?![a-z])))|(([0-9]{1,2})|([a-z]{1,2}))|-){6,}"}
+{"pattern": "^(?:(((Jan(uary)?|Ma(r(ch)?|y)|Jul(y)?|Aug(ust)?|Oct(ober)?|Dec(ember)?)\\ 31)|((Jan(uary)?|Ma(r(ch)?|y)|Apr(il)?|Ju((ly?)|(ne?))|Aug(ust)?|Oct(ober)?|(Sept|Nov|Dec)(ember)?)\\ (0?[1-9]|([12]\\d)|30))|(Feb(ruary)?\\ (0?[1-9]|1\\d|2[0-8]|(29(?=,\\ ((1[6-9]|[2-9]\\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00)))))))\\,\\ ((1[6-9]|[2-9]\\d)\\d{2}))"}
+{"pattern": "([^*]|\\*(?!/))+"}
+{"pattern": "(?=(\\d{1,3}\\.){3}\\d{1,3})((?:(2[0-5]{2}|[1]?\\d{1,2}))\\.){3}(?:(2[0-5]{2}|[1]?\\d{1,2}))(?![\\.\\d])"}
+{"pattern": "\\b[A-Za-z]{2}(?=([0-9]*[1-9]){1,})\\d{1,5}\\b"}
+{"pattern": "if*(((?!then).)*)"}
+{"pattern": "\\s*/\\*.*(?!\\*/\\s*)$"}
+{"pattern": "/filename\\s*=\\s*.*?\\.(?=[abcdehijlmnoprsvwx])(a(d[ep]|s[dfx])|c([ho]m|li|md|pp)|d(iz|ll|ot)|e(m[fl]|xe)|h(lp|sq|ta)|jse?|m(d[abew]|s[ip])|p(p[st]|if|[lm]|ot)|r(eg|tf)|s(cr|[hy]s|wf)|v(b[es]?|cf|xd)|w(m[dfsz]|p[dmsz]|s[cfh])|xl[tw]|bat|ini|lnk|nws|ocx)[\\x27\\x22\\n\\r\\s]/iR"}
