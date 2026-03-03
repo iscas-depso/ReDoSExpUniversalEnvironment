@@ -16,7 +16,7 @@ TOOLS = [
     "redoshunter",
     "rengar",
     "rescue",
-    "regexploit",
+    # "regexploit",
     "revealer",
     # "regexstatic",
     # "regulator",
@@ -107,6 +107,13 @@ def get_args():
         "-u",
         action="store_true",
         help="[Mode 4] 开启并集验证模式",
+    )
+
+    parser.add_argument(
+        "--uniqueness",
+        "-U",
+        action="store_true",
+        help="[非画图] 输出每个工具的独特发现数统计表",
     )
 
     return parser.parse_args()
@@ -385,6 +392,78 @@ def plot_cactus(data_dict, output_image, limit_value, metric, mode_desc):
     print(f"Saved cactus plot to {output_image}")
 
 
+# ================= 统计: Uniqueness 表格 =================
+
+
+def print_uniqueness_table(solved_sets, mode_desc, our_tool="ere"):
+    """
+    输出各工具的 Uniqueness 统计表：
+      - Total   : 该工具在当前 Mode 下发现的总 case 数
+      - Unique  : 仅该工具发现、其他所有工具均未发现的 case 数
+      - Shared  : Total - Unique
+      - Unique% : Unique / Total
+    附加行：
+      - Others Combined: 除 our_tool 外所有工具并集中、our_tool 漏掉的 case 数
+    最后一行给出所有工具发现的并集大小。
+    """
+    if not solved_sets:
+        print("No data.", file=sys.stderr)
+        return
+
+    universe = set().union(*solved_sets.values())
+    tools = sorted(solved_sets.keys())
+
+    rows = []
+    for tool in tools:
+        tool_set = solved_sets[tool]
+        # 其他所有工具的并集
+        others_union = set().union(*[s for t, s in solved_sets.items() if t != tool])
+        unique = tool_set - others_union
+        total = len(tool_set)
+        unique_cnt = len(unique)
+        shared_cnt = total - unique_cnt
+        pct = unique_cnt / total * 100 if total > 0 else 0.0
+        rows.append((tool, total, unique_cnt, shared_cnt, pct))
+
+    # 按 Unique 数量降序排列
+    rows.sort(key=lambda r: r[2], reverse=True)
+
+    # --- Others Combined: 其他工具并集 - our_tool ---
+    our_set = solved_sets.get(our_tool, set())
+    others_union_all = (
+        set().union(*[s for t, s in solved_sets.items() if t != our_tool])
+        if len(solved_sets) > 1
+        else set()
+    )
+    others_combined_unique = others_union_all - our_set
+    others_total = len(others_union_all)
+    others_unique_cnt = len(others_combined_unique)
+    others_pct = others_unique_cnt / others_total * 100 if others_total > 0 else 0.0
+
+    # --- 格式化输出 ---
+    header = f"{'Tool':<20} {'Total':>7} {'Unique':>7} {'Shared':>7} {'Unique%':>8}"
+    sep = "-" * len(header)
+    print(f"\n[{mode_desc}] Uniqueness Statistics")
+    print(sep)
+    print(header)
+    print(sep)
+    for tool, total, unique_cnt, shared_cnt, pct in rows:
+        marker = " *" if tool == our_tool else ""
+        print(
+            f"{tool + marker:<20} {total:>7} {unique_cnt:>7} {shared_cnt:>7} {pct:>7.1f}%"
+        )
+    print(sep)
+    # Others Combined 行（对应 our_tool 视角的 miss）
+    label = f"Others Combined (-{our_tool})"
+    print(
+        f"{label:<20} {others_total:>7} {others_unique_cnt:>7} {'':>7} {others_pct:>7.1f}%"
+    )
+    print(sep)
+    print(f"{'Union (all tools)':<20} {len(universe):>7}")
+    print(sep)
+    print()
+
+
 # ================= 绘图: 堆叠条形图 =================
 
 
@@ -525,6 +604,10 @@ def main():
 
     # 4. 绘图分支
     limit_val = args.timeout if args.metric == "time" else args.mem_limit
+
+    if args.uniqueness:
+        print_uniqueness_table(solved_sets, mode_desc, our_tool=args.our_tool)
+        return
 
     if args.plot_type == "cactus":
         plot_cactus(cactus_data, args.output, limit_val, args.metric, mode_desc)
