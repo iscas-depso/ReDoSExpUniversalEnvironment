@@ -26,10 +26,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DRAW_PY="${SCRIPT_DIR}/expr/draw_cactus.py"
-# DATA_DIR="${SCRIPT_DIR}/expr/results"
-# OUT_ROOT="${SCRIPT_DIR}/expr/plots"
-DATA_DIR="${SCRIPT_DIR}/expr/results-csrru"
-OUT_ROOT="${SCRIPT_DIR}/expr/plots-csrru"
+DATA_DIR="${SCRIPT_DIR}/expr/results"
+OUT_ROOT="${SCRIPT_DIR}/expr/plots"
+# DATA_DIR="${SCRIPT_DIR}/expr/results-csrru"
+# OUT_ROOT="${SCRIPT_DIR}/expr/plots-csrru"
 
 ENGINES=("python" "java11" "nodejs14")
 
