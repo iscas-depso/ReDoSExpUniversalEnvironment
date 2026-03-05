@@ -39,7 +39,7 @@ def main():
         # Record start time
         start_time = time.time()
 
-        cmds = [str(exec_path), "-bat"]
+        cmds = [str(exec_path), "detect", "-bat"]
         if cpu_core:
             cmds = ["taskset", "-c", str(cpu_core), *cmds]
 
