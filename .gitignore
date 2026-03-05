@@ -14,3 +14,4 @@ tools/redoshunter/.idea
 tmp*.*
 data/history.jsonl
 config/settings.json
+*.pyc
