@@ -5,6 +5,7 @@ set -euo pipefail
 # 引擎名列表（按顺序执行）
 ENGINES=(
     ere
+    ere_dfa
     python
     java11
     nodejs14
@@ -17,12 +18,12 @@ fi
 
 IMAGE="redos-test"
 GROUND_TRUTH="/app/expr/ground_truth/ground_truth_all_engines.jsonl"
-PARTS=20
+PARTS=1
 
-SAMPLES=30
+SAMPLES=100
 SEED=20260306
-KS=(0 50 120 280 670 1600 3800 9000 21000 50000)
-RUNS_PER_K=4
+KS=(1 50 120 280 670 1600 3800 9000 21000 50000)
+RUNS_PER_K=1
 OUTPUT_DIR="./expr/results/2_linearity"
 MANIFEST_PATH="/app/expr/results/2_linearity/samples_manifest.jsonl"
 
@@ -40,7 +41,7 @@ docker run --rm --privileged \
     python3 /app/expr/linear_benchmark.py \
     --runexec \
     --timeout 5 \
-    --cpus 30 \
+    --cpus 200 \
     --memlimit 10240 \
     --fullmatch \
     --samples "${SAMPLES}" \
@@ -70,7 +71,7 @@ for engine in "${ENGINES[@]}"; do
             python3 /app/expr/linear_benchmark.py \
             --runexec \
             --timeout 5 \
-            --cpus 30 \
+            --cpus 200 \
             --memlimit 10240 \
             --fullmatch \
             --samples "${SAMPLES}" \
