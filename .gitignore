@@ -15,3 +15,5 @@ tmp*.*
 data/history.jsonl
 config/settings.json
 *.pyc
+
+.DS_Store
