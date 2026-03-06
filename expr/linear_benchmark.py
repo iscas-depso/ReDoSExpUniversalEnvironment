@@ -737,6 +737,10 @@ def main():
         for filename in args.files:
             all_commands.extend(select_samples_from_file(filename))
         all_commands.sort(key=lambda x: (x["file"], x["line"], x["sample_id"]))
+        if len(all_commands) == 0:
+            raise RuntimeError(
+                "No samples selected for manifest. Check --required-engines / --samples / input ground truth."
+            )
         manifest_out = Path(write_manifest_path)
         manifest_out.parent.mkdir(parents=True, exist_ok=True)
         write_manifest(str(manifest_out), all_commands)

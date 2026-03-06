@@ -47,7 +47,7 @@ docker run --rm --privileged \
     --seed "${SEED}" \
     --ks "${KS[@]}" \
     --runs-per-k "${RUNS_PER_K}" \
-    --required-engines python java11 nodejs14 ere \
+    --required-engines python java11 nodejs14 \
     --write-manifest "${MANIFEST_PATH}" \
     "${GROUND_TRUTH}" >/dev/null
 
@@ -77,7 +77,7 @@ for engine in "${ENGINES[@]}"; do
             --seed "${SEED}" \
             --ks "${KS[@]}" \
             --runs-per-k "${RUNS_PER_K}" \
-            --required-engines python java11 nodejs14 ere \
+            --required-engines python java11 nodejs14 \
             --manifest "${MANIFEST_PATH}" \
             --total-parts "${PARTS}" \
             --part-index "${part}" \
