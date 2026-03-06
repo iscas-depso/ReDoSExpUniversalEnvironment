@@ -10,6 +10,8 @@ import subprocess
 import sys
 import threading
 import time
+import uuid
+from pathlib import Path
 
 try:
     from tqdm import tqdm
@@ -34,14 +36,13 @@ _mem_usage = multiprocessing.Value("f", 0.0)
 _cpu_usage = multiprocessing.Array("f", os.cpu_count() or 1)
 memory_shortage = False
 
+
 def _monitor_resources():
     """Background thread to update resource usage metrics periodically."""
     global memory_shortage
-    # Initial call to psutil to start the interval tracking
     psutil.cpu_percent(percpu=True)
     while True:
         try:
-            # Update memory usage (relatively fast)
             _mem_usage.value = psutil.virtual_memory().percent
             if not memory_shortage and _mem_usage.value >= 80:
                 memory_shortage = True
@@ -51,14 +52,10 @@ def _monitor_resources():
                 print("Memory shortage cleared!")
 
             if enable_cpu_monitor:
-                # Update CPU usage for all cores (slow because of interval)
-                # This blocking call happens once for all processes to share
                 usages = psutil.cpu_percent(interval=0.5, percpu=True)
                 for i, usage in enumerate(usages):
                     _cpu_usage[i] = usage
-
         except Exception:
-            # Prevent the monitor thread from dying on unexpected errors
             pass
         time.sleep(0.1)
 
@@ -164,7 +161,7 @@ def parse_input_line(filename, raw_line, idx):
     }
 
 
-def build_command(pattern, cpu, runtime):
+def build_command(pattern, cpu, runtime, output_path=None):
     pattern_b64 = base64.b64encode(pattern.encode("utf-8")).decode("utf-8")
     inner_cmd = [
         runtime["cmd"],
@@ -198,36 +195,38 @@ def build_command(pattern, cpu, runtime):
         "--timelimit",
         str(runtime["timeout_seconds"] * 2),
         "--output",
-        "/dev/null",
+        str(output_path),
         "--",
         *inner_cmd,
     ]
 
 
-def parse_output(stdout_text):
-    if not isinstance(stdout_text, str):
-        raise ValueError("stdout is not text")
+def parse_output(text):
+    if not isinstance(text, str):
+        raise ValueError("output is not text")
 
-    payload = stdout_text.strip()
+    payload = text.strip()
     if not payload:
-        raise ValueError("stdout is empty")
+        raise ValueError("output is empty")
 
     try:
         parsed = json.loads(payload)
     except json.JSONDecodeError:
-        lines = [line.strip() for line in stdout_text.splitlines() if line.strip()]
+        lines = [line.strip() for line in text.splitlines() if line.strip()]
         if len(lines) != 1:
-            raise ValueError("stdout is not valid JSON")
+            raise ValueError("output is not valid JSON")
         parsed = json.loads(lines[0])
 
     if not isinstance(parsed, dict):
-        raise ValueError("stdout JSON is not an object")
+        raise ValueError("output JSON is not an object")
     return parsed
 
 
 def run_command(task):
     runtime = task["runtime"]
     cpu = get_cpu()
+    tmp_output_path = Path(f"/tmp/{uuid.uuid4()}.txt")
+
     try:
         parsed = parse_input_line(task["filename"], task["raw_line"], task["line_no"])
         if parsed["error"] is not None:
@@ -244,7 +243,7 @@ def run_command(task):
             )
             return
 
-        cmds = build_command(parsed["pattern"], cpu, runtime)
+        cmds = build_command(parsed["pattern"], cpu, runtime, tmp_output_path)
         result = subprocess.run(
             cmds,
             capture_output=True,
@@ -254,9 +253,17 @@ def run_command(task):
 
         output_obj = None
         stderr_text = result.stderr
-        if result.returncode == 0:
+        output_text = result.stdout
+
+        if runtime["use_runexec"]:
+            if tmp_output_path.exists():
+                output_text = tmp_output_path.read_text(encoding="utf-8")
+            elif result.returncode == 0:
+                stderr_text = f"{stderr_text}\nmissing runexec output file: {tmp_output_path}".strip()
+
+        if result.returncode == 0 and output_text.strip():
             try:
-                output_obj = parse_output(result.stdout)
+                output_obj = parse_output(output_text)
             except Exception as e:
                 stderr_text = f"{stderr_text}\nparse output failed: {e}".strip()
 
@@ -297,6 +304,7 @@ def run_command(task):
         )
     finally:
         return_cpu(cpu)
+        tmp_output_path.unlink(missing_ok=True)
 
 
 def process_file(filename, runtime, total_parts=1, part_index=0):
