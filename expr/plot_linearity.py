@@ -5,6 +5,7 @@ import json
 import math
 import os
 import re
+import sys
 from collections import defaultdict
 from pathlib import Path
 
@@ -62,6 +63,12 @@ def parse_args():
         type=float,
         default=5000.0,
         help="Fallback timeout time in ms for timeout-like records when walltime is missing",
+    )
+    parser.add_argument(
+        "--max-k",
+        type=int,
+        default=None,
+        help="Only plot and summarize points with k <= max_k",
     )
     return parser.parse_args()
 
@@ -401,6 +408,13 @@ def main():
 
     if not runs:
         raise RuntimeError("No valid non-warmup run records loaded.")
+
+    if args.max_k is not None:
+        runs = [r for r in runs if r["k"] <= args.max_k]
+        if not runs:
+            raise RuntimeError(
+                f"No valid records remain after applying k <= {args.max_k}."
+            )
 
     sample_points = build_sample_point_summary(runs)
     main_points = build_main_curve_points(sample_points)
