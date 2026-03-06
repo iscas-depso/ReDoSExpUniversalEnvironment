@@ -254,6 +254,63 @@ def print_engine_stats(engine: str, stats: Stats, count: int) -> None:
     )
 
 
+def build_dedup_aggregate(
+    all_records: list[dict[str, Any]], strict_pattern_consistency: bool
+) -> list[dict[str, Any]]:
+    merged: dict[tuple[str, int], dict[str, Any]] = {}
+
+    for rec in all_records:
+        key = (rec["file"], rec["line"])
+        engine = rec["engine"]
+        pattern = rec.get("pattern")
+        tools = rec.get("successful_tools", [])
+        attacks = rec.get("successful_attacks", [])
+
+        if key not in merged:
+            merged[key] = {
+                "file": rec["file"],
+                "line": rec["line"],
+                "pattern": pattern,
+                "engines": set(),
+                "engine_details": {},
+            }
+
+        dst = merged[key]
+        if pattern is not None:
+            if dst["pattern"] is None:
+                dst["pattern"] = pattern
+            elif dst["pattern"] != pattern:
+                message = (
+                    f"[WARN] Cross-engine pattern mismatch: file={rec['file']}, "
+                    f"line={rec['line']}, old={dst['pattern']!r}, new={pattern!r}"
+                )
+                if strict_pattern_consistency:
+                    raise ValueError(message)
+                print(message, file=sys.stderr)
+
+        dst["engines"].add(engine)
+        dst["engine_details"][engine] = {
+            "successful_tools": sorted(set(tools)),
+            "successful_attacks": attacks,
+        }
+
+    out: list[dict[str, Any]] = []
+    for key in sorted(merged.keys()):
+        item = merged[key]
+        out.append(
+            {
+                "file": item["file"],
+                "line": item["line"],
+                "pattern": item["pattern"],
+                "engines": sorted(item["engines"]),
+                "engine_details": {
+                    e: item["engine_details"][e] for e in sorted(item["engine_details"])
+                },
+            }
+        )
+    return out
+
+
 def main() -> int:
     args = parse_args()
     results_dir: Path = args.results_dir
@@ -288,10 +345,12 @@ def main() -> int:
 
     if args.write_aggregate:
         aggregate_path = out_dir / "ground_truth_all_engines.jsonl"
-        all_records_sorted = sorted(all_records, key=lambda x: (x["engine"], x["file"], x["line"]))
-        write_jsonl(aggregate_path, all_records_sorted)
+        dedup_records = build_dedup_aggregate(
+            all_records, strict_pattern_consistency=args.strict_pattern_consistency
+        )
+        write_jsonl(aggregate_path, dedup_records)
         print(
-            f"[OK] Wrote {len(all_records_sorted)} records -> {aggregate_path}",
+            f"[OK] Wrote {len(dedup_records)} deduplicated records -> {aggregate_path}",
             file=sys.stderr,
         )
 
