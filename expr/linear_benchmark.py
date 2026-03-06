@@ -634,7 +634,7 @@ def main():
         description="Linearity benchmark using ground-truth attacks (detect/expr style)."
     )
     parser.add_argument("files", nargs="*", help="Ground-truth JSONL files")
-    parser.add_argument("--cmd", required=True, help="Benchmark command path")
+    parser.add_argument("--cmd", required=False, help="Benchmark command path")
     parser.add_argument("--engine", default="unknown", help="Engine name in output")
     parser.add_argument(
         "--timeout", type=int, default=5, help="Timeout in seconds (default: 5)"
@@ -721,6 +721,10 @@ def main():
 
     if manifest_path and write_manifest_path:
         raise RuntimeError("--manifest and --write-manifest cannot be used together")
+
+    # --cmd is only required for execution modes.
+    if not write_manifest_path and not cmd:
+        raise RuntimeError("--cmd is required unless --write-manifest is used")
 
     init_cpu_pool()
     total_parts = max(1, args.total_parts)
