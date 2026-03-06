@@ -12,8 +12,16 @@ import threading
 import time
 import uuid
 from pathlib import Path
-from tqdm import tqdm
-import psutil
+try:
+    from tqdm import tqdm
+except Exception:
+    def tqdm(iterable, **kwargs):
+        return iterable
+
+try:
+    import psutil
+except Exception:
+    psutil = None
 
 # Default configuration (overridden by argparse)
 cmd = None
@@ -31,6 +39,8 @@ sample_count = 30
 seed = 20260306
 required_engines = ["python", "java11", "nodejs14", "ere"]
 engine_name = "unknown"
+manifest_path = None
+write_manifest_path = None
 
 _json_output_lock = multiprocessing.Lock()
 
@@ -327,6 +337,75 @@ def select_samples(lines, filename):
     return selected
 
 
+def select_samples_from_file(filename):
+    try:
+        with open(filename, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+    except Exception as e:
+        raise RuntimeError(f"Error reading file {filename}: {e}")
+    return select_samples(lines, filename)
+
+
+def write_manifest(path, commands):
+    meta = {
+        "type": "meta",
+        "version": 1,
+        "seed": seed,
+        "samples": sample_count,
+        "required_engines": required_engines,
+        "ks": ks,
+        "runs_per_k": runs_per_k,
+        "count": len(commands),
+    }
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(json.dumps(meta, ensure_ascii=True) + "\n")
+        for c in commands:
+            row = dict(c)
+            row["type"] = "sample"
+            f.write(json.dumps(row, ensure_ascii=True) + "\n")
+
+
+def load_manifest(path):
+    meta = None
+    commands = []
+    with open(path, "r", encoding="utf-8") as f:
+        for raw in f:
+            s = raw.strip()
+            if not s:
+                continue
+            obj = json.loads(s)
+            if not isinstance(obj, dict):
+                continue
+            typ = obj.get("type")
+            if typ == "meta":
+                meta = obj
+            elif typ == "sample":
+                commands.append(obj)
+    if meta is None:
+        raise RuntimeError("manifest missing meta line")
+    return meta, commands
+
+
+def validate_manifest(meta):
+    mismatches = []
+    if int(meta.get("seed", -1)) != int(seed):
+        mismatches.append(f"seed: manifest={meta.get('seed')} cli={seed}")
+    if int(meta.get("samples", -1)) != int(sample_count):
+        mismatches.append(f"samples: manifest={meta.get('samples')} cli={sample_count}")
+    if list(meta.get("required_engines", [])) != list(required_engines):
+        mismatches.append(
+            f"required_engines: manifest={meta.get('required_engines')} cli={required_engines}"
+        )
+    if list(meta.get("ks", [])) != list(ks):
+        mismatches.append(f"ks: manifest={meta.get('ks')} cli={ks}")
+    if int(meta.get("runs_per_k", -1)) != int(runs_per_k):
+        mismatches.append(
+            f"runs_per_k: manifest={meta.get('runs_per_k')} cli={runs_per_k}"
+        )
+    if mismatches:
+        raise RuntimeError("manifest config mismatch: " + "; ".join(mismatches))
+
+
 def build_input_from_attack(prefix_b64, infix_b64, suffix_b64, k):
     prefix = decode_b64_text(prefix_b64)
     infix = decode_b64_text(infix_b64)
@@ -474,23 +553,21 @@ def run_command(task):
             break
 
 
-def process_file(filename, total_parts=1, part_index=0):
+def process_commands(all_commands, label, total_parts=1, part_index=0):
     print(
-        f"=== Processing file: {filename} (Part {part_index + 1}/{total_parts}) ===",
+        f"=== Processing: {label} (Part {part_index + 1}/{total_parts}) ===",
         file=sys.stderr,
     )
 
-    try:
-        with open(filename, "r", encoding="utf-8") as f:
-            lines = f.readlines()
-    except Exception as e:
-        print(f"Error reading file {filename}: {e}", file=sys.stderr)
-        return
-
-    all_commands = select_samples(lines, filename)
     total_candidates = len(all_commands)
 
     if total_parts > 1:
+        if part_index >= total_parts:
+            print(
+                f"Part index {part_index} out of range for total_parts={total_parts}; skip.",
+                file=sys.stderr,
+            )
+            return
         chunk_size = (total_candidates + total_parts - 1) // total_parts
         start_idx = part_index * chunk_size
         end_idx = min(start_idx + chunk_size, total_candidates)
@@ -526,9 +603,19 @@ def process_file(filename, total_parts=1, part_index=0):
         for _ in tqdm(
             pool.imap_unordered(run_command, all_commands),
             total=len(all_commands),
-            desc=f"Processing {filename} (Part {part_index + 1}/{total_parts})",
+            desc=f"Processing {label} (Part {part_index + 1}/{total_parts})",
         ):
             pass
+
+
+def process_file(filename, total_parts=1, part_index=0):
+    all_commands = select_samples_from_file(filename)
+    process_commands(
+        all_commands,
+        label=filename,
+        total_parts=total_parts,
+        part_index=part_index,
+    )
 
 
 def parse_engine_cmd(value):
@@ -546,7 +633,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Linearity benchmark using ground-truth attacks (detect/expr style)."
     )
-    parser.add_argument("files", nargs="+", help="Ground-truth JSONL files")
+    parser.add_argument("files", nargs="*", help="Ground-truth JSONL files")
     parser.add_argument("--cmd", required=True, help="Benchmark command path")
     parser.add_argument("--engine", default="unknown", help="Engine name in output")
     parser.add_argument(
@@ -600,6 +687,18 @@ def main():
         default=0,
         help="Current part index (0-based, default: 0)",
     )
+    parser.add_argument(
+        "--write-manifest",
+        type=str,
+        default=None,
+        help="Write sampled commands to manifest JSONL and exit",
+    )
+    parser.add_argument(
+        "--manifest",
+        type=str,
+        default=None,
+        help="Read sampled commands from manifest JSONL instead of re-sampling",
+    )
 
     args = parser.parse_args()
 
@@ -617,15 +716,48 @@ def main():
     seed = args.seed
     required_engines = args.required_engines
     engine_name = args.engine
+    manifest_path = args.manifest
+    write_manifest_path = args.write_manifest
+
+    if manifest_path and write_manifest_path:
+        raise RuntimeError("--manifest and --write-manifest cannot be used together")
 
     init_cpu_pool()
+    total_parts = max(1, args.total_parts)
+    part_index = max(0, args.part_index)
+
+    if write_manifest_path:
+        if not args.files:
+            raise RuntimeError("--write-manifest requires at least one input file")
+        all_commands = []
+        for filename in args.files:
+            all_commands.extend(select_samples_from_file(filename))
+        all_commands.sort(key=lambda x: (x["file"], x["line"], x["sample_id"]))
+        manifest_out = Path(write_manifest_path)
+        manifest_out.parent.mkdir(parents=True, exist_ok=True)
+        write_manifest(str(manifest_out), all_commands)
+        print(
+            f"Wrote manifest: {manifest_out} (samples={len(all_commands)})",
+            file=sys.stderr,
+        )
+        return
+
+    if manifest_path:
+        meta, all_commands = load_manifest(manifest_path)
+        validate_manifest(meta)
+        process_commands(
+            all_commands,
+            label=f"manifest:{manifest_path}",
+            total_parts=total_parts,
+            part_index=part_index,
+        )
+        return
+
+    if not args.files:
+        raise RuntimeError("No input files provided")
 
     for filename in args.files:
-        process_file(
-            filename,
-            total_parts=max(1, args.total_parts),
-            part_index=max(0, args.part_index),
-        )
+        process_file(filename, total_parts=total_parts, part_index=part_index)
 
 
 if __name__ == "__main__":
