@@ -17,9 +17,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 
-ENGINE_ORDER = ["ere", "python", "java11", "nodejs14"]
+ENGINE_ORDER = ["ere", "ere_dfa", "python", "java11", "nodejs14"]
 ENGINE_COLORS = {
     "ere": "#1f77b4",
+    "ere_dfa": "#9467bd",
     "python": "#2ca02c",
     "java11": "#d62728",
     "nodejs14": "#ff7f0e",
@@ -70,8 +71,23 @@ def parse_args():
         default=None,
         help="Only plot and summarize points with k <= max_k",
     )
+    parser.add_argument(
+        "--split",
+        action="store_true",
+        help="Use dual-panel (detail + full range) layout. "
+             "Default is single panel.",
+    )
+    parser.add_argument(
+        "--detail-k",
+        type=int,
+        default=None,
+        help="Upper bound of k for the left (detail) panel (only used with --split). "
+             "If omitted, auto-select ~10%% of max k.",
+    )
     return parser.parse_args()
 
+
+# ── helpers ──────────────────────────────────────────────────────────
 
 def quantile(values, q):
     xs = sorted(values)
@@ -108,7 +124,7 @@ def parse_time_ms(output_field):
 def parse_walltime_ms(stdout_field):
     if not isinstance(stdout_field, str):
         return None
-    m = re.search(r"walltime=([\\d\\.]+)s", stdout_field)
+    m = re.search(r"walltime=([\d\.]+)s", stdout_field)
     if not m:
         return None
     return float(m.group(1)) * 1000.0
@@ -126,6 +142,8 @@ def is_timeout_like(record):
     )
 
 
+# ── data loading ─────────────────────────────────────────────────────
+
 def read_engine_runs(path, engine, timeout_ms):
     rows = []
     with path.open("r", encoding="utf-8") as f:
@@ -138,13 +156,13 @@ def read_engine_runs(path, engine, timeout_ms):
             except json.JSONDecodeError:
                 continue
             warmup = obj.get("warmup")
-            run_id = obj.get("run_id")
-            if warmup is True or run_id == 0:
+            if warmup is True:
                 continue
 
             sample_id = obj.get("sample_id")
             input_bytes = obj.get("input_bytes")
             k = obj.get("k")
+            run_id = obj.get("run_id")
             if not (
                 isinstance(sample_id, str)
                 and isinstance(input_bytes, int)
@@ -159,7 +177,6 @@ def read_engine_runs(path, engine, timeout_ms):
                 if time_ms is None:
                     time_ms = timeout_ms
             if time_ms is None:
-                # Non-timeout and no parseable time -> drop invalid record.
                 continue
 
             rows.append(
@@ -175,6 +192,8 @@ def read_engine_runs(path, engine, timeout_ms):
             )
     return rows
 
+
+# ── aggregation ──────────────────────────────────────────────────────
 
 def build_sample_point_summary(runs):
     grouped = defaultdict(list)
@@ -223,7 +242,9 @@ def build_main_curve_points(sample_points):
                 "n_samples": len(vals),
                 "timed_out_count": timed_out_count,
                 "total_count": total_count,
-                "timeout_like_rate": timed_out_count / total_count if total_count else 0.0,
+                "timeout_like_rate": (
+                    timed_out_count / total_count if total_count else 0.0
+                ),
                 "median_ms": median(vals),
                 "q1_ms": quantile(vals, 0.25),
                 "q3_ms": quantile(vals, 0.75),
@@ -301,14 +322,30 @@ def write_csv(path, rows):
         writer.writerows(rows)
 
 
-def plot_main_curve(main_points, engines, out_path, linear_x, log_y):
-    by_engine = defaultdict(list)
-    for r in main_points:
-        by_engine[r["engine"]].append(r)
+# ── auto-detect detail_k ─────────────────────────────────────────────
 
-    fig, ax = plt.subplots(figsize=(9, 6))
+def _auto_detail_k(main_points):
+    """Pick a split point ≈ 10 % of max k, snapped to the nearest actual k."""
+    all_ks = sorted(set(r["k"] for r in main_points))
+    if not all_ks:
+        return 5000
+    max_k = all_ks[-1]
+    target = max_k * 0.10
+    return min(all_ks, key=lambda v: abs(v - target))
+
+
+# ── plotting (dual-panel) ───────────────────────────────────────────
+
+def _draw_engine_curves(ax, by_engine, engines, k_max=None):
+    """Draw median lines + IQR fill for each engine on *ax*.
+    If *k_max* is given, only points with k <= k_max are drawn.
+    """
     for e in engines:
         rows = sorted(by_engine.get(e, []), key=lambda x: x["k"])
+        if not rows:
+            continue
+        if k_max is not None:
+            rows = [r for r in rows if r["k"] <= k_max]
         if not rows:
             continue
         x = [r["k"] for r in rows]
@@ -319,50 +356,145 @@ def plot_main_curve(main_points, engines, out_path, linear_x, log_y):
         ax.plot(x, y, marker="o", linewidth=2, label=e, color=c)
         ax.fill_between(x, y1, y3, alpha=0.20, color=c)
 
-    if not linear_x:
-        ax.set_xscale("log")
-    if log_y:
-        ax.set_yscale("log")
-    ax.set_xlabel("Infix repeat times (k)")
-    ax.set_ylabel("Time (ms)")
-    ax.set_title(
-        "Linearity Main Curve (Median with IQR)"
-        + (" [log-y]" if log_y else "")
-    )
-    ax.grid(alpha=0.25)
-    ax.legend()
-    fig.tight_layout()
-    fig.savefig(out_path, dpi=220)
-    plt.close(fig)
 
-
-def plot_timeout_rate(main_points, engines, out_path, linear_x):
+def plot_main_curve(main_points, engines, out_path, linear_x, log_y,
+                    split=False, detail_k=None):
     by_engine = defaultdict(list)
     for r in main_points:
         by_engine[r["engine"]].append(r)
 
-    fig, ax = plt.subplots(figsize=(9, 6))
-    for e in engines:
-        rows = sorted(by_engine.get(e, []), key=lambda x: x["k"])
-        if not rows:
-            continue
-        x = [r["k"] for r in rows]
-        y = [r["timeout_like_rate"] for r in rows]
-        c = ENGINE_COLORS.get(e, None)
-        ax.plot(x, y, marker="o", linewidth=2, label=e, color=c)
+    all_ks = sorted(set(r["k"] for r in main_points))
+    max_k = all_ks[-1] if all_ks else 50000
 
-    if not linear_x:
-        ax.set_xscale("log")
-    ax.set_ylim(0.0, 1.05)
-    ax.set_xlabel("Infix repeat times (k)")
-    ax.set_ylabel("Timeout-like rate")
-    ax.set_title("Timeout-like Rate vs k")
-    ax.grid(alpha=0.25)
-    ax.legend()
+    if split:
+        # ── dual-panel ──────────────────────────────────────────────
+        if detail_k is None:
+            detail_k = _auto_detail_k(main_points)
+
+        fig, (ax_detail, ax_full) = plt.subplots(
+            1, 2,
+            figsize=(16, 6),
+            sharey=True,
+            gridspec_kw={"width_ratios": [1, 1.3]},
+        )
+
+        _draw_engine_curves(ax_detail, by_engine, engines, k_max=detail_k)
+        if linear_x:
+            ax_detail.set_xlim(left=-detail_k * 0.03, right=detail_k * 1.06)
+        else:
+            ax_detail.set_xscale("log")
+        if log_y:
+            ax_detail.set_yscale("log")
+        ax_detail.set_xlabel("Infix repeat times (k)")
+        ax_detail.set_ylabel("Time (ms)")
+        ax_detail.set_title(f"Detail  (k ≤ {detail_k})")
+        ax_detail.grid(alpha=0.25)
+
+        _draw_engine_curves(ax_full, by_engine, engines, k_max=None)
+        if linear_x:
+            ax_full.set_xlim(left=-max_k * 0.02, right=max_k * 1.04)
+        else:
+            ax_full.set_xscale("log")
+        if log_y:
+            ax_full.set_yscale("log")
+        ax_full.set_xlabel("Infix repeat times (k)")
+        ax_full.set_title("Full Range")
+        ax_full.grid(alpha=0.25)
+        ax_full.legend(loc="best")
+
+        fig.suptitle(
+            "Linearity Main Curve (Median with IQR)"
+            + (" [log-y]" if log_y else ""),
+            fontsize=14,
+        )
+    else:
+        # ── single panel (original) ────────────────────────────────
+        fig, ax = plt.subplots(figsize=(9, 6))
+        _draw_engine_curves(ax, by_engine, engines, k_max=None)
+
+        if not linear_x:
+            ax.set_xscale("log")
+        if log_y:
+            ax.set_yscale("log")
+        ax.set_xlabel("Infix repeat times (k)")
+        ax.set_ylabel("Time (ms)")
+        ax.set_title(
+            "Linearity Main Curve (Median with IQR)"
+            + (" [log-y]" if log_y else "")
+        )
+        ax.grid(alpha=0.25)
+        ax.legend()
+
     fig.tight_layout()
-    fig.savefig(out_path, dpi=220)
+    fig.savefig(out_path, dpi=220, bbox_inches="tight")
     plt.close(fig)
 
+
+def plot_timeout_rate(main_points, engines, out_path, linear_x,
+                      split=False, detail_k=None):
+    by_engine = defaultdict(list)
+    for r in main_points:
+        by_engine[r["engine"]].append(r)
+
+    all_ks = sorted(set(r["k"] for r in main_points))
+    max_k = all_ks[-1] if all_ks else 50000
+
+    if split:
+        if detail_k is None:
+            detail_k = _auto_detail_k(main_points)
+
+        fig, (ax_detail, ax_full) = plt.subplots(
+            1, 2,
+            figsize=(16, 6),
+            sharey=True,
+            gridspec_kw={"width_ratios": [1, 1.3]},
+        )
+        axes_info = [
+            (ax_detail, detail_k, f"Detail  (k ≤ {detail_k})"),
+            (ax_full, None, "Full Range"),
+        ]
+    else:
+        fig, ax = plt.subplots(figsize=(9, 6))
+        axes_info = [(ax, None, "Timeout-like Rate vs k")]
+
+    for ax, k_max, subtitle in axes_info:
+        for e in engines:
+            rows = sorted(by_engine.get(e, []), key=lambda x: x["k"])
+            if not rows:
+                continue
+            if k_max is not None:
+                rows = [r for r in rows if r["k"] <= k_max]
+            if not rows:
+                continue
+            x = [r["k"] for r in rows]
+            y = [r["timeout_like_rate"] for r in rows]
+            c = ENGINE_COLORS.get(e, None)
+            ax.plot(x, y, marker="o", linewidth=2, label=e, color=c)
+
+        if not linear_x:
+            ax.set_xscale("log")
+        ax.set_ylim(0.0, 1.05)
+        ax.set_xlabel("Infix repeat times (k)")
+        ax.set_title(subtitle)
+        ax.grid(alpha=0.25)
+
+    if split:
+        if linear_x:
+            ax_detail.set_xlim(left=-detail_k * 0.03, right=detail_k * 1.06)
+            ax_full.set_xlim(left=-max_k * 0.02, right=max_k * 1.04)
+        ax_detail.set_ylabel("Timeout-like rate")
+        ax_full.legend(loc="best")
+        fig.suptitle("Timeout-like Rate vs k", fontsize=14)
+    else:
+        ax.set_ylabel("Timeout-like rate")
+        ax.legend()
+
+    fig.tight_layout()
+    fig.savefig(out_path, dpi=220, bbox_inches="tight")
+    plt.close(fig)
+
+
+# ── box plots (unchanged) ───────────────────────────────────────────
 
 def plot_box(values_by_engine, engines, out_path, title, ylabel):
     data = []
@@ -390,6 +522,8 @@ def plot_box(values_by_engine, engines, out_path, title, ylabel):
     fig.savefig(out_path, dpi=220)
     plt.close(fig)
 
+
+# ── main ─────────────────────────────────────────────────────────────
 
 def main():
     args = parse_args()
@@ -426,15 +560,24 @@ def main():
     write_csv(out_dir / "slope_summary.csv", slope_summary)
     write_csv(out_dir / "max_common_summary.csv", max_common)
 
+    detail_k = args.detail_k  # None means auto
+
     plot_main_curve(
         main_points,
         engines,
         out_dir / "main_curve.png",
         args.linear_x,
         args.log_y,
+        split=args.split,
+        detail_k=args.detail_k,
     )
     plot_timeout_rate(
-        main_points, engines, out_dir / "timeout_rate_curve.png", args.linear_x
+        main_points,
+        engines,
+        out_dir / "timeout_rate_curve.png",
+        args.linear_x,
+        split=args.split,
+        detail_k=args.detail_k,
     )
 
     slope_by_engine = defaultdict(list)

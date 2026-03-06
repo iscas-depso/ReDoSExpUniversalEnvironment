@@ -5,6 +5,7 @@ import json
 import multiprocessing
 import multiprocessing.pool
 import os
+import queue
 import random
 import subprocess
 import sys
@@ -31,6 +32,8 @@ use_runexec = False
 CPU_COUNT = 4
 memory_limit = 1024
 enable_cpu_monitor = True
+enable_progress = True
+progress_refresh_ms = 150
 
 # Linearity experiment configuration
 ks = [50, 200, 800, 2000, 4000, 5000, 12000, 50000, 150000, 500000]
@@ -151,6 +154,18 @@ def json_output(**kwargs):
     """Print one JSON line to stdout with a cross-process lock."""
     with _json_output_lock:
         print(json.dumps(kwargs, ensure_ascii=True), flush=True)
+
+
+def progress_event(runtime, event_type, n=1):
+    """Send progress events from worker to main process."""
+    q = runtime.get("progress_queue")
+    if q is None:
+        return
+    try:
+        q.put({"type": event_type, "n": int(n)})
+    except Exception:
+        # Progress reporting must never affect benchmark behavior.
+        return
 
 
 def decode_b64_text(s: str) -> str:
@@ -507,7 +522,7 @@ def run_command(task):
     has_warmup = rp > 1                          # ← 关键：只有多轮才有 warmup
     measured_runs = max(1, rp - 1) if has_warmup else rp
 
-    for k in runtime["ks"]:
+    for k_idx, k in enumerate(runtime["ks"]):
         input_text, input_bytes = build_input_from_attack(
             task["prefix"], task["infix"], task["suffix"], k
         )
@@ -545,12 +560,17 @@ def run_command(task):
                 return_code=ret["return_code"],
                 timeout=ret["timeout"],
             )
+            progress_event(runtime, "run_done", 1)
 
             if (not warmup) and ret["timeout"]:
                 timeout_nonwarmup += 1
 
         # Dynamic truncation: 非warmup轮次中超时过半就提前终止
         if timeout_nonwarmup >= max(1, measured_runs // 2):
+            remaining_ks = len(runtime["ks"]) - (k_idx + 1)
+            skipped_runs = remaining_ks * rp
+            if skipped_runs > 0:
+                progress_event(runtime, "run_skipped", skipped_runs)
             break
 
 def process_commands(all_commands, label, total_parts=1, part_index=0):
@@ -595,17 +615,74 @@ def process_commands(all_commands, label, total_parts=1, part_index=0):
         "memory_limit": memory_limit,
         "ks": ks,
         "runs_per_k": runs_per_k,
+        "progress_queue": None,
     }
+    progress_mgr = None
+    progress_q = None
+    progress_bar = None
+    stop_event = threading.Event()
+    progress_thread = None
+
+    run_total_max = len(all_commands) * len(ks) * runs_per_k
+    if enable_progress:
+        progress_mgr = multiprocessing.Manager()
+        progress_q = progress_mgr.Queue()
+        runtime["progress_queue"] = progress_q
+        progress_bar = tqdm(
+            total=run_total_max,
+            desc=f"Runs {label} (Part {part_index + 1}/{total_parts})",
+            mininterval=max(0.05, progress_refresh_ms / 1000.0),
+        )
+
+        def consume_progress():
+            while not stop_event.is_set():
+                try:
+                    event = progress_q.get(timeout=max(0.05, progress_refresh_ms / 1000.0))
+                except queue.Empty:
+                    continue
+                et = event.get("type")
+                n = int(event.get("n", 0))
+                if n <= 0:
+                    continue
+                if et == "run_done":
+                    progress_bar.update(n)
+                elif et == "run_skipped":
+                    progress_bar.total = max(progress_bar.n, progress_bar.total - n)
+                    progress_bar.refresh()
+
+            while True:
+                try:
+                    event = progress_q.get_nowait()
+                except queue.Empty:
+                    break
+                et = event.get("type")
+                n = int(event.get("n", 0))
+                if n <= 0:
+                    continue
+                if et == "run_done":
+                    progress_bar.update(n)
+                elif et == "run_skipped":
+                    progress_bar.total = max(progress_bar.n, progress_bar.total - n)
+                    progress_bar.refresh()
+
+        progress_thread = threading.Thread(target=consume_progress, daemon=True)
+        progress_thread.start()
+
     for x in all_commands:
         x["runtime"] = runtime
 
-    with NoDaemonPool(processes=CPU_COUNT) as pool:
-        for _ in tqdm(
-            pool.imap_unordered(run_command, all_commands),
-            total=len(all_commands),
-            desc=f"Processing {label} (Part {part_index + 1}/{total_parts})",
-        ):
-            pass
+    try:
+        with NoDaemonPool(processes=CPU_COUNT) as pool:
+            for _ in pool.imap_unordered(run_command, all_commands):
+                pass
+    finally:
+        if progress_thread is not None:
+            stop_event.set()
+            progress_thread.join(timeout=2.0)
+        if progress_bar is not None:
+            progress_bar.close()
+        if progress_mgr is not None:
+            progress_mgr.shutdown()
 
 
 def process_file(filename, total_parts=1, part_index=0):
@@ -629,6 +706,7 @@ def main():
     global cmd, force_fullmatch, timeout_seconds, use_runexec
     global memory_limit, CPU_COUNT, enable_cpu_monitor
     global ks, runs_per_k, sample_count, seed, required_engines, engine_name
+    global enable_progress, progress_refresh_ms
 
     parser = argparse.ArgumentParser(
         description="Linearity benchmark using ground-truth attacks (detect/expr style)."
@@ -699,6 +777,17 @@ def main():
         default=None,
         help="Read sampled commands from manifest JSONL instead of re-sampling",
     )
+    parser.add_argument(
+        "--progress-refresh-ms",
+        type=int,
+        default=150,
+        help="Progress UI refresh interval in milliseconds",
+    )
+    parser.add_argument(
+        "--no-progress",
+        action="store_true",
+        help="Disable tqdm progress output",
+    )
 
     args = parser.parse_args()
 
@@ -718,6 +807,8 @@ def main():
     engine_name = args.engine
     manifest_path = args.manifest
     write_manifest_path = args.write_manifest
+    progress_refresh_ms = max(10, args.progress_refresh_ms)
+    enable_progress = not args.no_progress
 
     if manifest_path and write_manifest_path:
         raise RuntimeError("--manifest and --write-manifest cannot be used together")
