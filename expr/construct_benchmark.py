@@ -213,9 +213,13 @@ def parse_output(text):
         parsed = json.loads(payload)
     except json.JSONDecodeError:
         lines = [line.strip() for line in text.splitlines() if line.strip()]
-        if len(lines) != 1:
-            raise ValueError("output is not valid JSON")
-        parsed = json.loads(lines[0])
+        if not lines:
+            raise ValueError("output is empty")
+
+        # BenchExec --output prefixes the log with command and separators.
+        # The ere CLI prints a single-line JSON object, so parse the last
+        # non-empty line as the actual tool output.
+        parsed = json.loads(lines[-1])
 
     if not isinstance(parsed, dict):
         raise ValueError("output JSON is not an object")
