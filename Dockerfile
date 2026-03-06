@@ -170,6 +170,9 @@ COPY engines/nodejs21/ /app/engines/nodejs21/
 # Copy ERE engine (pre-built binary)
 COPY engines/ere/ /app/engines/ere/
 
+# Copy ERE dfa engine (pre-built binary)
+COPY engines/ere_dfa/ /app/engines/ere_dfa/
+
 # Remove UTF-8 BOM from nodejs benchmark scripts (prevents "not found" errors on Linux)
 RUN sed -i '1s/^\xEF\xBB\xBF//' /app/engines/nodejs14/bin/benchmark /app/engines/nodejs21/bin/benchmark 2>/dev/null || true
 
