@@ -502,19 +502,20 @@ def run_single_execution(pattern, input_text, cpu, runtime):
 
 
 def run_command(task):
-    """Execute one sampled record over ks and runs, print JSON lines per run."""
     runtime = task["runtime"]
-    timeout_nonwarmup = 0
-    measured_runs = max(0, runtime["runs_per_k"] - 1)
+    rp = runtime["runs_per_k"]
+    has_warmup = rp > 1                          # ← 关键：只有多轮才有 warmup
+    measured_runs = max(1, rp - 1) if has_warmup else rp
 
     for k in runtime["ks"]:
         input_text, input_bytes = build_input_from_attack(
             task["prefix"], task["infix"], task["suffix"], k
         )
 
-        timeout_nonwarmup = 0
-        for run_id in range(runtime["runs_per_k"]):
-            warmup = run_id == 0
+        timeout_nonwarmup = 0                    # ← 移到 k 循环内部（原代码也是）
+        for run_id in range(rp):
+            warmup = has_warmup and run_id == 0  # ← 修复：runs_per_k=1 时 warmup=False
+
             cpu = get_cpu()
             try:
                 ret = run_single_execution(task["pattern"], input_text, cpu, runtime)
@@ -548,10 +549,9 @@ def run_command(task):
             if (not warmup) and ret["timeout"]:
                 timeout_nonwarmup += 1
 
-        # Dynamic truncation for this sample on this engine
-        if measured_runs > 0 and timeout_nonwarmup >= max(1, measured_runs // 2):
+        # Dynamic truncation: 非warmup轮次中超时过半就提前终止
+        if timeout_nonwarmup >= max(1, measured_runs // 2):
             break
-
 
 def process_commands(all_commands, label, total_parts=1, part_index=0):
     print(
