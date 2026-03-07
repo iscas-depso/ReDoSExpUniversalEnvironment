@@ -117,8 +117,6 @@ def get_cpu():
 
 
 def return_cpu(cpu_id):
-    if _cpu_pool is None:
-        return
     _cpu_pool.put(cpu_id)
 
 
@@ -254,7 +252,7 @@ def run_command(task):
             cmds,
             capture_output=True,
             text=True,
-            timeout=runtime["timeout_seconds"] * 3,
+            timeout=runtime["timeout_seconds"] * 10,
         )
 
         output_obj = None
@@ -327,7 +325,7 @@ def process_file(filename, runtime, total_parts=1, part_index=0):
         return
 
     all_commands = []
-    for idx, raw_line in enumerate(lines, start=1):
+    for idx, raw_line in enumerate(lines):
         if not raw_line.strip():
             continue
         preview = parse_input_line(filename, raw_line, idx)
