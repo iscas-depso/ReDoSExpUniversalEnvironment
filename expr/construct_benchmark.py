@@ -30,6 +30,7 @@ CPU_COUNT = 4
 enable_cpu_monitor = True
 
 _json_output_lock = multiprocessing.Lock()
+_cpu_manager = None
 _cpu_pool = None
 _cpu_lock = multiprocessing.Lock()
 _mem_usage = multiprocessing.Value("f", 0.0)
@@ -78,11 +79,12 @@ class NoDaemonPool(multiprocessing.pool.Pool):
 
 
 def init_cpu_pool():
-    global _cpu_pool
+    global _cpu_manager, _cpu_pool
     if _cpu_pool is None:
         with _cpu_lock:
             if _cpu_pool is None:
-                _cpu_pool = multiprocessing.Queue()
+                _cpu_manager = multiprocessing.Manager()
+                _cpu_pool = _cpu_manager.Queue()
                 for i in range(CPU_COUNT):
                     _cpu_pool.put(i)
                 if psutil is not None:
