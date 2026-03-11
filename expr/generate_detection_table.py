@@ -74,6 +74,13 @@ class AttackStackbarRow:
 
 
 @dataclass
+class DetectionUpSetRow:
+    rank: int
+    combination: str
+    count: int
+
+
+@dataclass
 class PerformanceRow:
     tool: str
     median_time: float
@@ -380,6 +387,51 @@ def print_detection_stackbar_table(rows: List[DetectionStackbarRow]) -> None:
         print(
             f"{TOOL_DISPLAY[r.tool]:<14} {r.other_tools_found:>18} {r.only_other_tool:>17} {r.both_found:>12} {r.only_lara_found:>17}"
         )
+
+
+def build_detection_upset_table_rows(
+    reported_sets: Dict[str, Set[Key]],
+    v_union: Set[Key],
+    top_k: int = 20,
+) -> Tuple[List[DetectionUpSetRow], int]:
+    if not v_union:
+        raise ValueError("Global verified set V is empty, cannot build detection upset rows.")
+
+    det_sets: Dict[str, Set[Key]] = {t: (reported_sets[t] & v_union) for t in TOOLS}
+    combo_counts: Dict[Tuple[bool, ...], int] = {}
+    uncovered = 0
+
+    for key in v_union:
+        combo = tuple(key in det_sets[t] for t in TOOLS)
+        if any(combo):
+            combo_counts[combo] = combo_counts.get(combo, 0) + 1
+        else:
+            uncovered += 1
+
+    combos = sorted(
+        combo_counts.items(),
+        key=lambda item: (-item[1], -sum(item[0]), item[0]),
+    )[:top_k]
+
+    rows: List[DetectionUpSetRow] = []
+    for idx, (combo, cnt) in enumerate(combos, start=1):
+        names = [TOOL_DISPLAY[t] for t, present in zip(TOOLS, combo) if present]
+        rows.append(
+            DetectionUpSetRow(
+                rank=idx,
+                combination=" + ".join(names),
+                count=cnt,
+            )
+        )
+    return rows, uncovered
+
+
+def print_detection_upset_table(rows: List[DetectionUpSetRow], uncovered: int, top_k: int = 20) -> None:
+    print(f"\n=== Detection UpSet Data (for detection_upset.pdf, top {top_k}) ===")
+    print(f"{'Rank':<6} {'Tool Combination':<72} {'Count':>8}")
+    for r in rows:
+        print(f"{r.rank:<6} {r.combination:<72} {r.count:>8}")
+    print(f"{'Not detected by any tool in V':<78} {uncovered:>8}")
 
 
 def build_unique_rows(
@@ -820,6 +872,123 @@ def plot_detection_stackbar(
     plt.close(fig)
 
 
+def plot_detection_upset(
+    reported_sets: Dict[str, Set[Key]],
+    v_union: Set[Key],
+    output_pdf: Path,
+) -> None:
+    if not v_union:
+        raise ValueError("Global verified set V is empty, cannot build detection upset plot.")
+
+    det_sets: Dict[str, Set[Key]] = {t: (reported_sets[t] & v_union) for t in TOOLS}
+    display_tools = [TOOL_DISPLAY[t] for t in TOOLS]
+    bool_rows = []
+    uncovered = 0
+
+    for key in v_union:
+        row = {}
+        hit_any = False
+        for tool in TOOLS:
+            present = key in det_sets[tool]
+            row[TOOL_DISPLAY[tool]] = present
+            hit_any = hit_any or present
+        if hit_any:
+            bool_rows.append(row)
+        else:
+            uncovered += 1
+
+    if not bool_rows:
+        raise ValueError("No confirmed vulnerabilities are covered by any detector in V.")
+
+    output_pdf.parent.mkdir(parents=True, exist_ok=True)
+
+    def _plot_upset_fallback(rows: List[Dict[str, bool]], out_pdf: Path, not_detected: int) -> None:
+        combo_counts: Dict[Tuple[bool, ...], int] = {}
+        for row in rows:
+            key = tuple(row[t] for t in display_tools)
+            combo_counts[key] = combo_counts.get(key, 0) + 1
+
+        combos = sorted(
+            combo_counts.items(),
+            key=lambda item: (-item[1], -sum(item[0]), item[0]),
+        )
+        max_cols = 20
+        combos = combos[:max_cols]
+        if not combos:
+            raise ValueError("No non-empty intersections available for UpSet fallback.")
+
+        combo_keys = [k for k, _ in combos]
+        counts = [v for _, v in combos]
+        n_cols = len(combo_keys)
+        n_tools = len(display_tools)
+
+        fig = plt.figure(figsize=(13, 8))
+        gs = fig.add_gridspec(2, 1, height_ratios=[3.0, 1.6], hspace=0.08)
+        ax_bar = fig.add_subplot(gs[0, 0])
+        ax_mat = fig.add_subplot(gs[1, 0], sharex=ax_bar)
+
+        x = np.arange(n_cols)
+        bars = ax_bar.bar(x, counts, color="#4e79a7", edgecolor="#2f3e4e", linewidth=0.6)
+        ax_bar.bar_label(bars, labels=[str(c) for c in counts], padding=2, fontsize=8)
+        ax_bar.set_ylabel("Intersection Size")
+        ax_bar.set_title("Detection Intersection over Verified Vulnerability Set V")
+        ax_bar.grid(axis="y", linestyle="--", alpha=0.4)
+        ax_bar.set_axisbelow(True)
+        ax_bar.tick_params(axis="x", labelbottom=False)
+
+        y_positions = np.arange(n_tools)
+        for col_idx, combo in enumerate(combo_keys):
+            ax_mat.scatter(
+                np.full(n_tools, col_idx),
+                y_positions,
+                s=28,
+                color="#d9d9d9",
+                zorder=1,
+            )
+            present_rows = [i for i, v in enumerate(combo) if v]
+            if present_rows:
+                ax_mat.scatter(
+                    np.full(len(present_rows), col_idx),
+                    np.array(present_rows),
+                    s=42,
+                    color="#222222",
+                    zorder=2,
+                )
+                if len(present_rows) > 1:
+                    ax_mat.plot(
+                        [col_idx, col_idx],
+                        [min(present_rows), max(present_rows)],
+                        color="#222222",
+                        linewidth=1.1,
+                        zorder=1.5,
+                    )
+
+        ax_mat.set_yticks(y_positions)
+        ax_mat.set_yticklabels(display_tools)
+        ax_mat.invert_yaxis()
+        ax_mat.set_xlabel("Top Intersections (sorted by size)")
+        ax_mat.set_xlim(-0.6, n_cols - 0.4)
+        ax_mat.set_xticks(x)
+        ax_mat.set_xticklabels([str(i + 1) for i in x], fontsize=8)
+        ax_mat.grid(axis="x", linestyle=":", alpha=0.25)
+
+        if not_detected > 0:
+            fig.text(
+                0.01,
+                0.01,
+                f"Not detected by any tool in V: {not_detected}",
+                fontsize=9,
+                ha="left",
+                va="bottom",
+            )
+
+        fig.subplots_adjust(top=0.9, bottom=0.08, left=0.08, right=0.98, hspace=0.08)
+        plt.savefig(out_pdf)
+        plt.close(fig)
+
+    _plot_upset_fallback(bool_rows, output_pdf, uncovered)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Generate detection/attack tables from expr results for paper reporting."
@@ -902,6 +1071,12 @@ def main() -> None:
     print_detection_stackbar_table(
         build_detection_stackbar_rows(reported_sets, v_union, our_tool="ere")
     )
+    detection_upset_rows, detection_upset_uncovered = build_detection_upset_table_rows(
+        reported_sets, v_union, top_k=20
+    )
+    print_detection_upset_table(
+        detection_upset_rows, detection_upset_uncovered, top_k=20
+    )
     unique_rows = build_unique_rows(reported_sets, attacks_by_engine, v_union)
     print_unique_table(unique_rows)
     print_unique_latex(unique_rows)
@@ -916,6 +1091,9 @@ def main() -> None:
     detection_fig = results_dir.parent / "plots" / "detection_stackbar.pdf"
     plot_detection_stackbar(reported_sets, v_union, detection_fig, our_tool="ere")
     print(f"\nSaved detection stackbar PDF: {detection_fig}")
+    detection_upset_fig = results_dir.parent / "plots" / "detection_upset.pdf"
+    plot_detection_upset(reported_sets, v_union, detection_upset_fig)
+    print(f"Saved detection upset PDF: {detection_upset_fig}")
     attack_fig = results_dir.parent / "plots" / "unique_attack_stackbar.pdf"
     plot_attack_stackbar(attacks_by_engine, attack_fig, our_tool="ere")
     print(f"Saved attack stackbar PDF: {attack_fig}")
