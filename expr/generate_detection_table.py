@@ -31,6 +31,22 @@ EXPECTED_COUNTS = {
 Key = Tuple[str, int]
 
 
+PLOT_TITLE_FONTSIZE = 18
+PLOT_LABEL_FONTSIZE = 15
+PLOT_TICK_FONTSIZE = 13
+PLOT_LEGEND_FONTSIZE = 13
+PLOT_ANNOTATION_FONTSIZE = 12
+PLOT_CACTUS_FIGSIZE = (9, 6)
+PLOT_STACKBAR_FIGSIZE = (9, 6)
+PLOT_UPSET_FIGSIZE = (11, 8)
+PLOT_STACKBAR_TITLE_FONTSIZE = 16
+PLOT_STACKBAR_LABEL_FONTSIZE = 13
+PLOT_STACKBAR_TICK_FONTSIZE = 12
+PLOT_STACKBAR_LEGEND_FONTSIZE = 12
+PLOT_STACKBAR_ANNOTATION_FONTSIZE = 11
+PLOT_STACKBAR_MIN_VISIBLE_PCT = 3
+
+
 @dataclass
 class DetectionRow:
     tool: str
@@ -38,14 +54,6 @@ class DetectionRow:
     det_recall: float
     missed: int
     unconfirmed: int
-
-
-@dataclass
-class AttackUnionRow:
-    tool: str
-    successful_attacks: int
-    attack_recall: float
-    attack_conversion: float
 
 
 @dataclass
@@ -300,7 +308,7 @@ def print_detection_latex(rows: List[DetectionRow]) -> None:
 
 def print_attack_all(attacks_by_engine: Dict[str, Dict[str, Set[Key]]], v_union: Set[Key]) -> None:
     print("\\n=== Attack Success Count by Engine (for tab:attack-all) ===")
-    print(f"{'Tool':<12} {'Node.js':>8} {'Python':>8} {'Java':>8} {'At least one':>13}")
+    print(f"{'Tool':<12} {'Node.js':>8} {'Python':>8} {'Java':>8} {'At least one':>13} {'Attack Recall':>14}")
     for tool in TOOLS:
         node_n = len(attacks_by_engine["nodejs14"][tool])
         py_n = len(attacks_by_engine["python"][tool])
@@ -310,24 +318,17 @@ def print_attack_all(attacks_by_engine: Dict[str, Dict[str, Set[Key]]], v_union:
             | attacks_by_engine["python"][tool]
             | attacks_by_engine["java11"][tool]
         )
-        print(f"{TOOL_DISPLAY[tool]:<12} {node_n:>8} {py_n:>8} {java_n:>8} {union_n:>13}")
+        recall = (union_n / len(v_union)) if v_union else 0.0
+        print(f"{TOOL_DISPLAY[tool]:<12} {node_n:>8} {py_n:>8} {java_n:>8} {union_n:>13} {format_pct(recall):>14}")
 
-    print("-" * 56)
+    print("-" * 74)
     print(
         f"{'Marked total':<12} {len(set().union(*attacks_by_engine['nodejs14'].values())):>8}"
         f" {len(set().union(*attacks_by_engine['python'].values())):>8}"
         f" {len(set().union(*attacks_by_engine['java11'].values())):>8}"
         f" {len(v_union):>13}"
+        f" {'--':>14}"
     )
-
-
-def print_attack_union(rows: List[AttackUnionRow]) -> None:
-    print("\\n=== Attack Union Summary (for tab:attack-union) ===")
-    print(f"{'Tool':<12} {'Successful Attacks':>20} {'Attack Recall':>14} {'Conversion':>12}")
-    for r in rows:
-        print(
-            f"{TOOL_DISPLAY[r.tool]:<12} {r.successful_attacks:>20} {format_pct(r.attack_recall):>14} {format_pct(r.attack_conversion):>12}"
-        )
 
 
 def print_verify_counts(v_engine: Dict[str, Set[Key]], v_union: Set[Key]) -> None:
@@ -613,7 +614,7 @@ def plot_cactus(
     metric: str,
     mode_desc: str,
 ) -> None:
-    fig, ax = plt.subplots(figsize=(12, 8))
+    fig, ax = plt.subplots(figsize=PLOT_CACTUS_FIGSIZE)
     colors = plt.get_cmap("tab10").colors
     linestyles = ["-", "--", "-.", ":"]
     max_solved = 0
@@ -645,9 +646,9 @@ def plot_cactus(
             alpha=0.8,
         )
 
-    ax.set_title(f"{title} ({mode_desc})", fontsize=14)
-    ax.set_xlabel("Number of Solved Instances", fontsize=12)
-    ax.set_ylabel(f"{y_label} - Log Scale", fontsize=12)
+    ax.set_xlabel("Number of Solved Instances", fontsize=PLOT_LABEL_FONTSIZE)
+    ax.set_ylabel(f"{y_label} - Log Scale", fontsize=PLOT_LABEL_FONTSIZE)
+    ax.tick_params(axis="both", labelsize=PLOT_TICK_FONTSIZE)
     ax.set_yscale("log")
     ax.set_ylim(bottom=min_val, top=limit_value * 1.5)
     ax.set_xlim(left=0, right=max_solved * 1.05 if max_solved > 0 else 10)
@@ -662,7 +663,7 @@ def plot_cactus(
         limit_value,
         f"Limit = {int(limit_value)}",
         color="r",
-        fontsize=10,
+        fontsize=PLOT_ANNOTATION_FONTSIZE,
         ha="right",
         va="bottom",
         transform=ax.get_yaxis_transform(),
@@ -670,7 +671,7 @@ def plot_cactus(
     )
     ax.grid(True, which="major", ls="-", alpha=0.4)
     ax.grid(True, which="minor", ls=":", alpha=0.2)
-    ax.legend(loc="lower right")
+    ax.legend(loc="lower right", fontsize=PLOT_LEGEND_FONTSIZE)
 
     output_image.parent.mkdir(parents=True, exist_ok=True)
     plt.tight_layout()
@@ -701,7 +702,7 @@ def plot_attack_stackbar(
     totals[totals == 0] = 1.0
 
     pct = counts / totals * 100.0
-    min_vis_pct = 2.0
+    min_vis_pct = PLOT_STACKBAR_MIN_VISIBLE_PCT
     vis_pct = pct.copy()
     vis_pct[(vis_pct > 0) & (vis_pct < min_vis_pct)] = min_vis_pct
     vis_totals = vis_pct.sum(axis=0)
@@ -717,7 +718,7 @@ def plot_attack_stackbar(
     ]
 
     output_pdf.parent.mkdir(parents=True, exist_ok=True)
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=PLOT_STACKBAR_FIGSIZE)
     x = np.arange(len(labels))
     bottom = np.zeros(len(labels), dtype=float)
     bars = []
@@ -738,17 +739,32 @@ def plot_attack_stackbar(
 
     for i, bar_group in enumerate(bars):
         labels_count = [f"{int(v)}" if v > 0 else "" for v in counts[i]]
-        ax.bar_label(bar_group, labels=labels_count, label_type="center", fontsize=9)
+        ax.bar_label(
+            bar_group,
+            labels=labels_count,
+            label_type="center",
+            fontsize=PLOT_STACKBAR_ANNOTATION_FONTSIZE,
+        )
 
     ax.set_xticks(x)
-    ax.set_xticklabels(labels, rotation=0)
+    ax.set_xticklabels(labels, rotation=0, fontsize=PLOT_STACKBAR_TICK_FONTSIZE)
     ax.set_ylim(0, 100)
-    ax.set_ylabel("Percentage over Attack Success Union (%)")
-    ax.set_xlabel("Pairwise Comparison with LARA")
-    ax.set_title("Attack Overlap (Pairwise): LARA vs Baselines")
+    ax.set_ylabel("Percentage over Attack Success Union (%)", fontsize=PLOT_STACKBAR_LABEL_FONTSIZE)
+    ax.set_xlabel("Pairwise Comparison with LARA", fontsize=PLOT_STACKBAR_LABEL_FONTSIZE)
+    ax.tick_params(axis="y", labelsize=PLOT_STACKBAR_TICK_FONTSIZE)
     ax.yaxis.grid(True, linestyle="--", alpha=0.7)
-    ax.legend(loc="upper center", bbox_to_anchor=(0.5, 1.16), ncol=4, frameon=False)
+    ax.legend(
+        loc="upper center",
+        bbox_to_anchor=(0.5, 1.18),
+        ncol=2,
+        frameon=False,
+        fontsize=PLOT_STACKBAR_LEGEND_FONTSIZE,
+        columnspacing=1.2,
+        handletextpad=0.6,
+        labelspacing=0.35,
+    )
 
+    # fig.subplots_adjust(left=0.15, right=0.94, bottom=0.14, top=0.8)
     plt.tight_layout()
     plt.savefig(output_pdf)
     plt.close(fig)
@@ -817,7 +833,7 @@ def plot_detection_stackbar(
 
     # 与 draw_cactus.py 一致的视觉补偿：极小非零块给最小可见高度
     pct = counts / totals * 100.0
-    min_vis_pct = 2.0
+    min_vis_pct = PLOT_STACKBAR_MIN_VISIBLE_PCT
     vis_pct = pct.copy()
     vis_pct[(vis_pct > 0) & (vis_pct < min_vis_pct)] = min_vis_pct
     vis_totals = vis_pct.sum(axis=0)
@@ -833,7 +849,7 @@ def plot_detection_stackbar(
     ]
 
     output_pdf.parent.mkdir(parents=True, exist_ok=True)
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=PLOT_STACKBAR_FIGSIZE)
 
     x = np.arange(len(labels))
     bottom = np.zeros(len(labels), dtype=float)
@@ -856,17 +872,32 @@ def plot_detection_stackbar(
     # 标注原始计数
     for i, bar_group in enumerate(bars):
         labels_count = [f"{int(v)}" if v > 0 else "" for v in counts[i]]
-        ax.bar_label(bar_group, labels=labels_count, label_type="center", fontsize=9)
+        ax.bar_label(
+            bar_group,
+            labels=labels_count,
+            label_type="center",
+            fontsize=PLOT_STACKBAR_ANNOTATION_FONTSIZE,
+        )
 
     ax.set_xticks(x)
-    ax.set_xticklabels(labels, rotation=0)
+    ax.set_xticklabels(labels, rotation=0, fontsize=PLOT_STACKBAR_TICK_FONTSIZE)
     ax.set_ylim(0, 100)
-    ax.set_ylabel("Percentage over Verified Vulnerability Set V (%)")
-    ax.set_xlabel("Pairwise Comparison with LARA")
-    ax.set_title("Detection Effect (Pairwise): LARA vs Baselines")
+    ax.set_ylabel("Percentage over Set V (%)", fontsize=PLOT_STACKBAR_LABEL_FONTSIZE)
+    ax.set_xlabel("Pairwise Comparison with LARA", fontsize=PLOT_STACKBAR_LABEL_FONTSIZE)
+    ax.tick_params(axis="y", labelsize=PLOT_STACKBAR_TICK_FONTSIZE)
     ax.yaxis.grid(True, linestyle="--", alpha=0.7)
-    ax.legend(loc="upper center", bbox_to_anchor=(0.5, 1.16), ncol=4, frameon=False)
+    ax.legend(
+        loc="upper center",
+        bbox_to_anchor=(0.5, 1.18),
+        ncol=2,
+        frameon=False,
+        fontsize=PLOT_STACKBAR_LEGEND_FONTSIZE,
+        columnspacing=1.2,
+        handletextpad=0.6,
+        labelspacing=0.35,
+    )
 
+    # fig.subplots_adjust(left=0.15, right=0.94, bottom=0.14, top=0.8)
     plt.tight_layout()
     plt.savefig(output_pdf)
     plt.close(fig)
@@ -922,16 +953,21 @@ def plot_detection_upset(
         n_cols = len(combo_keys)
         n_tools = len(display_tools)
 
-        fig = plt.figure(figsize=(13, 8))
+        fig = plt.figure(figsize=PLOT_UPSET_FIGSIZE)
         gs = fig.add_gridspec(2, 1, height_ratios=[3.0, 1.6], hspace=0.08)
         ax_bar = fig.add_subplot(gs[0, 0])
         ax_mat = fig.add_subplot(gs[1, 0], sharex=ax_bar)
 
         x = np.arange(n_cols)
         bars = ax_bar.bar(x, counts, color="#4e79a7", edgecolor="#2f3e4e", linewidth=0.6)
-        ax_bar.bar_label(bars, labels=[str(c) for c in counts], padding=2, fontsize=8)
-        ax_bar.set_ylabel("Intersection Size")
-        ax_bar.set_title("Detection Intersection over Verified Vulnerability Set V")
+        ax_bar.bar_label(
+            bars,
+            labels=[str(c) for c in counts],
+            padding=2,
+            fontsize=PLOT_ANNOTATION_FONTSIZE,
+        )
+        ax_bar.set_ylabel("Intersection Size", fontsize=PLOT_LABEL_FONTSIZE)
+        ax_bar.tick_params(axis="y", labelsize=PLOT_TICK_FONTSIZE)
         ax_bar.grid(axis="y", linestyle="--", alpha=0.4)
         ax_bar.set_axisbelow(True)
         ax_bar.tick_params(axis="x", labelbottom=False)
@@ -964,12 +1000,12 @@ def plot_detection_upset(
                     )
 
         ax_mat.set_yticks(y_positions)
-        ax_mat.set_yticklabels(display_tools)
+        ax_mat.set_yticklabels(display_tools, fontsize=PLOT_TICK_FONTSIZE)
         ax_mat.invert_yaxis()
-        ax_mat.set_xlabel("Top Intersections (sorted by size)")
+        ax_mat.set_xlabel("Top Intersections (sorted by size)", fontsize=PLOT_LABEL_FONTSIZE)
         ax_mat.set_xlim(-0.6, n_cols - 0.4)
         ax_mat.set_xticks(x)
-        ax_mat.set_xticklabels([str(i + 1) for i in x], fontsize=8)
+        ax_mat.set_xticklabels([str(i + 1) for i in x], fontsize=PLOT_TICK_FONTSIZE)
         ax_mat.grid(axis="x", linestyle=":", alpha=0.25)
 
         if not_detected > 0:
@@ -977,12 +1013,12 @@ def plot_detection_upset(
                 0.01,
                 0.01,
                 f"Not detected by any tool in V: {not_detected}",
-                fontsize=9,
+                fontsize=PLOT_ANNOTATION_FONTSIZE,
                 ha="left",
                 va="bottom",
             )
 
-        fig.subplots_adjust(top=0.9, bottom=0.08, left=0.08, right=0.98, hspace=0.08)
+        plt.tight_layout()
         plt.savefig(out_pdf)
         plt.close(fig)
 
@@ -1044,29 +1080,10 @@ def main() -> None:
             )
         )
 
-    # Attack union table metrics
-    attack_union_rows: List[AttackUnionRow] = []
-    for tool in TOOLS:
-        a_union = (
-            attacks_by_engine["nodejs14"][tool]
-            | attacks_by_engine["python"][tool]
-            | attacks_by_engine["java11"][tool]
-        )
-        reported = len(reported_sets[tool])
-        attack_union_rows.append(
-            AttackUnionRow(
-                tool=tool,
-                successful_attacks=len(a_union),
-                attack_recall=(len(a_union) / len(v_union)) if v_union else 0.0,
-                attack_conversion=(len(a_union) / reported) if reported else 0.0,
-            )
-        )
-
     # Print outputs
     print_detection_table(detection_rows)
     print_detection_latex(detection_rows)
     print_attack_all(attacks_by_engine, v_union)
-    print_attack_union(attack_union_rows)
     print_verify_counts(v_engine, v_union)
     print_detection_stackbar_table(
         build_detection_stackbar_rows(reported_sets, v_union, our_tool="ere")

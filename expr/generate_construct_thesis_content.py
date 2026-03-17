@@ -36,6 +36,13 @@ LINEARITY_COLORS = {
     "ere_dfa": "#9467bd",
 }
 
+PLOT_LABEL_FONTSIZE = 15
+PLOT_TICK_FONTSIZE = 13
+PLOT_LEGEND_FONTSIZE = 13
+PLOT_CACTUS_FIGSIZE = (9, 6)
+PLOT_SCATTER_FIGSIZE = (9, 6)
+PLOT_LINEARITY_FIGSIZE = (9, 6)
+
 
 @dataclass
 class Record:
@@ -304,19 +311,16 @@ def plot_construct_cactus(
     out_dir: Path,
     stem: str,
 ) -> Dict[str, str]:
-    fig, ax = plt.subplots(figsize=(8.5, 5.2))
+    fig, ax = plt.subplots(figsize=PLOT_CACTUS_FIGSIZE)
 
     if metric == "time":
         y_label = "CPU Time (s)"
-        title = "Construction Cactus (CPU Time)"
         y_min = 1e-4
     elif metric == "memory":
         y_label = "Memory Usage (MB)"
-        title = "Construction Cactus (Memory)"
         y_min = 1e-2
     elif metric == "size":
         y_label = "Automaton Size (states)"
-        title = "Construction Cactus (Automaton Size)"
         y_min = 1.0
     else:
         raise ValueError(f"Unknown metric: {metric}")
@@ -347,14 +351,14 @@ def plot_construct_cactus(
         top = max(top, limit_value * 1.25)
     ax.set_ylim(bottom=y_min, top=top)
     ax.set_xlim(left=0, right=max_x * 1.02)
-    ax.set_xlabel("Number of Solved Instances")
-    ax.set_ylabel(f"{y_label} (log scale)")
-    ax.set_title(title)
+    ax.set_xlabel("Number of Solved Instances", fontsize=PLOT_LABEL_FONTSIZE)
+    ax.set_ylabel(f"{y_label} (log scale)", fontsize=PLOT_LABEL_FONTSIZE)
+    ax.tick_params(axis="both", labelsize=PLOT_TICK_FONTSIZE)
     ax.grid(True, which="major", ls="-", alpha=0.35)
     ax.grid(True, which="minor", ls=":", alpha=0.2)
     if limit_value is not None:
         ax.axhline(y=limit_value, color="#444444", linestyle=":", linewidth=1.2, alpha=0.9)
-    ax.legend(loc="lower right")
+    ax.legend(loc="lower right", fontsize=PLOT_LEGEND_FONTSIZE)
     return save_fig_dual(fig, out_dir, stem)
 
 
@@ -381,7 +385,7 @@ def build_success_size_pairs(
 def plot_nfa_dfa_size_scatter(
     nfa_sizes: List[int], dfa_sizes: List[int], out_dir: Path, stem: str
 ) -> Dict[str, str]:
-    fig, ax = plt.subplots(figsize=(6.8, 6.2))
+    fig, ax = plt.subplots(figsize=PLOT_SCATTER_FIGSIZE)
     ax.scatter(nfa_sizes, dfa_sizes, s=8, alpha=0.25, color="#2ca02c")
 
     lo = min(min(nfa_sizes), min(dfa_sizes))
@@ -390,12 +394,12 @@ def plot_nfa_dfa_size_scatter(
 
     ax.set_xscale("log")
     ax.set_yscale("log")
-    ax.set_xlabel("RELAX-NFA size (states, log scale)")
-    ax.set_ylabel("RELAX-DFA size (states, log scale)")
-    ax.set_title("NFA Size vs DFA Size (Both Successful Samples)")
+    ax.set_xlabel("RELAX-NFA size (states, log scale)", fontsize=PLOT_LABEL_FONTSIZE)
+    ax.set_ylabel("RELAX-DFA size (states, log scale)", fontsize=PLOT_LABEL_FONTSIZE)
+    ax.tick_params(axis="both", labelsize=PLOT_TICK_FONTSIZE)
     ax.grid(True, which="major", ls="-", alpha=0.35)
     ax.grid(True, which="minor", ls=":", alpha=0.2)
-    ax.legend(loc="lower right")
+    ax.legend(loc="lower right", fontsize=PLOT_LEGEND_FONTSIZE)
     return save_fig_dual(fig, out_dir, stem)
 
 
@@ -511,7 +515,7 @@ def plot_matching_linear(main_points: List[dict], out_dir: Path, stem: str) -> D
     for r in main_points:
         by_engine[r["engine"]].append(r)
 
-    fig, ax = plt.subplots(figsize=(9.2, 5.8))
+    fig, ax = plt.subplots(figsize=PLOT_LINEARITY_FIGSIZE)
     for engine in LINEARITY_ENGINES:
         rows = sorted(by_engine.get(engine, []), key=lambda x: x["k"])
         if not rows:
@@ -532,11 +536,15 @@ def plot_matching_linear(main_points: List[dict], out_dir: Path, stem: str) -> D
         )
         ax.fill_between(x, y1, y3, color=c, alpha=0.16)
 
-    ax.set_xlabel("Infix repeat times (k)")
-    ax.set_ylabel("CPU time (ms)")
-    ax.set_title("Matching Time vs Infix Repeats (Median with IQR)")
+    ax.set_xlabel("Infix repeat times (k)", fontsize=PLOT_LABEL_FONTSIZE)
+    ax.set_ylabel("CPU time (ms)", fontsize=PLOT_LABEL_FONTSIZE)
+    ax.tick_params(axis="both", labelsize=PLOT_TICK_FONTSIZE)
     ax.grid(alpha=0.28)
-    ax.legend(loc="best")
+    ax.legend(
+        loc="center right",
+        bbox_to_anchor=(0.98, 0.30),
+        fontsize=PLOT_LEGEND_FONTSIZE,
+    )
     return save_fig_dual(fig, out_dir, stem)
 
 
@@ -545,7 +553,7 @@ def plot_matching_log(main_points: List[dict], out_dir: Path, stem: str) -> Dict
     for r in main_points:
         by_engine[r["engine"]].append(r)
 
-    fig, ax = plt.subplots(figsize=(9.2, 5.8))
+    fig, ax = plt.subplots(figsize=PLOT_LINEARITY_FIGSIZE)
     for engine in LINEARITY_ENGINES:
         rows = sorted(by_engine.get(engine, []), key=lambda x: x["k"])
         if not rows:
@@ -567,12 +575,12 @@ def plot_matching_log(main_points: List[dict], out_dir: Path, stem: str) -> Dict
         ax.fill_between(x, y1, y3, color=c, alpha=0.16)
 
     ax.set_yscale("log")
-    ax.set_xlabel("Infix repeat times (k)")
-    ax.set_ylabel("CPU time (ms, log scale)")
-    ax.set_title("Matching Time vs Infix Repeats (Log Scale, Median with IQR)")
+    ax.set_xlabel("Infix repeat times (k)", fontsize=PLOT_LABEL_FONTSIZE)
+    ax.set_ylabel("CPU time (ms, log scale)", fontsize=PLOT_LABEL_FONTSIZE)
+    ax.tick_params(axis="both", labelsize=PLOT_TICK_FONTSIZE)
     ax.grid(alpha=0.28, which="major")
     ax.grid(alpha=0.18, which="minor", linestyle=":")
-    ax.legend(loc="best")
+    ax.legend(loc="best", fontsize=PLOT_LEGEND_FONTSIZE)
     return save_fig_dual(fig, out_dir, stem)
 
 
