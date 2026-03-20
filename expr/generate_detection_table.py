@@ -1,22 +1,24 @@
 #!/usr/bin/env python3
 import argparse
+import csv
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable, Iterator, List, Set, Tuple
+from typing import Dict, Iterable, Iterator, List, Optional, Set, Tuple
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import re
 
-TOOLS: List[str] = ["ere", "redoshunter", "rengar", "revealer", "rescue"]
+TOOLS: List[str] = ["ere", "redoshunter", "regulator", "rengar", "revealer", "rescue",]
 TOOL_DISPLAY = {
     "ere": "LARA",
     "redoshunter": "ReDoSHunter",
+    "regulator": "Regulator",
     "rengar": "Rengar",
     "revealer": "Revealer",
-    "rescue": "ReScue",
+    "rescue": "ReScue"
 }
 ENGINES: List[str] = ["nodejs14", "python", "java11"]
 ENGINE_DISPLAY = {"nodejs14": "Node.js", "python": "Python", "java11": "Java"}
@@ -51,7 +53,7 @@ PLOT_STACKBAR_MIN_VISIBLE_PCT = 3
 class DetectionRow:
     tool: str
     reported: int
-    det_recall: float
+    ref_coverage: int
     missed: int
     unconfirmed: int
 
@@ -97,6 +99,15 @@ class PerformanceRow:
     average_memory: float
     timeouts: int
     ooms: int
+
+
+@dataclass
+class FnBreakdownRow:
+    tool: str
+    total: int
+    timeout: int
+    oom: int
+    others: int
 
 
 def iter_json_objects(path: Path) -> Iterator[dict]:
@@ -186,19 +197,26 @@ def parse_memory(stdout_str: str) -> float | None:
     return int(match.group(1)) / (1024 * 1024) if match else None
 
 
-def is_timeout_record(record: dict) -> bool:
-    if record.get("timeout", False) is True:
-        return True
+def get_termination_reason(record: dict) -> str:
     stdout = str(record.get("stdout", ""))
-    return (
+    if "terminationreason=memory" in stdout:
+        return "memory"
+    if record.get("timeout", False) is True:
+        return "timeout"
+    if (
         "terminationreason=cputime-soft" in stdout
         or "terminationreason=cputime" in stdout
-    )
+    ):
+        return "timeout"
+    return ""
+
+
+def is_timeout_record(record: dict) -> bool:
+    return get_termination_reason(record) == "timeout"
 
 
 def is_oom_record(record: dict) -> bool:
-    stdout = str(record.get("stdout", ""))
-    return "terminationreason=memory" in stdout
+    return get_termination_reason(record) == "memory"
 
 
 def find_file(root: Path, prefix: str, tool: str) -> Path:
@@ -221,6 +239,14 @@ def load_reported_sets(results_dir: Path) -> Dict[str, Set[Key]]:
             if claims_redos(rec):
                 reported[tool].add(parse_key(rec))
     return reported
+
+
+def load_records_by_key(root: Path, prefix: str, tool: str) -> Dict[Key, dict]:
+    path = find_file(root, prefix, tool)
+    records: Dict[Key, dict] = {}
+    for rec in iter_json_objects(path):
+        records[parse_key(rec)] = rec
+    return records
 
 
 def build_performance_rows(results_dir: Path) -> List[PerformanceRow]:
@@ -289,10 +315,10 @@ def format_pct(x: float) -> str:
 
 def print_detection_table(rows: List[DetectionRow]) -> None:
     print("\\n=== Table: Detection (tab:detection) ===")
-    print(f"{'Tool':<12} {'Reported':>10} {'Detection Recall':>18} {'Missed':>10} {'Unconfirmed':>14}")
+    print(f"{'Tool':<12} {'Reported':>10} {'Reference Coverage':>20} {'Missed':>10} {'Unconfirmed':>14}")
     for r in rows:
         print(
-            f"{TOOL_DISPLAY[r.tool]:<12} {r.reported:>10} {format_pct(r.det_recall):>18} {r.missed:>10} {r.unconfirmed:>14}"
+            f"{TOOL_DISPLAY[r.tool]:<12} {r.reported:>10} {r.ref_coverage:>20} {r.missed:>10} {r.unconfirmed:>14}"
         )
 
 
@@ -300,7 +326,7 @@ def print_detection_latex(rows: List[DetectionRow]) -> None:
     print("\\nLaTeX rows for tab:detection:")
     for r in rows:
         line = (
-            f"{TOOL_DISPLAY[r.tool]} & {r.reported} & {r.det_recall * 100:.2f}\\%"
+            f"{TOOL_DISPLAY[r.tool]} & {r.reported} & {r.ref_coverage}"
             f" & {r.missed} & {r.unconfirmed} \\\\" 
         )
         print(line)
@@ -393,7 +419,7 @@ def print_detection_stackbar_table(rows: List[DetectionStackbarRow]) -> None:
 def build_detection_upset_table_rows(
     reported_sets: Dict[str, Set[Key]],
     v_union: Set[Key],
-    top_k: int = 20,
+    top_k: Optional[int] = None,
 ) -> Tuple[List[DetectionUpSetRow], int]:
     if not v_union:
         raise ValueError("Global verified set V is empty, cannot build detection upset rows.")
@@ -412,7 +438,9 @@ def build_detection_upset_table_rows(
     combos = sorted(
         combo_counts.items(),
         key=lambda item: (-item[1], -sum(item[0]), item[0]),
-    )[:top_k]
+    )
+    if top_k is not None:
+        combos = combos[:top_k]
 
     rows: List[DetectionUpSetRow] = []
     for idx, (combo, cnt) in enumerate(combos, start=1):
@@ -427,8 +455,13 @@ def build_detection_upset_table_rows(
     return rows, uncovered
 
 
-def print_detection_upset_table(rows: List[DetectionUpSetRow], uncovered: int, top_k: int = 20) -> None:
-    print(f"\n=== Detection UpSet Data (for detection_upset.pdf, top {top_k}) ===")
+def print_detection_upset_table(
+    rows: List[DetectionUpSetRow],
+    uncovered: int,
+    top_k: Optional[int] = None,
+) -> None:
+    scope = "all intersections" if top_k is None else f"top {top_k}"
+    print(f"\n=== Detection UpSet Data (for detection_upset.pdf, {scope}) ===")
     print(f"{'Rank':<6} {'Tool Combination':<72} {'Count':>8}")
     for r in rows:
         print(f"{r.rank:<6} {r.combination:<72} {r.count:>8}")
@@ -809,6 +842,132 @@ def print_performance_latex(rows: List[PerformanceRow]) -> None:
         )
 
 
+def build_lara_fn_breakdown_row(
+    results_dir: Path,
+    reported_sets: Dict[str, Set[Key]],
+    v_union: Set[Key],
+) -> FnBreakdownRow:
+    fn_keys = sorted(v_union - reported_sets["ere"])
+    ere_records = load_records_by_key(results_dir, "1_expr", "ere")
+
+    timeout = 0
+    oom = 0
+    others = 0
+    for key in fn_keys:
+        ere_record = ere_records.get(key, {})
+        reason = get_termination_reason(ere_record)
+        if reason == "timeout":
+            timeout += 1
+        elif reason == "memory":
+            oom += 1
+        else:
+            others += 1
+
+    return FnBreakdownRow(
+        tool="ere",
+        total=len(fn_keys),
+        timeout=timeout,
+        oom=oom,
+        others=others,
+    )
+
+
+def print_lara_fn_breakdown_table(row: FnBreakdownRow) -> None:
+    print("\n=== Table: LARA FN Breakdown (tab:lara-fn) ===")
+    print(f"{'Tool':<12} {'Total FN':>10} {'Timeout':>10} {'OOM':>8} {'Others':>10}")
+    print(
+        f"{TOOL_DISPLAY[row.tool]:<12} {row.total:>10} {row.timeout:>10} {row.oom:>8} {row.others:>10}"
+    )
+
+
+def print_lara_fn_breakdown_latex(row: FnBreakdownRow) -> None:
+    print("\nLaTeX rows for tab:lara-fn:")
+    print(
+        f"{TOOL_DISPLAY[row.tool]} & {row.total} & {row.timeout} & {row.oom} & {row.others} \\\\"
+    )
+
+
+def write_lara_fn_csv(
+    results_dir: Path,
+    reported_sets: Dict[str, Set[Key]],
+    attacks_by_engine: Dict[str, Dict[str, Set[Key]]],
+    v_union: Set[Key],
+    output_csv: Path,
+) -> None:
+    fn_keys = sorted(v_union - reported_sets["ere"])
+    ere_records = load_records_by_key(results_dir, "1_expr", "ere")
+
+    output_csv.parent.mkdir(parents=True, exist_ok=True)
+    with output_csv.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                "file",
+                "line",
+                "input",
+                "input_length",
+                "verified_engines",
+                "detected_by_other_tools",
+                "verified_by_tools",
+                "verified_attack_details",
+                "ere_output",
+                "ere_stdout",
+                "ere_stderr",
+                "ere_return_code",
+                "ere_timeout_flag",
+                "ere_is_timeout_record",
+                "ere_is_oom_record",
+                "ere_record_json",
+            ],
+        )
+        writer.writeheader()
+
+        for key in fn_keys:
+            ere_record = ere_records.get(key, {})
+            verified_engines = [
+                ENGINE_DISPLAY[eng]
+                for eng in ENGINES
+                if any(key in attacks_by_engine[eng][tool] for tool in TOOLS)
+            ]
+            detected_by_other_tools = [
+                TOOL_DISPLAY[tool]
+                for tool in TOOLS
+                if tool != "ere" and key in reported_sets[tool]
+            ]
+            verified_by_tools = [
+                TOOL_DISPLAY[tool]
+                for tool in TOOLS
+                if any(key in attacks_by_engine[eng][tool] for eng in ENGINES)
+            ]
+            verified_attack_details = [
+                f"{TOOL_DISPLAY[tool]}:{'/'.join(ENGINE_DISPLAY[eng] for eng in ENGINES if key in attacks_by_engine[eng][tool])}"
+                for tool in TOOLS
+                if any(key in attacks_by_engine[eng][tool] for eng in ENGINES)
+            ]
+            writer.writerow(
+                {
+                    "file": key[0],
+                    "line": key[1],
+                    "input": ere_record.get("input", ""),
+                    "input_length": len(str(ere_record.get("input", ""))),
+                    "verified_engines": "; ".join(verified_engines),
+                    "detected_by_other_tools": "; ".join(detected_by_other_tools),
+                    "verified_by_tools": "; ".join(verified_by_tools),
+                    "verified_attack_details": "; ".join(verified_attack_details),
+                    "ere_output": ere_record.get("output", ""),
+                    "ere_stdout": ere_record.get("stdout", ""),
+                    "ere_stderr": ere_record.get("stderr", ""),
+                    "ere_return_code": ere_record.get("return_code", ""),
+                    "ere_timeout_flag": ere_record.get("timeout", ""),
+                    "ere_is_timeout_record": is_timeout_record(ere_record),
+                    "ere_is_oom_record": is_oom_record(ere_record),
+                    "ere_record_json": json.dumps(
+                        ere_record, ensure_ascii=False, sort_keys=True
+                    ),
+                }
+            )
+
+
 def plot_detection_stackbar(
     reported_sets: Dict[str, Set[Key]],
     v_union: Set[Key],
@@ -943,8 +1102,6 @@ def plot_detection_upset(
             combo_counts.items(),
             key=lambda item: (-item[1], -sum(item[0]), item[0]),
         )
-        max_cols = 20
-        combos = combos[:max_cols]
         if not combos:
             raise ValueError("No non-empty intersections available for UpSet fallback.")
 
@@ -953,7 +1110,8 @@ def plot_detection_upset(
         n_cols = len(combo_keys)
         n_tools = len(display_tools)
 
-        fig = plt.figure(figsize=PLOT_UPSET_FIGSIZE)
+        fig_width = max(PLOT_UPSET_FIGSIZE[0], 0.42 * n_cols + 3.0)
+        fig = plt.figure(figsize=(fig_width, PLOT_UPSET_FIGSIZE[1]))
         gs = fig.add_gridspec(2, 1, height_ratios=[3.0, 1.6], hspace=0.08)
         ax_bar = fig.add_subplot(gs[0, 0])
         ax_mat = fig.add_subplot(gs[1, 0], sharex=ax_bar)
@@ -1002,7 +1160,7 @@ def plot_detection_upset(
         ax_mat.set_yticks(y_positions)
         ax_mat.set_yticklabels(display_tools, fontsize=PLOT_TICK_FONTSIZE)
         ax_mat.invert_yaxis()
-        ax_mat.set_xlabel("Top Intersections (sorted by size)", fontsize=PLOT_LABEL_FONTSIZE)
+        ax_mat.set_xlabel("Intersections (sorted by size)", fontsize=PLOT_LABEL_FONTSIZE)
         ax_mat.set_xlim(-0.6, n_cols - 0.4)
         ax_mat.set_xticks(x)
         ax_mat.set_xticklabels([str(i + 1) for i in x], fontsize=PLOT_TICK_FONTSIZE)
@@ -1067,14 +1225,13 @@ def main() -> None:
         r_set = reported_sets[tool]
         hit = len(r_set & v_union)
         reported = len(r_set)
-        recall = (hit / len(v_union)) if v_union else 0.0
         missed = len(v_union - r_set)
         unconfirmed = len(r_set - v_union)
         detection_rows.append(
             DetectionRow(
                 tool=tool,
                 reported=reported,
-                det_recall=recall,
+                ref_coverage=hit,
                 missed=missed,
                 unconfirmed=unconfirmed,
             )
@@ -1089,10 +1246,10 @@ def main() -> None:
         build_detection_stackbar_rows(reported_sets, v_union, our_tool="ere")
     )
     detection_upset_rows, detection_upset_uncovered = build_detection_upset_table_rows(
-        reported_sets, v_union, top_k=20
+        reported_sets, v_union
     )
     print_detection_upset_table(
-        detection_upset_rows, detection_upset_uncovered, top_k=20
+        detection_upset_rows, detection_upset_uncovered
     )
     unique_rows = build_unique_rows(reported_sets, attacks_by_engine, v_union)
     print_unique_table(unique_rows)
@@ -1104,6 +1261,12 @@ def main() -> None:
     print_without_lara_stats(attacks_by_engine, v_union)
     print_performance_table(performance_rows)
     print_performance_latex(performance_rows)
+    lara_fn_breakdown_row = build_lara_fn_breakdown_row(results_dir, reported_sets, v_union)
+    print_lara_fn_breakdown_table(lara_fn_breakdown_row)
+    print_lara_fn_breakdown_latex(lara_fn_breakdown_row)
+    lara_fn_csv = results_dir.parent / "plots" / "lara_fn.csv"
+    write_lara_fn_csv(results_dir, reported_sets, attacks_by_engine, v_union, lara_fn_csv)
+    print(f"Saved LARA FN CSV: {lara_fn_csv}")
 
     detection_fig = results_dir.parent / "plots" / "detection_stackbar.pdf"
     plot_detection_stackbar(reported_sets, v_union, detection_fig, our_tool="ere")
