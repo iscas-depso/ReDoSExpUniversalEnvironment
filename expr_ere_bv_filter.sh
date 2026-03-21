@@ -4,7 +4,7 @@ set -euo pipefail
 
 IMAGE="${IMAGE:-redos-test}"
 DATASET="${DATASET:-/app/expr/data/cve414_with_metadata_no_slq_only.jsonl}"
-OUTPUT="${OUTPUT:-./expr/expr/data/ere_detect_bv_cve414_with_metadata_no_slq_only.jsonl}"
+OUTPUT="${OUTPUT:-./expr/data/ere_detect_bv_cve414_with_metadata_no_slq_only.jsonl}"
 PYTHON_SCRIPT="${PYTHON_SCRIPT:-/app/expr/filter_ere_accepted.py}"
 TIMEOUT="${TIMEOUT:-30}"
 
