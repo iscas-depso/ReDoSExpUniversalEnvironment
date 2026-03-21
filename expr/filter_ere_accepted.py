@@ -12,7 +12,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             "Sequentially run `ere detect -bv` on each pattern in a JSONL file "
-            "and print accepted records as a JSON document to stdout."
+            "and print each accepted input line unchanged to stdout."
         )
     )
     parser.add_argument(
@@ -39,11 +39,6 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def json_error(message: str) -> None:
-    json.dump({"status": "error", "message": message}, sys.stdout, ensure_ascii=False, indent=2)
-    sys.stdout.write("\n")
-
-
 def build_ere_pattern(pattern: str, use_fullmatch: bool) -> str:
     if use_fullmatch:
         return f"^(?:{pattern})$"
@@ -67,14 +62,13 @@ def main() -> int:
     use_fullmatch = args.fullmatch
 
     if not input_path.exists():
-        json_error(f"Input file not found: {input_path}")
+        print(f"Input file not found: {input_path}", file=sys.stderr)
         return 1
 
     if not Path(args.ere).exists():
-        json_error(f"ere executable not found: {args.ere}")
+        print(f"ere executable not found: {args.ere}", file=sys.stderr)
         return 1
 
-    accepted_records = []
     invalid_json_lines = []
     missing_pattern_lines = []
     timeout_lines = []
@@ -106,8 +100,6 @@ def main() -> int:
 
             processed_patterns += 1
             ere_pattern = build_ere_pattern(pattern, use_fullmatch)
-            ere_pattern_b64 = base64.b64encode(ere_pattern.encode("utf-8")).decode("ascii")
-
             try:
                 result = check_pattern(args.ere, ere_pattern, args.timeout)
             except subprocess.TimeoutExpired:
@@ -116,43 +108,22 @@ def main() -> int:
                 continue
 
             if result.returncode == 0:
-                accepted_record = dict(record)
-                accepted_record.update(
-                    {
-                        "line": line_number,
-                        "ere_pattern": ere_pattern,
-                        "ere_pattern_base64": ere_pattern_b64,
-                        "ere_return_code": result.returncode,
-                    }
-                )
-                accepted_records.append(accepted_record)
+                sys.stdout.write(raw_line)
+                if not raw_line.endswith("\n"):
+                    sys.stdout.write("\n")
             else:
                 rejected_count += 1
 
-    output = {
-        "status": "ok",
-        "input_file": str(input_path),
-        "ere_path": args.ere,
-        "fullmatch_wrapped": use_fullmatch,
-        "total_lines": total_lines,
-        "processed_patterns": processed_patterns,
-        "accepted_count": len(accepted_records),
-        "rejected_count": rejected_count,
-        "invalid_json_line_count": len(invalid_json_lines),
-        "missing_pattern_count": len(missing_pattern_lines),
-        "timeout_count": len(timeout_lines),
-        "accepted_records": accepted_records,
-    }
-
-    if invalid_json_lines:
-        output["invalid_json_lines"] = invalid_json_lines
-    if missing_pattern_lines:
-        output["missing_pattern_lines"] = missing_pattern_lines
-    if timeout_lines:
-        output["timeout_lines"] = timeout_lines
-
-    json.dump(output, sys.stdout, ensure_ascii=False, indent=2)
-    sys.stdout.write("\n")
+    print(
+        (
+            f"Finished filtering {input_path}: total_lines={total_lines}, "
+            f"processed_patterns={processed_patterns}, "
+            f"rejected_count={rejected_count}, invalid_json_line_count={len(invalid_json_lines)}, "
+            f"missing_pattern_count={len(missing_pattern_lines)}, timeout_count={len(timeout_lines)}, "
+            f"fullmatch_wrapped={use_fullmatch}"
+        ),
+        file=sys.stderr,
+    )
     return 0
 
 
