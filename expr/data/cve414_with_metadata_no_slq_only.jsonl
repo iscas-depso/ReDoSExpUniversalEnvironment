@@ -99,7 +99,7 @@
 {"pattern": "^(([^=;]+))\\s*=\\s*([^\\n\\r\\0]*)", "Vul_Pattern": ["POA"], "Source": "CVE-2017-15010"}
 {"pattern": "^([^\\/]+\\/[^\\s;]+)(?:(?:\\s*;\\s*boundary=(?:\"([^\"]+)\"|([^;\"]+)))|(?:\\s*;\\s*[^=]+=(?:(?:\"(?:[^\"]+)\")|(?:[^;\"]+))))*$", "Vul_Pattern": ["EOD", "POA", "EOA"], "Source": "CVE-2017-16111"}
 {"pattern": "([^\\=\\*]+)(\\*)?\\s*\\=\\s*(?:([^;'\"]+\\'[\\w-]*\\'[^;\\s]+)|(?:\\\"([^\"]*)\\\")|([^;\\s]*))(?:(?:\\s*;\\s*)|(?:\\s*$))", "Vul_Pattern": ["POA", "SLQ"], "Source": "CVE-2017-16111"}
-{"pattern": "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$", "Vul_Pattern": ["POA"], "Source": "CVE-2017-16100"}
+{"pattern": "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9]).)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$", "Vul_Pattern": ["POA"], "Source": "CVE-2017-16100"}
 {"pattern": "^(\\/.*)([\\?&])bewit\\=([^&$]*)(?:&(.+))?$", "Vul_Pattern": ["POA"], "Source": "CVE-2016-2515"}
 {"pattern": "^(\\w+)(?:\\s+(.*))?$", "Vul_Pattern": ["POA"], "Source": "CVE-2016-2515"}
 {"pattern": "^[0-9]+(\\.?[0-9]+)?$", "Vul_Pattern": ["POA"], "Source": "CVE-2016-2537"}
