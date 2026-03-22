@@ -29,7 +29,7 @@ def measure(data, pattern, full_match, output_file):
     try:
         if full_match:
             # Full match: entire text must match the regex
-            if re.fullmatch(pattern, data, re.DOTALL):
+            if re.fullmatch(pattern, data):
                 count = 1
         else:
             # Partial match: count all matches in the text
