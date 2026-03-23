@@ -11,17 +11,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 import re
 
-TOOLS: List[str] = ["ere", "redoshunter", "regulator", "rengar", "revealer", "rescue",]
+TOOLS: List[str] = ["ere", "redoshunter", "regulator", "rengar", "revealer", "regexploit", "rescue"]
 TOOL_DISPLAY = {
     "ere": "LARA",
     "redoshunter": "ReDoSHunter",
     "regulator": "Regulator",
     "rengar": "Rengar",
     "revealer": "Revealer",
-    "rescue": "ReScue"
+    "regexploit": "Regexploit",
+    "rescue": "ReScue",
 }
 ENGINES: List[str] = ["nodejs14", "python", "java11"]
+# ENGINES: List[str] = ["nodejs14"]
+
 ENGINE_DISPLAY = {"nodejs14": "Node.js", "python": "Python", "java11": "Java"}
+
+DEFAULT_RESULTS_DIR = Path("expr/results")
+DEFAULT_CVE_RESULTS_DIR = Path("expr/results-cve")
 
 EXPECTED_COUNTS = {
     "nodejs14": 4415,
@@ -152,6 +158,27 @@ def parse_key(record: dict) -> Key:
     return (str(record.get("file")), int(record.get("line", -1)))
 
 
+def export_sort_key(item: Key) -> Tuple[str, int, str]:
+    return (Path(item[0]).name, item[1], item[0])
+
+
+def discover_tools(results_dir: Path, prefix: str = "1_expr") -> List[str]:
+    available: Set[str] = set()
+    marker = f"{prefix}_"
+    for path in sorted(results_dir.glob(f"{prefix}_*.json*")):
+        name = path.name
+        if not name.startswith(marker):
+            continue
+        suffix = name[len(marker):]
+        json_idx = suffix.find(".json")
+        if json_idx != -1:
+            suffix = suffix[:json_idx]
+        if suffix:
+            available.add(suffix)
+
+    return [tool for tool in TOOLS if tool in available]
+
+
 def claims_redos(record: dict) -> bool:
     output_field = record.get("output")
     if not output_field:
@@ -231,14 +258,18 @@ def find_file(root: Path, prefix: str, tool: str) -> Path:
     return candidates[0]
 
 
-def load_reported_sets(results_dir: Path) -> Dict[str, Set[Key]]:
-    reported: Dict[str, Set[Key]] = {t: set() for t in TOOLS}
-    for tool in TOOLS:
+def load_reported_sets_for_tools(results_dir: Path, tools: Iterable[str]) -> Dict[str, Set[Key]]:
+    reported: Dict[str, Set[Key]] = {t: set() for t in tools}
+    for tool in tools:
         path = find_file(results_dir, "1_expr", tool)
         for rec in iter_json_objects(path):
             if claims_redos(rec):
                 reported[tool].add(parse_key(rec))
     return reported
+
+
+def load_reported_sets(results_dir: Path) -> Dict[str, Set[Key]]:
+    return load_reported_sets_for_tools(results_dir, TOOLS)
 
 
 def load_records_by_key(root: Path, prefix: str, tool: str) -> Dict[Key, dict]:
@@ -247,6 +278,24 @@ def load_records_by_key(root: Path, prefix: str, tool: str) -> Dict[Key, dict]:
     for rec in iter_json_objects(path):
         records[parse_key(rec)] = rec
     return records
+
+
+def load_reference_records(
+    results_dir: Path,
+    tools: Iterable[str],
+    prefix: str = "1_expr",
+) -> Dict[Key, dict]:
+    records: Dict[Key, dict] = {}
+    for tool in tools:
+        path = find_file(results_dir, prefix, tool)
+        for rec in iter_json_objects(path):
+            key = parse_key(rec)
+            records.setdefault(key, rec)
+    return records
+
+
+def is_cve_results_dir(results_dir: Path) -> bool:
+    return results_dir.name == DEFAULT_CVE_RESULTS_DIR.name
 
 
 def build_performance_rows(results_dir: Path) -> List[PerformanceRow]:
@@ -332,41 +381,334 @@ def print_detection_latex(rows: List[DetectionRow]) -> None:
         print(line)
 
 
+def build_confirmed_detection_rows(
+    reported_sets: Dict[str, Set[Key]],
+    confirmed_keys: Set[Key],
+    tools: Iterable[str],
+) -> List[DetectionRow]:
+    rows: List[DetectionRow] = []
+    for tool in tools:
+        hit = len(reported_sets[tool] & confirmed_keys)
+        rows.append(
+            DetectionRow(
+                tool=tool,
+                reported=hit,
+                ref_coverage=hit,
+                missed=len(confirmed_keys) - hit,
+                unconfirmed=0,
+            )
+        )
+    return rows
+
+
+def print_confirmed_detection_table(rows: List[DetectionRow], confirmed_total: int) -> None:
+    print("\n=== Table: Confirmed CVE Detection (tab:cve-detection) ===")
+    print(f"Confirmed instances: {confirmed_total}")
+    print(f"{'Tool':<14} {'Detected':>10} {'Recall':>10} {'Missed':>10}")
+    for r in rows:
+        recall = (r.ref_coverage / confirmed_total) if confirmed_total else 0.0
+        print(
+            f"{TOOL_DISPLAY.get(r.tool, r.tool):<14} {r.ref_coverage:>10} {format_pct(recall):>10} {r.missed:>10}"
+        )
+
+
+def write_confirmed_detection_summary_csv(
+    rows: List[DetectionRow],
+    confirmed_total: int,
+    output_csv: Path,
+) -> None:
+    output_csv.parent.mkdir(parents=True, exist_ok=True)
+    with output_csv.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=["tool", "display_name", "detected", "missed", "recall"],
+        )
+        writer.writeheader()
+        for r in rows:
+            recall = (r.ref_coverage / confirmed_total) if confirmed_total else 0.0
+            writer.writerow(
+                {
+                    "tool": r.tool,
+                    "display_name": TOOL_DISPLAY.get(r.tool, r.tool),
+                    "detected": r.ref_coverage,
+                    "missed": r.missed,
+                    "recall": f"{recall:.6f}",
+                }
+            )
+
+
+def write_confirmed_detection_matrix_csv(
+    reported_sets: Dict[str, Set[Key]],
+    reference_records: Dict[Key, dict],
+    tools: Iterable[str],
+    output_csv: Path,
+) -> None:
+    tool_list = list(tools)
+    output_csv.parent.mkdir(parents=True, exist_ok=True)
+    with output_csv.open("w", newline="", encoding="utf-8") as f:
+        fieldnames = [
+            "file",
+            "line",
+            "input",
+            *tool_list,
+            "detected_by_count",
+            "detected_by_tools",
+        ]
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+
+        def sort_key(item: Key) -> Tuple[str, int, str]:
+            return (Path(item[0]).name, item[1], item[0])
+
+        for key in sorted(reference_records, key=sort_key):
+            rec = reference_records[key]
+            flags = {tool: int(key in reported_sets[tool]) for tool in tool_list}
+            detected_tools = [
+                TOOL_DISPLAY.get(tool, tool) for tool in tool_list if flags[tool]
+            ]
+            writer.writerow(
+                {
+                    "file": key[0],
+                    "line": key[1],
+                    "input": rec.get("input", ""),
+                    **flags,
+                    "detected_by_count": sum(flags.values()),
+                    "detected_by_tools": "; ".join(detected_tools),
+                }
+            )
+
+
+def run_confirmed_only_mode(results_dir: Path) -> None:
+    tools = discover_tools(results_dir, prefix="1_expr")
+    if not tools:
+        raise FileNotFoundError(f"No 1_expr_<tool>.json files found under {results_dir}")
+
+    reference_records = load_reference_records(results_dir, tools, prefix="1_expr")
+    confirmed_keys = set(reference_records)
+    reported_sets = load_reported_sets_for_tools(results_dir, tools)
+    detection_rows = build_confirmed_detection_rows(reported_sets, confirmed_keys, tools)
+    lara_fn_breakdown_row = build_lara_fn_breakdown_row(
+        results_dir, reported_sets, confirmed_keys
+    )
+    detection_stackbar_rows = build_detection_stackbar_rows(
+        reported_sets, confirmed_keys, our_tool="ere"
+    )
+    detection_upset_rows, detection_upset_uncovered = build_detection_upset_table_rows(
+        reported_sets, confirmed_keys
+    )
+
+    print_confirmed_detection_table(detection_rows, len(confirmed_keys))
+    print_confirmed_detection_stackbar_table(detection_stackbar_rows)
+    print_detection_upset_table(detection_upset_rows, detection_upset_uncovered)
+    print_confirmed_lara_fn_breakdown_table(lara_fn_breakdown_row)
+
+    output_dir = results_dir.parent / "plots-cve"
+    summary_csv = output_dir / "cve_detection_summary.csv"
+    matrix_csv = output_dir / "cve_detection_matrix.csv"
+    stackbar_pdf = output_dir / "cve_detection_stackbar.pdf"
+    upset_pdf = output_dir / "cve_detection_upset.pdf"
+    lara_fn_csv = output_dir / "cve_lara_fn.csv"
+    write_confirmed_detection_summary_csv(detection_rows, len(confirmed_keys), summary_csv)
+    write_confirmed_detection_matrix_csv(reported_sets, reference_records, tools, matrix_csv)
+    plot_detection_stackbar(reported_sets, confirmed_keys, stackbar_pdf, our_tool="ere")
+    plot_detection_upset(reported_sets, confirmed_keys, upset_pdf)
+    write_confirmed_lara_fn_csv(
+        results_dir,
+        reported_sets,
+        reference_records,
+        tools,
+        lara_fn_csv,
+    )
+
+    print(f"Saved CVE detection summary CSV: {summary_csv}")
+    print(f"Saved CVE detection matrix CSV: {matrix_csv}")
+    print(f"Saved CVE detection stackbar PDF: {stackbar_pdf}")
+    print(f"Saved CVE detection upset PDF: {upset_pdf}")
+    print(f"Saved CVE LARA FN CSV: {lara_fn_csv}")
+
+
+def run_standard_mode(results_dir: Path) -> None:
+    missing_engines = [eng for eng in ENGINES if not (results_dir / eng).exists()]
+    if missing_engines:
+        raise FileNotFoundError(
+            f"{results_dir} is missing engine result dirs: {', '.join(missing_engines)}. "
+            f"For confirmed CVE statistics, use {DEFAULT_CVE_RESULTS_DIR}."
+        )
+
+    # R_T: each tool's reported vulnerable set
+    reported_sets = load_reported_sets(results_dir)
+    performance_rows = build_performance_rows(results_dir)
+
+    # A_T(engine): each tool's successful attack set on each engine
+    attacks_by_engine: Dict[str, Dict[str, Set[Key]]] = {}
+    for eng in ENGINES:
+        attacks_by_engine[eng] = load_attack_sets_per_engine(results_dir, eng)
+    attack_union_sets = build_attack_union_sets(attacks_by_engine)
+
+    # V_engine and global V (union over engines)
+    v_engine: Dict[str, Set[Key]] = {}
+    for eng in ENGINES:
+        v_engine[eng] = set().union(*attacks_by_engine[eng].values())
+    v_union = set().union(*v_engine.values())
+    attack_time_cactus, attack_memory_cactus = build_attack_union_cactus_data(
+        results_dir, attack_union_sets
+    )
+    marked_time_cactus, marked_memory_cactus = build_marked_union_cactus_data(
+        results_dir, v_union
+    )
+
+    # Detection table metrics against global V
+    detection_rows: List[DetectionRow] = []
+    for tool in TOOLS:
+        r_set = reported_sets[tool]
+        hit = len(r_set & v_union)
+        reported = len(r_set)
+        missed = len(v_union - r_set)
+        unconfirmed = len(r_set - v_union)
+        detection_rows.append(
+            DetectionRow(
+                tool=tool,
+                reported=reported,
+                ref_coverage=hit,
+                missed=missed,
+                unconfirmed=unconfirmed,
+            )
+        )
+
+    # Print outputs
+    print_detection_table(detection_rows)
+    print_detection_latex(detection_rows)
+    print_attack_all(attacks_by_engine, v_union)
+    # print_verify_counts(v_engine, v_union)
+    print_detection_stackbar_table(
+        build_detection_stackbar_rows(reported_sets, v_union, our_tool="ere")
+    )
+    detection_upset_rows, detection_upset_uncovered = build_detection_upset_table_rows(
+        reported_sets, v_union
+    )
+    print_detection_upset_table(
+        detection_upset_rows, detection_upset_uncovered
+    )
+    unique_rows = build_unique_rows(reported_sets, attacks_by_engine, v_union)
+    print_unique_table(unique_rows)
+    print_unique_latex(unique_rows)
+    attack_stackbar_rows, attack_universe = build_attack_stackbar_rows(
+        attacks_by_engine, our_tool="ere"
+    )
+    print_attack_stackbar_table(attack_stackbar_rows, len(attack_universe))
+    print_without_lara_stats(attacks_by_engine, v_union)
+    print_performance_table(performance_rows)
+    print_performance_latex(performance_rows)
+    lara_fn_breakdown_row = build_lara_fn_breakdown_row(results_dir, reported_sets, v_union)
+    print_lara_fn_breakdown_table(lara_fn_breakdown_row)
+    print_lara_fn_breakdown_latex(lara_fn_breakdown_row)
+    lara_fn_csv = results_dir.parent / "plots" / "lara_fn.csv"
+    unique_detection_csv = results_dir.parent / "plots" / "unique_detections.csv"
+    unique_attack_csv = results_dir.parent / "plots" / "unique_attacks.csv"
+    write_lara_fn_csv(results_dir, reported_sets, attacks_by_engine, v_union, lara_fn_csv)
+    write_unique_detection_csv(
+        results_dir, reported_sets, attacks_by_engine, v_union, unique_detection_csv
+    )
+    write_unique_attack_csv(
+        results_dir, reported_sets, attacks_by_engine, v_union, unique_attack_csv
+    )
+    print(f"Saved LARA FN CSV: {lara_fn_csv}")
+    print(f"Saved unique detections CSV: {unique_detection_csv}")
+    print(f"Saved unique attacks CSV: {unique_attack_csv}")
+
+    detection_fig = results_dir.parent / "plots" / "detection_stackbar.pdf"
+    plot_detection_stackbar(reported_sets, v_union, detection_fig, our_tool="ere")
+    print(f"\nSaved detection stackbar PDF: {detection_fig}")
+    detection_upset_fig = results_dir.parent / "plots" / "detection_upset.pdf"
+    plot_detection_upset(reported_sets, v_union, detection_upset_fig)
+    print(f"Saved detection upset PDF: {detection_upset_fig}")
+    attack_fig = results_dir.parent / "plots" / "unique_attack_stackbar.pdf"
+    plot_attack_stackbar(attacks_by_engine, attack_fig, our_tool="ere")
+    print(f"Saved attack stackbar PDF: {attack_fig}")
+    attack_time_cactus_fig = results_dir.parent / "plots" / "attack_union_cactus_time.pdf"
+    plot_cactus(
+        attack_time_cactus,
+        attack_time_cactus_fig,
+        limit_value=600.0,
+        metric="time",
+        mode_desc="At Least One Engine Attack Success",
+    )
+    print(f"Saved attack-union time cactus PDF: {attack_time_cactus_fig}")
+    attack_memory_cactus_fig = results_dir.parent / "plots" / "attack_union_cactus_memory.pdf"
+    plot_cactus(
+        attack_memory_cactus,
+        attack_memory_cactus_fig,
+        limit_value=10240.0,
+        metric="memory",
+        mode_desc="At Least One Engine Attack Success",
+    )
+    print(f"Saved attack-union memory cactus PDF: {attack_memory_cactus_fig}")
+    marked_time_cactus_fig = results_dir.parent / "plots" / "marked_union_cactus_time.pdf"
+    plot_cactus(
+        marked_time_cactus,
+        marked_time_cactus_fig,
+        limit_value=600.0,
+        metric="time",
+        mode_desc="Confirmed Vulnerability Set V",
+    )
+    print(f"Saved marked-union time cactus PDF: {marked_time_cactus_fig}")
+    marked_memory_cactus_fig = results_dir.parent / "plots" / "marked_union_cactus_memory.pdf"
+    plot_cactus(
+        marked_memory_cactus,
+        marked_memory_cactus_fig,
+        limit_value=10240.0,
+        metric="memory",
+        mode_desc="Confirmed Vulnerability Set V",
+    )
+    print(f"Saved marked-union memory cactus PDF: {marked_memory_cactus_fig}")
+
+
+def union_attacks_for_tool(
+    attacks_by_engine: Dict[str, Dict[str, Set[Key]]],
+    tool: str,
+) -> Set[Key]:
+    return set().union(*(attacks_by_engine[eng][tool] for eng in ENGINES))
+
+
 def print_attack_all(attacks_by_engine: Dict[str, Dict[str, Set[Key]]], v_union: Set[Key]) -> None:
     print("\\n=== Attack Success Count by Engine (for tab:attack-all) ===")
-    print(f"{'Tool':<12} {'Node.js':>8} {'Python':>8} {'Java':>8} {'At least one':>13} {'Attack Recall':>14}")
+    engine_headers = [ENGINE_DISPLAY.get(eng, eng) for eng in ENGINES]
+    header = (
+        f"{'Tool':<12}"
+        + "".join(f" {name:>8}" for name in engine_headers)
+        + f" {'At least one':>13} {'Attack Recall':>14}"
+    )
+    print(header)
     for tool in TOOLS:
-        node_n = len(attacks_by_engine["nodejs14"][tool])
-        py_n = len(attacks_by_engine["python"][tool])
-        java_n = len(attacks_by_engine["java11"][tool])
-        union_n = len(
-            attacks_by_engine["nodejs14"][tool]
-            | attacks_by_engine["python"][tool]
-            | attacks_by_engine["java11"][tool]
-        )
+        counts_by_engine = [len(attacks_by_engine[eng][tool]) for eng in ENGINES]
+        union_n = len(union_attacks_for_tool(attacks_by_engine, tool))
         recall = (union_n / len(v_union)) if v_union else 0.0
-        print(f"{TOOL_DISPLAY[tool]:<12} {node_n:>8} {py_n:>8} {java_n:>8} {union_n:>13} {format_pct(recall):>14}")
+        print(
+            f"{TOOL_DISPLAY[tool]:<12}"
+            + "".join(f" {count:>8}" for count in counts_by_engine)
+            + f" {union_n:>13} {format_pct(recall):>14}"
+        )
 
-    print("-" * 74)
+    print("-" * len(header))
     print(
-        f"{'Marked total':<12} {len(set().union(*attacks_by_engine['nodejs14'].values())):>8}"
-        f" {len(set().union(*attacks_by_engine['python'].values())):>8}"
-        f" {len(set().union(*attacks_by_engine['java11'].values())):>8}"
-        f" {len(v_union):>13}"
-        f" {'--':>14}"
+        f"{'Marked total':<12}"
+        + "".join(
+            f" {len(set().union(*attacks_by_engine[eng].values())):>8}"
+            for eng in ENGINES
+        )
+        + f" {len(v_union):>13}"
+        + f" {'--':>14}"
     )
 
 
 def print_verify_counts(v_engine: Dict[str, Set[Key]], v_union: Set[Key]) -> None:
     print("\\n=== Verify Marked Counts (paper numbers) ===")
     actual = {
-        "nodejs14": len(v_engine["nodejs14"]),
-        "python": len(v_engine["python"]),
-        "java11": len(v_engine["java11"]),
+        **{eng: len(v_engine[eng]) for eng in ENGINES},
         "union": len(v_union),
     }
 
-    for k in ["nodejs14", "python", "java11", "union"]:
+    for k in [*ENGINES, "union"]:
         name = ENGINE_DISPLAY.get(k, k)
         exp = EXPECTED_COUNTS[k]
         got = actual[k]
@@ -407,6 +749,17 @@ def build_detection_stackbar_rows(
 
 def print_detection_stackbar_table(rows: List[DetectionStackbarRow]) -> None:
     print("\n=== Detection Stackbar Data (for detection_stackbar.pdf) ===")
+    print(
+        f"{'Compare To':<14} {'Other Tools Found':>18} {'Only Other Tool':>17} {'Both Found':>12} {'Only LARA Found':>17}"
+    )
+    for r in rows:
+        print(
+            f"{TOOL_DISPLAY[r.tool]:<14} {r.other_tools_found:>18} {r.only_other_tool:>17} {r.both_found:>12} {r.only_lara_found:>17}"
+        )
+
+
+def print_confirmed_detection_stackbar_table(rows: List[DetectionStackbarRow]) -> None:
+    print("\n=== Confirmed CVE Detection Stackbar Data (for cve_detection_stackbar.pdf) ===")
     print(
         f"{'Compare To':<14} {'Other Tools Found':>18} {'Only Other Tool':>17} {'Both Found':>12} {'Only LARA Found':>17}"
     )
@@ -473,17 +826,35 @@ def build_unique_rows(
     attacks_by_engine: Dict[str, Dict[str, Set[Key]]],
     v_union: Set[Key],
 ) -> List[UniqueRow]:
+    unique_detection_sets, unique_attack_sets = build_unique_sets(
+        reported_sets, attacks_by_engine, v_union
+    )
+
+    rows: List[UniqueRow] = []
+    for tool in TOOLS:
+        rows.append(
+            UniqueRow(
+                tool=tool,
+                unique_detections=len(unique_detection_sets[tool]),
+                unique_attacks=len(unique_attack_sets[tool]),
+            )
+        )
+    return rows
+
+
+def build_unique_sets(
+    reported_sets: Dict[str, Set[Key]],
+    attacks_by_engine: Dict[str, Dict[str, Set[Key]]],
+    v_union: Set[Key],
+) -> Tuple[Dict[str, Set[Key]], Dict[str, Set[Key]]]:
     detection_hits: Dict[str, Set[Key]] = {t: (reported_sets[t] & v_union) for t in TOOLS}
     attack_union_sets: Dict[str, Set[Key]] = {
-        t: (
-            attacks_by_engine["nodejs14"][t]
-            | attacks_by_engine["python"][t]
-            | attacks_by_engine["java11"][t]
-        )
+        t: union_attacks_for_tool(attacks_by_engine, t)
         for t in TOOLS
     }
 
-    rows: List[UniqueRow] = []
+    unique_detection_sets: Dict[str, Set[Key]] = {}
+    unique_attack_sets: Dict[str, Set[Key]] = {}
     for tool in TOOLS:
         other_detection_union = set().union(
             *[detection_hits[t] for t in TOOLS if t != tool]
@@ -491,14 +862,10 @@ def build_unique_rows(
         other_attack_union = set().union(
             *[attack_union_sets[t] for t in TOOLS if t != tool]
         )
-        rows.append(
-            UniqueRow(
-                tool=tool,
-                unique_detections=len(detection_hits[tool] - other_detection_union),
-                unique_attacks=len(attack_union_sets[tool] - other_attack_union),
-            )
-        )
-    return rows
+        unique_detection_sets[tool] = detection_hits[tool] - other_detection_union
+        unique_attack_sets[tool] = attack_union_sets[tool] - other_attack_union
+
+    return unique_detection_sets, unique_attack_sets
 
 
 def print_unique_table(rows: List[UniqueRow]) -> None:
@@ -523,11 +890,7 @@ def build_attack_stackbar_rows(
     our_tool: str = "ere",
 ) -> Tuple[List[AttackStackbarRow], Set[Key]]:
     attack_union_sets: Dict[str, Set[Key]] = {
-        t: (
-            attacks_by_engine["nodejs14"][t]
-            | attacks_by_engine["python"][t]
-            | attacks_by_engine["java11"][t]
-        )
+        t: union_attacks_for_tool(attacks_by_engine, t)
         for t in TOOLS
     }
     v_attack_union = set().union(*attack_union_sets.values())
@@ -566,11 +929,7 @@ def build_attack_union_sets(
     attacks_by_engine: Dict[str, Dict[str, Set[Key]]],
 ) -> Dict[str, Set[Key]]:
     return {
-        t: (
-            attacks_by_engine["nodejs14"][t]
-            | attacks_by_engine["python"][t]
-            | attacks_by_engine["java11"][t]
-        )
+        t: union_attacks_for_tool(attacks_by_engine, t)
         for t in TOOLS
     }
 
@@ -809,9 +1168,7 @@ def print_without_lara_stats(
 ) -> None:
     baseline_union = set().union(
         *[
-            attacks_by_engine["nodejs14"][t]
-            | attacks_by_engine["python"][t]
-            | attacks_by_engine["java11"][t]
+            union_attacks_for_tool(attacks_by_engine, t)
             for t in TOOLS
             if t != "ere"
         ]
@@ -874,6 +1231,14 @@ def build_lara_fn_breakdown_row(
 
 def print_lara_fn_breakdown_table(row: FnBreakdownRow) -> None:
     print("\n=== Table: LARA FN Breakdown (tab:lara-fn) ===")
+    print(f"{'Tool':<12} {'Total FN':>10} {'Timeout':>10} {'OOM':>8} {'Others':>10}")
+    print(
+        f"{TOOL_DISPLAY[row.tool]:<12} {row.total:>10} {row.timeout:>10} {row.oom:>8} {row.others:>10}"
+    )
+
+
+def print_confirmed_lara_fn_breakdown_table(row: FnBreakdownRow) -> None:
+    print("\n=== Table: Confirmed CVE LARA FN Breakdown (tab:cve-lara-fn) ===")
     print(f"{'Tool':<12} {'Total FN':>10} {'Timeout':>10} {'OOM':>8} {'Others':>10}")
     print(
         f"{TOOL_DISPLAY[row.tool]:<12} {row.total:>10} {row.timeout:>10} {row.oom:>8} {row.others:>10}"
@@ -954,6 +1319,275 @@ def write_lara_fn_csv(
                     "detected_by_other_tools": "; ".join(detected_by_other_tools),
                     "verified_by_tools": "; ".join(verified_by_tools),
                     "verified_attack_details": "; ".join(verified_attack_details),
+                    "ere_output": ere_record.get("output", ""),
+                    "ere_stdout": ere_record.get("stdout", ""),
+                    "ere_stderr": ere_record.get("stderr", ""),
+                    "ere_return_code": ere_record.get("return_code", ""),
+                    "ere_timeout_flag": ere_record.get("timeout", ""),
+                    "ere_is_timeout_record": is_timeout_record(ere_record),
+                    "ere_is_oom_record": is_oom_record(ere_record),
+                    "ere_record_json": json.dumps(
+                        ere_record, ensure_ascii=False, sort_keys=True
+                    ),
+                }
+            )
+
+
+def write_unique_detection_csv(
+    results_dir: Path,
+    reported_sets: Dict[str, Set[Key]],
+    attacks_by_engine: Dict[str, Dict[str, Set[Key]]],
+    v_union: Set[Key],
+    output_csv: Path,
+) -> None:
+    unique_detection_sets, _ = build_unique_sets(
+        reported_sets, attacks_by_engine, v_union
+    )
+    expr_records = {
+        tool: load_records_by_key(results_dir, "1_expr", tool)
+        for tool in TOOLS
+    }
+
+    output_csv.parent.mkdir(parents=True, exist_ok=True)
+    with output_csv.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                "file",
+                "line",
+                "input",
+                "input_length",
+                "unique_tool",
+                "unique_tool_display",
+                "verified_engines",
+                "detected_by_tools",
+                "detected_by_other_tools",
+                "verified_by_tools",
+                "verified_attack_details",
+                "owner_output",
+                "owner_stdout",
+                "owner_stderr",
+                "owner_return_code",
+                "owner_timeout_flag",
+                "owner_is_timeout_record",
+                "owner_is_oom_record",
+                "owner_record_json",
+            ],
+        )
+        writer.writeheader()
+
+        for tool in TOOLS:
+            for key in sorted(unique_detection_sets[tool], key=export_sort_key):
+                owner_record = expr_records[tool].get(key, {})
+                verified_engines = [
+                    ENGINE_DISPLAY[eng]
+                    for eng in ENGINES
+                    if any(key in attacks_by_engine[eng][other_tool] for other_tool in TOOLS)
+                ]
+                detected_by_tools = [
+                    TOOL_DISPLAY[other_tool]
+                    for other_tool in TOOLS
+                    if key in reported_sets[other_tool]
+                ]
+                detected_by_other_tools = [
+                    TOOL_DISPLAY[other_tool]
+                    for other_tool in TOOLS
+                    if other_tool != tool and key in reported_sets[other_tool]
+                ]
+                verified_by_tools = [
+                    TOOL_DISPLAY[other_tool]
+                    for other_tool in TOOLS
+                    if any(key in attacks_by_engine[eng][other_tool] for eng in ENGINES)
+                ]
+                verified_attack_details = [
+                    f"{TOOL_DISPLAY[other_tool]}:{'/'.join(ENGINE_DISPLAY[eng] for eng in ENGINES if key in attacks_by_engine[eng][other_tool])}"
+                    for other_tool in TOOLS
+                    if any(key in attacks_by_engine[eng][other_tool] for eng in ENGINES)
+                ]
+                writer.writerow(
+                    {
+                        "file": key[0],
+                        "line": key[1],
+                        "input": owner_record.get("input", ""),
+                        "input_length": len(str(owner_record.get("input", ""))),
+                        "unique_tool": tool,
+                        "unique_tool_display": TOOL_DISPLAY[tool],
+                        "verified_engines": "; ".join(verified_engines),
+                        "detected_by_tools": "; ".join(detected_by_tools),
+                        "detected_by_other_tools": "; ".join(detected_by_other_tools),
+                        "verified_by_tools": "; ".join(verified_by_tools),
+                        "verified_attack_details": "; ".join(verified_attack_details),
+                        "owner_output": owner_record.get("output", ""),
+                        "owner_stdout": owner_record.get("stdout", ""),
+                        "owner_stderr": owner_record.get("stderr", ""),
+                        "owner_return_code": owner_record.get("return_code", ""),
+                        "owner_timeout_flag": owner_record.get("timeout", ""),
+                        "owner_is_timeout_record": is_timeout_record(owner_record),
+                        "owner_is_oom_record": is_oom_record(owner_record),
+                        "owner_record_json": json.dumps(
+                            owner_record, ensure_ascii=False, sort_keys=True
+                        ),
+                    }
+                )
+
+
+def write_unique_attack_csv(
+    results_dir: Path,
+    reported_sets: Dict[str, Set[Key]],
+    attacks_by_engine: Dict[str, Dict[str, Set[Key]]],
+    v_union: Set[Key],
+    output_csv: Path,
+) -> None:
+    _, unique_attack_sets = build_unique_sets(reported_sets, attacks_by_engine, v_union)
+    expr_records = {
+        tool: load_records_by_key(results_dir, "1_expr", tool)
+        for tool in TOOLS
+    }
+    detect_records = {
+        eng: {
+            tool: load_records_by_key(results_dir / eng, "1_detect", tool)
+            for tool in TOOLS
+        }
+        for eng in ENGINES
+    }
+
+    output_csv.parent.mkdir(parents=True, exist_ok=True)
+    with output_csv.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                "file",
+                "line",
+                "input",
+                "input_length",
+                "unique_tool",
+                "unique_tool_display",
+                "detected_by_tools",
+                "detected_by_other_tools",
+                "verified_by_tools",
+                "verified_by_other_tools",
+                "owner_verified_engines",
+                "owner_verified_engine_count",
+                "owner_attack_details",
+                *[f"{eng}_verified" for eng in ENGINES],
+                *[f"{eng}_record_json" for eng in ENGINES],
+                "owner_expr_record_json",
+            ],
+        )
+        writer.writeheader()
+
+        for tool in TOOLS:
+            for key in sorted(unique_attack_sets[tool], key=export_sort_key):
+                owner_expr_record = expr_records[tool].get(key, {})
+                detected_by_tools = [
+                    TOOL_DISPLAY[other_tool]
+                    for other_tool in TOOLS
+                    if key in reported_sets[other_tool]
+                ]
+                detected_by_other_tools = [
+                    TOOL_DISPLAY[other_tool]
+                    for other_tool in TOOLS
+                    if other_tool != tool and key in reported_sets[other_tool]
+                ]
+                verified_by_tools = [
+                    TOOL_DISPLAY[other_tool]
+                    for other_tool in TOOLS
+                    if any(key in attacks_by_engine[eng][other_tool] for eng in ENGINES)
+                ]
+                verified_by_other_tools = [
+                    TOOL_DISPLAY[other_tool]
+                    for other_tool in TOOLS
+                    if other_tool != tool and any(key in attacks_by_engine[eng][other_tool] for eng in ENGINES)
+                ]
+                owner_verified_engines = [
+                    ENGINE_DISPLAY[eng]
+                    for eng in ENGINES
+                    if key in attacks_by_engine[eng][tool]
+                ]
+                owner_attack_details = [
+                    f"{ENGINE_DISPLAY[eng]}:{'success' if key in attacks_by_engine[eng][tool] else 'no-success'}"
+                    for eng in ENGINES
+                ]
+
+                row = {
+                    "file": key[0],
+                    "line": key[1],
+                    "input": owner_expr_record.get("input", ""),
+                    "input_length": len(str(owner_expr_record.get("input", ""))),
+                    "unique_tool": tool,
+                    "unique_tool_display": TOOL_DISPLAY[tool],
+                    "detected_by_tools": "; ".join(detected_by_tools),
+                    "detected_by_other_tools": "; ".join(detected_by_other_tools),
+                    "verified_by_tools": "; ".join(verified_by_tools),
+                    "verified_by_other_tools": "; ".join(verified_by_other_tools),
+                    "owner_verified_engines": "; ".join(owner_verified_engines),
+                    "owner_verified_engine_count": len(owner_verified_engines),
+                    "owner_attack_details": "; ".join(owner_attack_details),
+                    "owner_expr_record_json": json.dumps(
+                        owner_expr_record, ensure_ascii=False, sort_keys=True
+                    ),
+                }
+                for eng in ENGINES:
+                    row[f"{eng}_verified"] = key in attacks_by_engine[eng][tool]
+                    row[f"{eng}_record_json"] = json.dumps(
+                        detect_records[eng][tool].get(key, {}),
+                        ensure_ascii=False,
+                        sort_keys=True,
+                    )
+                writer.writerow(row)
+
+
+def write_confirmed_lara_fn_csv(
+    results_dir: Path,
+    reported_sets: Dict[str, Set[Key]],
+    reference_records: Dict[Key, dict],
+    tools: Iterable[str],
+    output_csv: Path,
+) -> None:
+    fn_keys = sorted(set(reference_records) - reported_sets["ere"])
+    ere_records = load_records_by_key(results_dir, "1_expr", "ere")
+    tool_list = list(tools)
+
+    output_csv.parent.mkdir(parents=True, exist_ok=True)
+    with output_csv.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                "file",
+                "line",
+                "input",
+                "input_length",
+                "detected_by_other_tools",
+                "detected_by_other_tools_count",
+                "termination_reason",
+                "ere_output",
+                "ere_stdout",
+                "ere_stderr",
+                "ere_return_code",
+                "ere_timeout_flag",
+                "ere_is_timeout_record",
+                "ere_is_oom_record",
+                "ere_record_json",
+            ],
+        )
+        writer.writeheader()
+
+        for key in fn_keys:
+            ere_record = ere_records.get(key, reference_records.get(key, {}))
+            detected_by_other_tools = [
+                TOOL_DISPLAY[tool]
+                for tool in tool_list
+                if tool != "ere" and key in reported_sets[tool]
+            ]
+            writer.writerow(
+                {
+                    "file": key[0],
+                    "line": key[1],
+                    "input": ere_record.get("input", ""),
+                    "input_length": len(str(ere_record.get("input", ""))),
+                    "detected_by_other_tools": "; ".join(detected_by_other_tools),
+                    "detected_by_other_tools_count": len(detected_by_other_tools),
+                    "termination_reason": get_termination_reason(ere_record) or "other",
                     "ere_output": ere_record.get("output", ""),
                     "ere_stdout": ere_record.get("stdout", ""),
                     "ere_stderr": ere_record.get("stderr", ""),
@@ -1072,6 +1706,7 @@ def plot_detection_upset(
 
     det_sets: Dict[str, Set[Key]] = {t: (reported_sets[t] & v_union) for t in TOOLS}
     display_tools = [TOOL_DISPLAY[t] for t in TOOLS]
+    set_sizes = [len(det_sets[t]) for t in TOOLS]
     bool_rows = []
     uncovered = 0
 
@@ -1109,33 +1744,119 @@ def plot_detection_upset(
         counts = [v for _, v in combos]
         n_cols = len(combo_keys)
         n_tools = len(display_tools)
+        max_set_size = max(set_sizes) if set_sizes else 0
 
-        fig_width = max(PLOT_UPSET_FIGSIZE[0], 0.42 * n_cols + 3.0)
-        fig = plt.figure(figsize=(fig_width, PLOT_UPSET_FIGSIZE[1]))
-        gs = fig.add_gridspec(2, 1, height_ratios=[3.0, 1.6], hspace=0.08)
-        ax_bar = fig.add_subplot(gs[0, 0])
-        ax_mat = fig.add_subplot(gs[1, 0], sharex=ax_bar)
+        label_panel_width = 1.65
+        right_panel_width = max(4.8, 0.14 * n_cols + 1.6)
+        fig_width = max(PLOT_UPSET_FIGSIZE[0], 3.8 + label_panel_width + right_panel_width)
+        fig_height = max(PLOT_UPSET_FIGSIZE[1], 4.6 + 0.45 * n_tools)
+        fig = plt.figure(figsize=(fig_width, fig_height))
+        gs = fig.add_gridspec(
+            2,
+            3,
+            height_ratios=[2.5, 2.0],
+            width_ratios=[3.6, label_panel_width, right_panel_width],
+            hspace=0.04,
+            wspace=0.03,
+        )
+        ax_blank = fig.add_subplot(gs[0, 0:2])
+        ax_bar = fig.add_subplot(gs[0, 2])
+        ax_sets = fig.add_subplot(gs[1, 0])
+        ax_labels = fig.add_subplot(gs[1, 1])
+        ax_mat = fig.add_subplot(gs[1, 2], sharex=ax_bar, sharey=ax_sets)
+
+        ax_blank.axis("off")
 
         x = np.arange(n_cols)
-        bars = ax_bar.bar(x, counts, color="#4e79a7", edgecolor="#2f3e4e", linewidth=0.6)
-        ax_bar.bar_label(
-            bars,
-            labels=[str(c) for c in counts],
-            padding=2,
-            fontsize=PLOT_ANNOTATION_FONTSIZE,
+        ax_bar.bar(
+            x,
+            counts,
+            width=0.55,
+            color="#4e79a7",
+            edgecolor="#2f3e4e",
+            linewidth=0.5,
         )
         ax_bar.set_ylabel("Intersection Size", fontsize=PLOT_LABEL_FONTSIZE)
         ax_bar.tick_params(axis="y", labelsize=PLOT_TICK_FONTSIZE)
         ax_bar.grid(axis="y", linestyle="--", alpha=0.4)
         ax_bar.set_axisbelow(True)
-        ax_bar.tick_params(axis="x", labelbottom=False)
+        ax_bar.tick_params(axis="x", labelbottom=False, bottom=False)
+        ax_bar.set_xlim(-0.5, n_cols - 0.5)
+        ax_bar.spines["top"].set_visible(False)
+        ax_bar.spines["right"].set_visible(False)
 
         y_positions = np.arange(n_tools)
+        for row_idx in y_positions:
+            if row_idx % 2 == 1:
+                ax_sets.axhspan(row_idx - 0.5, row_idx + 0.5, color="#f7f7f7", zorder=0)
+                ax_labels.axhspan(row_idx - 0.5, row_idx + 0.5, color="#f7f7f7", zorder=0)
+                ax_mat.axhspan(row_idx - 0.5, row_idx + 0.5, color="#f7f7f7", zorder=0)
+
+        ax_sets.barh(
+            y_positions,
+            [-size for size in set_sizes],
+            height=0.46,
+            color="#4e79a7",
+            edgecolor="#2f3e4e",
+            linewidth=0.5,
+            zorder=2,
+        )
+        label_offset = max(max_set_size * 0.035, 8)
+        for y, size in zip(y_positions, set_sizes):
+            ax_sets.text(
+                -size - label_offset,
+                y,
+                str(size),
+                ha="right",
+                va="center",
+                fontsize=PLOT_LABEL_FONTSIZE,
+            )
+
+        ax_sets.set_yticks(y_positions)
+        ax_sets.set_yticklabels([])
+        ax_sets.tick_params(axis="y", left=False, right=False, length=0)
+        ax_sets.tick_params(axis="x", bottom=False, labelbottom=False)
+        ax_sets.set_xlim(-(max_set_size * 1.32 + label_offset), 0)
+        ax_sets.set_ylim(-0.5, n_tools - 0.5)
+        ax_sets.invert_yaxis()
+        ax_sets.set_title("Reference Coverage", fontsize=PLOT_LABEL_FONTSIZE, pad=8)
+        for spine in ["top", "left", "bottom", "right"]:
+            ax_sets.spines[spine].set_visible(False)
+
+        ax_labels.set_xlim(0, 1)
+        ax_labels.set_ylim(ax_sets.get_ylim())
+        ax_labels.set_xticks([])
+        ax_labels.set_yticks([])
+        ax_labels.tick_params(
+            axis="both",
+            which="both",
+            left=False,
+            right=False,
+            bottom=False,
+            top=False,
+            labelleft=False,
+            labelbottom=False,
+            length=0,
+        )
+        for y, label in zip(y_positions, display_tools):
+            ax_labels.text(
+                0.02,
+                y,
+                label,
+                ha="left",
+                va="center",
+                fontsize=PLOT_LABEL_FONTSIZE,
+                clip_on=False,
+            )
+        for spine in ["top", "left", "bottom", "right"]:
+            ax_labels.spines[spine].set_visible(False)
+        ax_labels.set_frame_on(False)
+
         for col_idx, combo in enumerate(combo_keys):
             ax_mat.scatter(
                 np.full(n_tools, col_idx),
                 y_positions,
-                s=28,
+                s=18,
                 color="#d9d9d9",
                 zorder=1,
             )
@@ -1144,7 +1865,7 @@ def plot_detection_upset(
                 ax_mat.scatter(
                     np.full(len(present_rows), col_idx),
                     np.array(present_rows),
-                    s=42,
+                    s=24,
                     color="#222222",
                     zorder=2,
                 )
@@ -1153,18 +1874,19 @@ def plot_detection_upset(
                         [col_idx, col_idx],
                         [min(present_rows), max(present_rows)],
                         color="#222222",
-                        linewidth=1.1,
+                        linewidth=0.9,
                         zorder=1.5,
                     )
 
-        ax_mat.set_yticks(y_positions)
-        ax_mat.set_yticklabels(display_tools, fontsize=PLOT_TICK_FONTSIZE)
-        ax_mat.invert_yaxis()
-        ax_mat.set_xlabel("Intersections (sorted by size)", fontsize=PLOT_LABEL_FONTSIZE)
         ax_mat.set_xlim(-0.6, n_cols - 0.4)
-        ax_mat.set_xticks(x)
-        ax_mat.set_xticklabels([str(i + 1) for i in x], fontsize=PLOT_TICK_FONTSIZE)
-        ax_mat.grid(axis="x", linestyle=":", alpha=0.25)
+        ax_mat.set_xticks([])
+        ax_mat.set_yticks(y_positions)
+        ax_mat.tick_params(axis="y", left=False, labelleft=False)
+        ax_mat.tick_params(axis="x", bottom=False, labelbottom=False)
+        ax_mat.spines["top"].set_visible(False)
+        ax_mat.spines["right"].set_visible(False)
+        ax_mat.spines["bottom"].set_visible(False)
+        ax_mat.spines["left"].set_visible(False)
 
         if not_detected > 0:
             fig.text(
@@ -1176,7 +1898,7 @@ def plot_detection_upset(
                 va="bottom",
             )
 
-        plt.tight_layout()
+        fig.subplots_adjust(left=0.05, right=0.995, bottom=0.08, top=0.98)
         plt.savefig(out_pdf)
         plt.close(fig)
 
@@ -1190,129 +1912,21 @@ def main() -> None:
     parser.add_argument(
         "--results-dir",
         type=Path,
-        default=Path("expr/results"),
+        default=DEFAULT_RESULTS_DIR,
         help="Results root, containing 1_expr*.json and engine subdirs.",
     )
     args = parser.parse_args()
 
     results_dir = args.results_dir
+    if is_cve_results_dir(results_dir):
+        run_confirmed_only_mode(results_dir)
+        return
 
-    # R_T: each tool's reported vulnerable set
-    reported_sets = load_reported_sets(results_dir)
-    performance_rows = build_performance_rows(results_dir)
+    run_standard_mode(results_dir)
 
-    # A_T(engine): each tool's successful attack set on each engine
-    attacks_by_engine: Dict[str, Dict[str, Set[Key]]] = {}
-    for eng in ENGINES:
-        attacks_by_engine[eng] = load_attack_sets_per_engine(results_dir, eng)
-    attack_union_sets = build_attack_union_sets(attacks_by_engine)
-
-    # V_engine and global V (union over engines)
-    v_engine: Dict[str, Set[Key]] = {}
-    for eng in ENGINES:
-        v_engine[eng] = set().union(*attacks_by_engine[eng].values())
-    v_union = set().union(*v_engine.values())
-    attack_time_cactus, attack_memory_cactus = build_attack_union_cactus_data(
-        results_dir, attack_union_sets
-    )
-    marked_time_cactus, marked_memory_cactus = build_marked_union_cactus_data(
-        results_dir, v_union
-    )
-
-    # Detection table metrics against global V
-    detection_rows: List[DetectionRow] = []
-    for tool in TOOLS:
-        r_set = reported_sets[tool]
-        hit = len(r_set & v_union)
-        reported = len(r_set)
-        missed = len(v_union - r_set)
-        unconfirmed = len(r_set - v_union)
-        detection_rows.append(
-            DetectionRow(
-                tool=tool,
-                reported=reported,
-                ref_coverage=hit,
-                missed=missed,
-                unconfirmed=unconfirmed,
-            )
-        )
-
-    # Print outputs
-    print_detection_table(detection_rows)
-    print_detection_latex(detection_rows)
-    print_attack_all(attacks_by_engine, v_union)
-    print_verify_counts(v_engine, v_union)
-    print_detection_stackbar_table(
-        build_detection_stackbar_rows(reported_sets, v_union, our_tool="ere")
-    )
-    detection_upset_rows, detection_upset_uncovered = build_detection_upset_table_rows(
-        reported_sets, v_union
-    )
-    print_detection_upset_table(
-        detection_upset_rows, detection_upset_uncovered
-    )
-    unique_rows = build_unique_rows(reported_sets, attacks_by_engine, v_union)
-    print_unique_table(unique_rows)
-    print_unique_latex(unique_rows)
-    attack_stackbar_rows, attack_universe = build_attack_stackbar_rows(
-        attacks_by_engine, our_tool="ere"
-    )
-    print_attack_stackbar_table(attack_stackbar_rows, len(attack_universe))
-    print_without_lara_stats(attacks_by_engine, v_union)
-    print_performance_table(performance_rows)
-    print_performance_latex(performance_rows)
-    lara_fn_breakdown_row = build_lara_fn_breakdown_row(results_dir, reported_sets, v_union)
-    print_lara_fn_breakdown_table(lara_fn_breakdown_row)
-    print_lara_fn_breakdown_latex(lara_fn_breakdown_row)
-    lara_fn_csv = results_dir.parent / "plots" / "lara_fn.csv"
-    write_lara_fn_csv(results_dir, reported_sets, attacks_by_engine, v_union, lara_fn_csv)
-    print(f"Saved LARA FN CSV: {lara_fn_csv}")
-
-    detection_fig = results_dir.parent / "plots" / "detection_stackbar.pdf"
-    plot_detection_stackbar(reported_sets, v_union, detection_fig, our_tool="ere")
-    print(f"\nSaved detection stackbar PDF: {detection_fig}")
-    detection_upset_fig = results_dir.parent / "plots" / "detection_upset.pdf"
-    plot_detection_upset(reported_sets, v_union, detection_upset_fig)
-    print(f"Saved detection upset PDF: {detection_upset_fig}")
-    attack_fig = results_dir.parent / "plots" / "unique_attack_stackbar.pdf"
-    plot_attack_stackbar(attacks_by_engine, attack_fig, our_tool="ere")
-    print(f"Saved attack stackbar PDF: {attack_fig}")
-    attack_time_cactus_fig = results_dir.parent / "plots" / "attack_union_cactus_time.pdf"
-    plot_cactus(
-        attack_time_cactus,
-        attack_time_cactus_fig,
-        limit_value=600.0,
-        metric="time",
-        mode_desc="At Least One Engine Attack Success",
-    )
-    print(f"Saved attack-union time cactus PDF: {attack_time_cactus_fig}")
-    attack_memory_cactus_fig = results_dir.parent / "plots" / "attack_union_cactus_memory.pdf"
-    plot_cactus(
-        attack_memory_cactus,
-        attack_memory_cactus_fig,
-        limit_value=10240.0,
-        metric="memory",
-        mode_desc="At Least One Engine Attack Success",
-    )
-    print(f"Saved attack-union memory cactus PDF: {attack_memory_cactus_fig}")
-    marked_time_cactus_fig = results_dir.parent / "plots" / "marked_union_cactus_time.pdf"
-    plot_cactus(
-        marked_time_cactus,
-        marked_time_cactus_fig,
-        limit_value=600.0,
-        metric="time",
-        mode_desc="Confirmed Vulnerability Set V",
-    )
-    print(f"Saved marked-union time cactus PDF: {marked_time_cactus_fig}")
-    marked_memory_cactus_fig = results_dir.parent / "plots" / "marked_union_cactus_memory.pdf"
-    plot_cactus(
-        marked_memory_cactus,
-        marked_memory_cactus_fig,
-        limit_value=10240.0,
-        metric="memory",
-        mode_desc="Confirmed Vulnerability Set V",
-    )
-    print(f"Saved marked-union memory cactus PDF: {marked_memory_cactus_fig}")
+    if results_dir == DEFAULT_RESULTS_DIR and DEFAULT_CVE_RESULTS_DIR.exists():
+        print("\n=== Confirmed CVE Tables ===")
+        run_confirmed_only_mode(DEFAULT_CVE_RESULTS_DIR)
 
 
 if __name__ == "__main__":
