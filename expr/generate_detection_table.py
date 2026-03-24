@@ -294,6 +294,24 @@ def load_reference_records(
     return records
 
 
+def filter_reference_records_detected_by_any_tool(
+    reference_records: Dict[Key, dict],
+    reported_sets: Dict[str, Set[Key]],
+    tools: Iterable[str],
+) -> Tuple[Dict[Key, dict], int]:
+    tool_list = list(tools)
+    filtered_records: Dict[Key, dict] = {}
+    excluded = 0
+
+    for key, rec in reference_records.items():
+        if any(key in reported_sets[tool] for tool in tool_list):
+            filtered_records[key] = rec
+        else:
+            excluded += 1
+
+    return filtered_records, excluded
+
+
 def is_cve_results_dir(results_dir: Path) -> bool:
     return results_dir.name == DEFAULT_CVE_RESULTS_DIR.name
 
@@ -478,14 +496,29 @@ def write_confirmed_detection_matrix_csv(
             )
 
 
-def run_confirmed_only_mode(results_dir: Path) -> None:
+def run_confirmed_only_mode(
+    results_dir: Path,
+    exclude_cve_undetected_by_all_tools: bool = False,
+) -> None:
     tools = discover_tools(results_dir, prefix="1_expr")
     if not tools:
         raise FileNotFoundError(f"No 1_expr_<tool>.json files found under {results_dir}")
 
     reference_records = load_reference_records(results_dir, tools, prefix="1_expr")
-    confirmed_keys = set(reference_records)
     reported_sets = load_reported_sets_for_tools(results_dir, tools)
+    excluded_cves = 0
+    if exclude_cve_undetected_by_all_tools:
+        reference_records, excluded_cves = filter_reference_records_detected_by_any_tool(
+            reference_records,
+            reported_sets,
+            tools,
+        )
+        if not reference_records:
+            raise ValueError(
+                "All confirmed CVEs were excluded because none were detected by any tool."
+            )
+
+    confirmed_keys = set(reference_records)
     detection_rows = build_confirmed_detection_rows(reported_sets, confirmed_keys, tools)
     lara_fn_breakdown_row = build_lara_fn_breakdown_row(
         results_dir, reported_sets, confirmed_keys
@@ -496,7 +529,14 @@ def run_confirmed_only_mode(results_dir: Path) -> None:
     detection_upset_rows, detection_upset_uncovered = build_detection_upset_table_rows(
         reported_sets, confirmed_keys
     )
+    cve_time_cactus, cve_memory_cactus = build_marked_union_cactus_data(
+        results_dir, confirmed_keys
+    )
 
+    if exclude_cve_undetected_by_all_tools:
+        print(
+            f"Excluded confirmed CVEs not detected by any tool: {excluded_cves}"
+        )
     print_confirmed_detection_table(detection_rows, len(confirmed_keys))
     print_confirmed_detection_stackbar_table(detection_stackbar_rows)
     print_detection_upset_table(detection_upset_rows, detection_upset_uncovered)
@@ -507,11 +547,27 @@ def run_confirmed_only_mode(results_dir: Path) -> None:
     matrix_csv = output_dir / "cve_detection_matrix.csv"
     stackbar_pdf = output_dir / "cve_detection_stackbar.pdf"
     upset_pdf = output_dir / "cve_detection_upset.pdf"
+    time_cactus_pdf = output_dir / "cve_marked_union_cactus_time.pdf"
+    memory_cactus_pdf = output_dir / "cve_marked_union_cactus_memory.pdf"
     lara_fn_csv = output_dir / "cve_lara_fn.csv"
     write_confirmed_detection_summary_csv(detection_rows, len(confirmed_keys), summary_csv)
     write_confirmed_detection_matrix_csv(reported_sets, reference_records, tools, matrix_csv)
     plot_detection_stackbar(reported_sets, confirmed_keys, stackbar_pdf, our_tool="ere")
     plot_detection_upset(reported_sets, confirmed_keys, upset_pdf)
+    plot_cactus(
+        cve_time_cactus,
+        time_cactus_pdf,
+        limit_value=600.0,
+        metric="time",
+        mode_desc="Confirmed CVE Set V",
+    )
+    plot_cactus(
+        cve_memory_cactus,
+        memory_cactus_pdf,
+        limit_value=10240.0,
+        metric="memory",
+        mode_desc="Confirmed CVE Set V",
+    )
     write_confirmed_lara_fn_csv(
         results_dir,
         reported_sets,
@@ -524,6 +580,8 @@ def run_confirmed_only_mode(results_dir: Path) -> None:
     print(f"Saved CVE detection matrix CSV: {matrix_csv}")
     print(f"Saved CVE detection stackbar PDF: {stackbar_pdf}")
     print(f"Saved CVE detection upset PDF: {upset_pdf}")
+    print(f"Saved CVE time cactus PDF: {time_cactus_pdf}")
+    print(f"Saved CVE memory cactus PDF: {memory_cactus_pdf}")
     print(f"Saved CVE LARA FN CSV: {lara_fn_csv}")
 
 
@@ -1915,18 +1973,32 @@ def main() -> None:
         default=DEFAULT_RESULTS_DIR,
         help="Results root, containing 1_expr*.json and engine subdirs.",
     )
+    parser.add_argument(
+        "--exclude-cve-undetected-by-all-tools",
+        action="store_true",
+        help=(
+            "For CVE reporting only, exclude confirmed CVEs that are not detected by "
+            "any tool before generating tables/plots/CSVs."
+        ),
+    )
     args = parser.parse_args()
 
     results_dir = args.results_dir
     if is_cve_results_dir(results_dir):
-        run_confirmed_only_mode(results_dir)
+        run_confirmed_only_mode(
+            results_dir,
+            exclude_cve_undetected_by_all_tools=args.exclude_cve_undetected_by_all_tools,
+        )
         return
 
     run_standard_mode(results_dir)
 
     if results_dir == DEFAULT_RESULTS_DIR and DEFAULT_CVE_RESULTS_DIR.exists():
         print("\n=== Confirmed CVE Tables ===")
-        run_confirmed_only_mode(DEFAULT_CVE_RESULTS_DIR)
+        run_confirmed_only_mode(
+            DEFAULT_CVE_RESULTS_DIR,
+            exclude_cve_undetected_by_all_tools=args.exclude_cve_undetected_by_all_tools,
+        )
 
 
 if __name__ == "__main__":
