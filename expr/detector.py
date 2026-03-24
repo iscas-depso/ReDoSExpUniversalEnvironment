@@ -80,13 +80,17 @@ def build_string(prefix: str, infix: str, suffix: str, encoding="utf-8") -> str:
     base_len = len(prefix_b) + len(suffix_b)
     if base_len > attack_size * 1024:
         raise ValueError("prefix + suffix exceeds attack size")
-
+        
     if len(infix_b) == 0:
-        # infix 为空，无法重复
-        return prefix_b + suffix_b
-
-    n = (attack_size * 1024 - base_len) // len(infix_b)
-    return (prefix_b + infix_b * n + suffix_b).decode(encoding)
+        result = prefix_b + suffix_b
+    else:
+        n = (attack_size * 1024 - base_len) // len(infix_b)
+        result = prefix_b + infix_b * n + suffix_b
+    # 尝试 UTF-8，失败则 latin-1 无损兜底
+    try:
+        return result.decode("utf-8")
+    except UnicodeDecodeError:
+        return result.decode("latin-1")
 
 
 class NoDaemonProcess(multiprocessing.Process):
@@ -271,6 +275,7 @@ def run_command(args):
                 *cmds,
             ]
         try:
+            result = None
             tmp_input_path.write_text(
                 build_string(attack["prefix"], attack["infix"], attack["suffix"]),
                 encoding="utf-8",
@@ -315,9 +320,9 @@ def run_command(args):
                 line=idx,
                 input=attacks,
                 output=str(e),
-                stdout=result.stdout,
-                stderr=result.stderr,
-                return_code=result.returncode,
+                stdout=result.stdout if result else "",
+                stderr=result.stderr if result else "",
+                return_code=result.returncode if result else None,
                 timeout=False,
             )
             return
