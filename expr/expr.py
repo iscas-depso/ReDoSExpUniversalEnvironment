@@ -44,6 +44,7 @@ memory_shortage = False
 
 def _monitor_resources():
     """Background thread to update resource usage metrics periodically."""
+    global memory_shortage
     # Initial call to psutil to start the interval tracking
     psutil.cpu_percent(percpu=True)
     while True:
