@@ -270,8 +270,6 @@ def run_command(args):
                 str(timeout_seconds),
                 "--timelimit",
                 str(timeout_seconds * 2),
-                "--walltimelimit",
-                str(timeout_seconds * 5),
                 "--output",
                 "/dev/null",
                 "--",
