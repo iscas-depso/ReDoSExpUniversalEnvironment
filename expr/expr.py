@@ -106,6 +106,8 @@ def init_cpu_pool():
 def get_cpu():
     """Acquire a CPU index (P operation). Blocks if no CPU is available."""
     cpu_id = _cpu_pool.get()
+    
+    wait_count = 0
 
     while True:
         # Check overall memory usage from shared value (maintained by monitor thread)
