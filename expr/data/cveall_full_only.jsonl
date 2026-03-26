@@ -39,7 +39,6 @@
 {"pattern": "\"(?:[^\\\\\"\\r\\n]|\\\\(?:[abfnrtv\\\\\"]|\\d+|x[0-9a-fA-F]+))*\"", "Source": "CVE-2021-23341", "vulnerability": "full"}
 {"pattern": "(?:\\w+_)?(['\"])(?:\\1\\1|&(?:\\r\\n?|\\n)(?:\\s*!.+(?:\\r\\n?|\\n))?|(?!\\1).)*(?:\\1|&)", "Source": "CVE-2021-23341", "vulnerability": "full"}
 {"pattern": "(\"|')(?:(?!\\1|\\$\\{)[^\\\\]|\\\\.|\\$\\{(?:<expr>)*?\\})*\\1", "Source": "CVE-2021-23341", "vulnerability": "full"}
-{"pattern": "((?:^|[^\\\\])(?:\\\\\\\\)*)\\$\\{(?:<expr>)*?\\}", "Source": "CVE-2021-23341", "vulnerability": "full"}
 {"pattern": "((?:^|\\r?\\n|\\r)[\\t ]*)[%.#][\\w\\-#.]*[\\w\\-](?:\\([^)]+\\)|\\{(?:\\{[^}]+\\}|[^}])+\\}|\\[[^\\]]+\\])*[\\/<>]*", "Source": "CVE-2021-23341", "vulnerability": "full"}
 {"pattern": "(^|[^#])\\{(?:\\{[^}]+\\}|[^}])+\\}", "Source": "CVE-2021-23341", "vulnerability": "full"}
 {"pattern": "\"(?:[^\\\\$\"]|\\\\[\\s\\S]|\\$(?:(?=\")|\\$+|[^\"${])|\\$\\{(?:[^{}\"]|\"(?:[^\\\\\"]|\\\\[\\s\\S])*\")*\\})*\"", "Source": "CVE-2021-23341", "vulnerability": "full"}
@@ -161,7 +160,6 @@
 {"pattern": "\\[([^\\[\\]]*|\\[[^\\[\\]]*\\])*\\]|([A-Za-z])\\2+|\\.{3}|.", "Source": "CVE-2020-26289", "vulnerability": "full"}
 {"pattern": "^(?:(?:(?:https?|ftp):)?\\/\\/)(?:(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)(?:\\.(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)*(?:\\.(?:[a-z\\u00a1-\\uffff]{2,}))?)(?::\\d{2,5})?(?:[/?#]\\S*)?$", "Source": "CVE-2020-1920", "vulnerability": "full"}
 {"pattern": "^(\\-|\\+)?([1-9]+[0-9]*)$", "Source": "CVE-2019-17592", "vulnerability": "full"}
-{"pattern": "^(\\\\d\\\\d\\\\d\\\\d)-(\\\\d\\\\d)-(\\\\d\\\\d)T(\\\\d\\\\d):(\\\\d\\\\d):(\\\\d\\\\d)(?:\\\\.\\\\d+)?Z$", "Source": "CVE-2018-6519", "vulnerability": "full"}
 {"pattern": "^(?:\\.?[a-zA-Z_][a-zA-Z_0-9]*)+$", "Source": "CVE-2018-3738", "vulnerability": "full"}
 {"pattern": "^([a-z0-9-]+)[ \\t]+([a-zA-Z0-9+\\/]+[=]*)([\\n \\t]+([^\\n]+))?$", "Source": "CVE-2018-3737", "vulnerability": "full"}
 {"pattern": "^([a-z0-9-]+)[ \\t]+([a-zA-Z0-9+\\/ \\t\\n]+[=]*)(.*)$", "Source": "CVE-2018-3737", "vulnerability": "full"}
@@ -304,7 +302,6 @@
 {"pattern": "; *(?:LAVA[ _]|)IRIS[ _\\-]?([^/;\\)]+) *(?:;|\\)|Build)", "Source": "CVE-2021-21317", "vulnerability": "full"}
 {"pattern": "; *(E[34][0-9]{2}|LS[6-8][0-9]{2}|VS[6-9][0-9]+[^;/]+|Nexus 4|Nexus 5X?|GT540f?|Optimus (?:2X|G|4X HD)|OptimusX4HD) *(?:Build|;)", "Source": "CVE-2021-21317", "vulnerability": "full"}
 {"pattern": "; *(LG-)([A-Z]{1,2}\\d{2,}[^,;/\\)\\(]*?)(?:Build| V\\d+|[,;/\\)\\(]|$)", "Source": "CVE-2021-21317", "vulnerability": "full"}
-{"pattern": "^(LG)-([^;/]+)/ Mozilla/.*; Android", "Source": "CVE-2021-21317", "vulnerability": "full"}
 {"pattern": "; *(M-PP[^;/]+|PhonePad ?\\d{2,}[^;/]+?)(?: Build|\\) AppleWebKit)", "Source": "CVE-2021-21317", "vulnerability": "full"}
 {"pattern": "; *(M-MP[^;/]+|SmartPad ?\\d{2,}[^;/]+?)(?: Build|\\) AppleWebKit)", "Source": "CVE-2021-21317", "vulnerability": "full"}
 {"pattern": "; *(?:meizu_|MEIZU )(.+?) *(?:Build|[;\\)])", "Source": "CVE-2021-21317", "vulnerability": "full"}
@@ -389,7 +386,6 @@
 {"pattern": "(Dar)(win)/(12).(\\d+).*\\((?:i386|x86_64)\\)", "Source": "CVE-2017-16086", "vulnerability": "full"}
 {"pattern": "(Dar)(win)/(13).(\\d+).*\\((?:i386|x86_64)\\)", "Source": "CVE-2017-16086", "vulnerability": "full"}
 {"pattern": "(iPhone|iPad|iPod).*Mac OS X.*Version/(\\d+)\\.(\\d+)", "Source": "CVE-2017-16086", "vulnerability": "full"}
-{"pattern": "(Mandriva)(?: Linux)?/(?:[\\d.-]+m[a-z]{2}(\\d+).(\\d))?", "Source": "CVE-2017-16086", "vulnerability": "full"}
 {"pattern": "(WebTV)/(\\d+).(\\d+)", "Source": "CVE-2017-16086", "vulnerability": "full"}
 {"pattern": "webOS.*(P160UNA)/(\\d+).(\\d+)", "Source": "CVE-2017-16086", "vulnerability": "full"}
 {"pattern": "Googlebot-Mobile/(\\d+).(\\d+)", "Source": "CVE-2017-16086", "vulnerability": "full"}
@@ -426,7 +422,6 @@
 {"pattern": "(''|\\\\\\\\|\\\\'|[^'])*'", "Source": "CVE-2023-30608", "vulnerability": "full"}
 {"pattern": "\"(\"\"|\\\\\\\\|\\\\\"|[^\"])*\"", "Source": "CVE-2023-30608", "vulnerability": "full"}
 {"pattern": "(.+?)\\((.*)\\)", "Source": "CVE-2023-26112", "vulnerability": "full"}
-{"pattern": "^((?:[^;'\"]|'[^']*'|\"[^\"]*\")+)", "Source": "CVE-2023-24038", "vulnerability": "full"}
 {"pattern": "^\\s*([\\w\\-]+)\\s*:\\s*(.+?)\\s*$", "Source": "CVE-2023-24038", "vulnerability": "full"}
 {"pattern": "^ *(?P<rev>\\d+) +(?P<author>.+?) +(0? *(?P<size>\\d+))? *(?P<date>\\w+ +\\d{2} +[\\d:]+) +(?P<file>.*)$", "Source": "CVE-2022-42969", "vulnerability": "full"}
 {"pattern": "<([^>]*\\srel\\s*=\\s*['\"]?([^'\">]+)[^>]*)>", "Source": "CVE-2022-40897", "vulnerability": "full"}
