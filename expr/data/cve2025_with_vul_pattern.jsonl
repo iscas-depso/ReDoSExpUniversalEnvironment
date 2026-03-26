@@ -1,4 +1,4 @@
-{"pattern": "\\s*,\\s*", "Vul_Pattern": ["POA", "SLQ"], "Source": "CVE-2025-4727"}
+{"pattern": "\\s*,\\s*", "Vul_Pattern": ["SLQ"], "Source": "CVE-2025-4727"}
 {"pattern": "\\s+$", "Vul_Pattern": ["SLQ"], "Source": "CVE-2025-4215"}
 {"pattern": "\\/*$", "Vul_Pattern": ["SLQ"], "Source": "CVE-2025-26042"}
 {"pattern": "<([^>]+)>; rel=\"deprecation\"", "Vul_Pattern": ["SLQ"], "Source": "CVE-2025-25290"}
@@ -22,21 +22,21 @@
 {"pattern": "^\\s*(?:-|\\+)?(?:\\d+|\\d{1,3}(?:,\\d{3})+)?(?:\\.\\d{1,2})?\\s*(?:\\$|€|¥|₹)?\\s*$", "Vul_Pattern": ["POA"], "Source": "CVE-2024-41818"}
 {"pattern": "([^&;=]+)=([^&;=]+)", "Vul_Pattern": ["SLQ"], "Source": "CVE-2024-41128"}
 {"pattern": "\\{.*\\}", "Vul_Pattern": ["POA", "SLQ"], "Source": "CVE-2024-4067"}
-{"pattern": "\\s*,\\s*", "Vul_Pattern": ["POA", "SLQ"], "Source": "CVE-2024-39316"}
+{"pattern": "\\s*,\\s*", "Vul_Pattern": ["SLQ"], "Source": "CVE-2024-39316"}
 {"pattern": "^(?:async\\s+)?\\(?\\s*([^)=]+)\\s*\\)?(?:\\s*=>)", "Vul_Pattern": ["POA"], "Source": "CVE-2024-39249"}
 {"pattern": "^(?:([^:/?#]+):)?(?:\\/\\/((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:/?#]*)(?::(\\d*))?))?((((?:[^?#/]*\\/)*)([^?#]*))(?:\\?([^#]*))?(?:#(.*))?)", "Vul_Pattern": ["POA"], "Source": "CVE-2024-36751"}
 {"pattern": "^(?:(?![^:@]+:[^:@/]*@)([^:/?#.]+):)?(?:\\/\\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:/?#]*)(?::(\\d*))?)(((\\/(?:[^?#](?![^?#/]*\\.[^?#/.]+(?:[?#]|$)))*\\/?)?([^?#/]*))(?:\\?([^#]*))?(?:#(.*))?)", "Vul_Pattern": ["POA"], "Source": "CVE-2024-36751"}
-{"pattern": "\\s*;\\s*q=\"?", "Vul_Pattern": ["POA", "SLQ"], "Source": "CVE-2024-26142"}
-{"pattern": "\\s*[;,]\\s*", "Vul_Pattern": ["POA", "SLQ"], "Source": "CVE-2024-25126"}
+{"pattern": "\\s*;\\s*q=\"?", "Vul_Pattern": ["SLQ"], "Source": "CVE-2024-26142"}
+{"pattern": "\\s*[;,]\\s*", "Vul_Pattern": ["SLQ"], "Source": "CVE-2024-25126"}
 {"pattern": "^https:\\/\\/[0-9A-z.]+.[0-9A-z.]+.[a-z]+\\/.*\\.json$", "Vul_Pattern": ["POA"], "Source": "CVE-2024-23732"}
-{"pattern": "\\s*([:,])\\s*", "Vul_Pattern": ["POA", "SLQ"], "Source": "CVE-2024-21539"}
+{"pattern": "\\s*([:,])\\s*", "Vul_Pattern": ["SLQ"], "Source": "CVE-2024-21539"}
 {"pattern": "(\\\\*)\"", "Vul_Pattern": ["SLQ"], "Source": "CVE-2024-21538"}
 {"pattern": "(\\\\*)$", "Vul_Pattern": ["SLQ"], "Source": "CVE-2024-21538"}
 {"pattern": "\\s*\\t+\\s*(\\S)", "Vul_Pattern": ["POA", "SLQ"], "Source": "CVE-2024-21503"}
 {"pattern": "<!--.*?-->", "Vul_Pattern": ["SLQ"], "Source": "CVE-2024-1892"}
-{"pattern": "(<head(?:>|\\s.*?>))", "Vul_Pattern": ["POA", "SLQ"], "Source": "CVE-2024-1892"}
+{"pattern": "(<head(?:>|\\s.*?>))", "Vul_Pattern": ["SLQ"], "Source": "CVE-2024-1892"}
 {"pattern": "^#+ (?:\\.?(?:\\d|[ixv])+)*\\s*(?:$|\\n\\s*)", "Vul_Pattern": ["NQ"], "Source": "CVE-2024-12720"}
-{"pattern": "<!--(?!\\s*(?:\\[if [^\\]]+]|<!|>))(?:(?!-->).)*-->", "Vul_Pattern": ["EOD?"], "Source": "CVE-2024-12579", "needs_review": true}
+{"pattern": "<!--(?!\\s*(?:\\[if [^\\]]+]|<!|>))(?:(?!-->).)*-->", "Vul_Pattern": ["SLQ"], "Source": "CVE-2024-12579"}
 {"pattern": "<gpt_academic_string_mask><show_llm>(.*?)</show_llm><show_render>(.*?)</show_render></gpt_academic_string_mask>", "Vul_Pattern": ["SLQ"], "Source": "CVE-2024-12388"}
 {"pattern": "<[^>]+>", "Vul_Pattern": ["SLQ"], "Source": "CVE-2024-10955"}
 {"pattern": "^(?:\\s*now\\s*(?:-\\s*(\\d+)\\s*([dmhs]))?)?\\s*$", "Vul_Pattern": ["POA"], "Source": "CVE-2024-10624"}
@@ -53,10 +53,10 @@
 {"pattern": "<(/)([A-Za-z]\\w*)([^>]?)(\\s?/?)>", "Vul_Pattern": ["SLQ"], "Source": "CVE-2023-31606"}
 {"pattern": "(''|\\\\\\\\|\\\\'|[^'])*'", "Vul_Pattern": ["EOD"], "Source": "CVE-2023-30608"}
 {"pattern": "\"(\"\"|\\\\\\\\|\\\\\"|[^\"])*\"", "Vul_Pattern": ["EOD"], "Source": "CVE-2023-30608"}
-{"pattern": "(''|\\\\'|[^'])*'", "Vul_Pattern": ["EOD"], "Source": "CVE-2023-30608"}
+{"pattern": "(''|\\\\'|[^'])*'", "Vul_Pattern": ["SLQ"], "Source": "CVE-2023-30608"}
 {"pattern": "[ \\t]*$", "Vul_Pattern": ["SLQ"], "Source": "CVE-2023-26115"}
 {"pattern": "(.+?)\\((.*)\\)", "Vul_Pattern": ["POA", "SLQ"], "Source": "CVE-2023-26112"}
-{"pattern": "\\s*,\\s*", "Vul_Pattern": ["POA", "SLQ"], "Source": "CVE-2023-26103"}
+{"pattern": "\\s*,\\s*", "Vul_Pattern": ["SLQ"], "Source": "CVE-2023-26103"}
 {"pattern": "^[\\r\\n\\t ]+|[\\r\\n\\t ]+$", "Vul_Pattern": ["SLQ"], "Source": "CVE-2023-24807"}
 {"pattern": "^((?:[^;'\"]|'[^']*'|\"[^\"]*\")+)", "Vul_Pattern": ["NQ"], "Source": "CVE-2023-24038"}
 {"pattern": "^\\s*([\\w\\-]+)\\s*:\\s*(.+?)\\s*$", "Vul_Pattern": ["POA"], "Source": "CVE-2023-24038"}
@@ -64,24 +64,24 @@
 {"pattern": "<([^>]*\\srel\\s*=\\s*['\"]?([^'\">]+)[^>]*)>", "Vul_Pattern": ["POA"], "Source": "CVE-2022-40897"}
 {"pattern": "\\s+([1-9][0-9]*w|[0-9]+(?:\\.[0-9]+)?x)$", "Vul_Pattern": ["SLQ"], "Source": "CVE-2022-37620"}
 {"pattern": "\\[(?:([^:\\]]+):)?(?:hash|contenthash)(?::([a-z]+\\d*))?(?::(\\d+))?\\]", "Vul_Pattern": ["SLQ"], "Source": "CVE-2022-37603"}
-{"pattern": "[\"'].*[\"']", "Vul_Pattern": ["POA", "SLQ"], "Source": "CVE-2022-37262"}
+{"pattern": "[\"'].*[\"']", "Vul_Pattern": ["SLQ"], "Source": "CVE-2022-37262"}
 {"pattern": "^(\\.\\.?(\\/|$))+", "Vul_Pattern": ["NQ"], "Source": "CVE-2022-37260"}
 {"pattern": "[^.[\\]]+|\\[(?:(-?\\d+(?:\\.\\d+)?)|([\"'])((?:(?!\\2)[^\\\\]|\\\\.)*?)\\2)\\]|(?=(?:\\.|\\[\\])(?:\\.|\\[\\]|$))", "Vul_Pattern": ["EOD", "SLQ"], "Source": "CVE-2022-37259"}
 {"pattern": "^[ \\t\\n\\v\\f\\r\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000]+|[ \\t\\n\\v\\f\\r\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000]+$", "Vul_Pattern": ["SLQ"], "Source": "CVE-2022-36064"}
 {"pattern": "^[ \\t\\n\\r]+|[ \\t\\n\\r]+$", "Vul_Pattern": ["SLQ"], "Source": "CVE-2022-36064"}
 {"pattern": "^[ \\t\\n]+|[ \\t\\n]+$", "Vul_Pattern": ["SLQ"], "Source": "CVE-2022-36064"}
-{"pattern": "\\{.*\\}/", "Vul_Pattern": ["POA", "SLQ"], "Source": "CVE-2022-3517"}
+{"pattern": "\\{.*\\}/", "Vul_Pattern": ["SLQ"], "Source": "CVE-2022-3517"}
 {"pattern": "^(?:(?:(?:https?|ftp):)?\\/\\/)(?:\\S+(?::\\S*)?@)?(?:(?!(?:10|127)(?:\\.\\d{1,3}){3})(?!(?:169\\.254|192\\.168)(?:\\.\\d{1,3}){2})(?!172\\.(?:1[6-9]|2\\d|3[0-1])(?:\\.\\d{1,3}){2})(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z0-9\\u00a1-\\uffff][a-z0-9\\u00a1-\\uffff_-]{0,62})?[a-z0-9\\u00a1-\\uffff]\\.)+(?:[a-z\\u00a1-\\uffff]{2,}\\.?))(?::\\d{2,5})?(?:[/?#]\\S*)?$", "Vul_Pattern": ["POA", "EOA"], "Source": "CVE-2022-31147"}
 {"pattern": "\\b(((ht|f)tp(s?)\\:\\/\\/|~\\/|\\/)|www.)(\\w+:\\w+@)?(([-\\w]+\\.)+(com|org|net|gov|mil|biz|info|mobi|name|aero|jobs|museum|travel|[a-z]{2}))(:[\\d]{1,5})?(((\\/([-\\w~!$+|.,=]|%[a-f\\d]{2})+)+|\\/)+|\\?|#)?((\\?([-\\w~!$+|.,*:]|%[a-f\\d{2}])+=?([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)(&(?:[-\\w~!$+|.,*:]|%[a-f\\d{2}])+=?([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)*)*(#([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)?\\b", "Vul_Pattern": ["NQ", "POA"], "Source": "CVE-2022-29158"}
 {"pattern": "\\s\\s*$", "Vul_Pattern": ["SLQ"], "Source": "CVE-2022-25927"}
 {"pattern": "(?<!\\{)\\{+(?=(?:[^{][^,.]*)?[,.][^}]*\\})", "Vul_Pattern": ["POA"], "Source": "CVE-2022-25918"}
-{"pattern": "[:](?=\\s*[a-zA-Z0-9_\\-]+\\s*[=])", "Vul_Pattern": ["POA?"], "Source": "CVE-2022-25901", "needs_review": true}
+{"pattern": "[:](?=\\s*[a-zA-Z0-9_\\-]+\\s*[=])", "Vul_Pattern": ["SLQ"], "Source": "CVE-2022-25901"}
 {"pattern": "<!--.*?-->", "Vul_Pattern": ["SLQ"], "Source": "CVE-2022-25887"}
 {"pattern": "\\/\\*\\s*# sourceMappingURL=(.*)\\*\\/", "Vul_Pattern": ["SLQ"], "Source": "CVE-2022-25758"}
 {"pattern": "\\/\\*\\s*# sourceMappingURL=(.*)\\s*\\*\\/", "Vul_Pattern": ["POA", "SLQ"], "Source": "CVE-2022-25758"}
 {"pattern": "[-+]?\\d*\\.?\\d+", "Vul_Pattern": ["POA", "SLQ"], "Source": "CVE-2022-24373"}
 {"pattern": "\\s+\\z", "Vul_Pattern": ["SLQ"], "Source": "CVE-2022-23548"}
 {"pattern": "^ {0,3}\\[(label)\\]: *\\n? *<?([^\\s>]+)>?(?:(?: +\\n? *| *\\n *)(title))? *(?:\\n+|$)", "Vul_Pattern": ["POA"], "Source": "CVE-2022-21680"}
-{"pattern": "(?!\\s*\\])(?:\\\\[\\[\\]]|[^\\[\\]])+", "Vul_Pattern": ["EOD", "SLQ"], "Source": "CVE-2022-21680"}
+{"pattern": "(?!\\s*\\])(?:\\\\[\\[\\]]|[^\\[\\]])+", "Vul_Pattern": ["SLQ"], "Source": "CVE-2022-21680"}
 {"pattern": "^!?\\[(label)\\]\\[(?!\\s*\\])((?:\\\\[\\[\\]]?|[^\\[\\]\\\\])+)\\]", "Vul_Pattern": ["SLQ"], "Source": "CVE-2022-21680"}
 {"pattern": "^!?\\[(?!\\s*\\])((?:\\[[^\\[\\]]*\\]|\\\\[\\[\\]]|[^\\[\\]])*)\\](?:\\[\\])?", "Vul_Pattern": ["EOD", "NQ"], "Source": "CVE-2022-21680"}
