@@ -429,6 +429,19 @@ def build_input_from_attack(prefix_b64, infix_b64, suffix_b64, k):
     return text, len(text.encode("utf-8"))
 
 
+def is_timeout_result(ret):
+    """Treat runexec CPU soft-limit terminations as timeouts, same as post-analysis."""
+    if ret.get("timeout") is True:
+        return True
+    stdout = ret.get("stdout", "")
+    if not isinstance(stdout, str):
+        return False
+    return (
+        "terminationreason=cputime-soft" in stdout
+        or "terminationreason=cputime" in stdout
+    )
+
+
 def run_single_execution(pattern, input_text, cpu, runtime):
     tmp_input_path = Path(f"/tmp/{uuid.uuid4()}.txt")
     tmp_output_path = Path(f"/tmp/{uuid.uuid4()}.txt")
@@ -536,6 +549,7 @@ def run_command(task):
                 ret = run_single_execution(task["pattern"], input_text, cpu, runtime)
             finally:
                 return_cpu(cpu)
+            timed_out = is_timeout_result(ret)
 
             json_output(
                 file=task["file"],
@@ -558,11 +572,11 @@ def run_command(task):
                 stdout=ret["stdout"],
                 stderr=ret["stderr"],
                 return_code=ret["return_code"],
-                timeout=ret["timeout"],
+                timeout=timed_out,
             )
             progress_event(runtime, "run_done", 1)
 
-            if (not warmup) and ret["timeout"]:
+            if (not warmup) and timed_out:
                 timeout_nonwarmup += 1
 
         # Dynamic truncation: 非warmup轮次中超时过半就提前终止
