@@ -31,13 +31,14 @@ cat /tmp/test.json
 
 ```bash
 # 启动容器并开放Web端口
-docker run --rm -p 8080:8080 -v /tmp:/tmp redos-test
+docker run --rm --privileged --cgroupns=host -p 8080:8080 -v /tmp:/tmp redos-test
 
 # 浏览器访问 http://localhost:8080 进入图形化界面
 ```
 
 在网页中可以勾选需要的工具和引擎，先运行“检测工具”阶段获取攻击字符串，再选择其中一个结果进入“引擎验证”阶段。
 如需快速自检，可运行 `npm run test:e2e`（基于 Playwright 的模拟端到端测试，默认使用 mock 运行器，不会真正触发真实工具或引擎）。
+如果你需要容器内真正启用 BenchExec `runexec` 的 cgroups/时间内存限制，请使用 `--privileged --cgroupns=host`。普通 `docker run` 在很多环境里会把 `/sys/fs/cgroup` 以只读方式挂进容器，导致限制无法可靠生效。
 
 ### 核心特性
 
@@ -101,13 +102,14 @@ docker run --rm -v /tmp:/tmp redos-test \
 
 ```bash
 # Launch the container with the dashboard
-docker run --rm -p 8080:8080 -v /tmp:/tmp redos-test
+docker run --rm --privileged --cgroupns=host -p 8080:8080 -v /tmp:/tmp redos-test
 
 # Open http://localhost:8080 in your browser
 ```
 
 The dashboard lets you run detection tools in parallel, pick a generated payload, and then benchmark it against the selected engines with live progress updates.
 To sanity-check the UI workflow without hitting real binaries, run `npm run test:e2e`; this launches a Playwright test suite backed by mocked tool/engine runners.
+If you need BenchExec `runexec` with real cgroup-based resource limits inside Docker, start the container with `--privileged --cgroupns=host`. On many hosts, a plain `docker run` mounts `/sys/fs/cgroup` read-only and BenchExec cannot enforce limits reliably.
 
 ##### 资源限制与 API（Resource Limits & API）
 
@@ -116,6 +118,7 @@ To sanity-check the UI workflow without hitting real binaries, run `npm run test
   - `POST /api/jobs/tools`：接受 `regex`, `tools[]`，可选 `timeoutSeconds`, `cpuCores`, `memoryMB`
   - `POST /api/jobs/engines`：接受 `regex`, `engines[]`, `attack{prefix,infix,suffix,repeat_times}`, 可选 `matchMode`, `repeatOverride`, `maxAttackLength`, 以及 `timeoutSeconds`, `cpuCores`, `memoryMB`
 - 容器内通过 BenchExec `runexec` 施加限制。请确保 cgroups v2 子树 controller 已在容器中启用（详见 DEPLOYMENT.md 的“Runexec & cgroups v2（容器模式）”）。
+- 若要让这些限制在 Docker 中可靠生效，建议使用 `docker run --privileged --cgroupns=host ...` 启动 Web 服务。
 
 ### 项目结构
 
