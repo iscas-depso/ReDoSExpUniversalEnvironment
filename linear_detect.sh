@@ -41,7 +41,7 @@ docker run --rm --privileged \
     python3 /app/expr/linear_benchmark.py \
     --runexec \
     --timeout 5 \
-    --cpus 200 \
+    --cpus 64 \
     --memlimit 10240 \
     --fullmatch \
     --samples "${SAMPLES}" \
@@ -71,7 +71,7 @@ for engine in "${ENGINES[@]}"; do
             python3 /app/expr/linear_benchmark.py \
             --runexec \
             --timeout 5 \
-            --cpus 200 \
+            --cpus 64 \
             --memlimit 10240 \
             --fullmatch \
             --samples "${SAMPLES}" \
