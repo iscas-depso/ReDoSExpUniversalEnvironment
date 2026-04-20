@@ -22,12 +22,12 @@ fail_count=0
 echo -n "1. Checking Docker image... "
 if docker images | grep -q "redos-test"; then
     echo -e "${GREEN}✓${NC}"
-    ((success_count++))
+    ((success_count+=1))
 else
     echo -e "${RED}✗${NC}"
     echo "   Error: Docker image 'redos-test' not found"
     echo "   Run: docker build --rm -t redos-test ."
-    ((fail_count++))
+    ((fail_count+=1))
     exit 1
 fi
 
@@ -35,11 +35,11 @@ fi
 echo -n "2. Testing container startup... "
 if docker run --rm redos-test echo "test" > /dev/null 2>&1; then
     echo -e "${GREEN}✓${NC}"
-    ((success_count++))
+    ((success_count+=1))
 else
     echo -e "${RED}✗${NC}"
     echo "   Error: Container failed to start"
-    ((fail_count++))
+    ((fail_count+=1))
     exit 1
 fi
 
@@ -47,20 +47,20 @@ fi
 echo -n "3. Checking tools directory... "
 if docker run --rm redos-test test -d /app/tools > /dev/null 2>&1; then
     echo -e "${GREEN}✓${NC}"
-    ((success_count++))
+    ((success_count+=1))
 else
     echo -e "${RED}✗${NC}"
-    ((fail_count++))
+    ((fail_count+=1))
 fi
 
 # Test 4: Engines directory exists
 echo -n "4. Checking engines directory... "
 if docker run --rm redos-test test -d /app/engines > /dev/null 2>&1; then
     echo -e "${GREEN}✓${NC}"
-    ((success_count++))
+    ((success_count+=1))
 else
     echo -e "${RED}✗${NC}"
-    ((fail_count++))
+    ((fail_count+=1))
 fi
 
 # Test 5: regexploit tool
@@ -69,11 +69,11 @@ SAFE_REGEX_B64="XmFiYyQ="  # ^abc$
 if timeout 30 docker run --rm -v /tmp:/tmp redos-test \
     python3 /app/tools/regexploit/run.py "$SAFE_REGEX_B64" /tmp/verify_regexploit.json > /dev/null 2>&1; then
     echo -e "${GREEN}✓${NC}"
-    ((success_count++))
+    ((success_count+=1))
 else
     echo -e "${RED}✗${NC}"
     echo "   Error: regexploit tool failed"
-    ((fail_count++))
+    ((fail_count+=1))
 fi
 
 # Test 6: regexstatic tool
@@ -81,7 +81,7 @@ echo -n "6. Testing regexstatic tool... "
 if timeout 30 docker run --rm -v /tmp:/tmp redos-test \
     python3 /app/tools/regexstatic/run.py "$SAFE_REGEX_B64" /tmp/verify_regexstatic.json > /dev/null 2>&1; then
     echo -e "${GREEN}✓${NC}"
-    ((success_count++))
+    ((success_count+=1))
 else
     echo -e "${YELLOW}⚠${NC} (may timeout, this is acceptable)"
     # Not counting as failure
@@ -93,14 +93,14 @@ echo "abc" > /tmp/verify_engine_input.txt
 if timeout 10 docker run --rm -v /tmp:/tmp redos-test \
     /app/engines/python/bin/benchmark "$SAFE_REGEX_B64" /tmp/verify_engine_input.txt 1 > /dev/null 2>&1; then
     echo -e "${GREEN}✓${NC}"
-    ((success_count++))
+    ((success_count+=1))
 else
     echo -e "${YELLOW}⚠${NC} (may timeout, checking file exists)"
     if docker run --rm redos-test test -f /app/engines/python/bin/benchmark; then
         echo "   Binary exists, considering as pass"
-        ((success_count++))
+        ((success_count+=1))
     else
-        ((fail_count++))
+        ((fail_count+=1))
     fi
 fi
 
@@ -113,13 +113,13 @@ for tool in "${tools[@]}"; do
         all_exist=false
         echo -e "${RED}✗${NC}"
         echo "   Missing: $tool"
-        ((fail_count++))
+        ((fail_count+=1))
         break
     fi
 done
 if $all_exist; then
     echo -e "${GREEN}✓${NC}"
-    ((success_count++))
+    ((success_count+=1))
 fi
 
 # Test 9: Check critical engines exist
@@ -131,28 +131,28 @@ for engine in "${engines[@]}"; do
         all_exist=false
         echo -e "${RED}✗${NC}"
         echo "   Missing: $engine"
-        ((fail_count++))
+        ((fail_count+=1))
         break
     fi
 done
 if $all_exist; then
     echo -e "${GREEN}✓${NC}"
-    ((success_count++))
+    ((success_count+=1))
 fi
 
 # Test 10: Python dependencies
 echo -n "10. Checking Python dependencies... "
 if docker run --rm redos-test python3 -c "import numpy; import scipy; import sklearn" > /dev/null 2>&1; then
     echo -e "${GREEN}✓${NC}"
-    ((success_count++))
+    ((success_count+=1))
 else
     echo -e "${RED}✗${NC}"
     echo "   Error: Python dependencies missing (numpy, scipy, scikit-learn)"
-    ((fail_count++))
+    ((fail_count+=1))
 fi
 
 # Cleanup
-rm -f /tmp/verify_*.json /tmp/verify_engine_input.txt 2>/dev/null
+rm -f /tmp/verify_*.json /tmp/verify_engine_input.txt 2>/dev/null || true
 
 echo ""
 echo "==================================="
