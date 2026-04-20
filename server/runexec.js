@@ -9,6 +9,13 @@ const execFile = util.promisify(childProcess.execFile);
 const { PROJECT_ROOT } = require('./definitions');
 const { coresToSpec } = require('./cpu-allocator');
 
+const RUNEXEC_FALLBACK_PATTERNS = [
+  'Creating namespace for container mode failed',
+  'Operation not permitted',
+  'cgroupfs is mounted read-only',
+  'Cannot reliably kill sub-processes without freezer cgroup or container mode'
+];
+
 function parseRunexecResult(stdout) {
   const result = {};
   const lines = String(stdout || '').split(/\r?\n/);
@@ -19,6 +26,11 @@ function parseRunexecResult(stdout) {
     }
   }
   return result;
+}
+
+function isRunexecUnavailableOutput(stdout, stderr) {
+  const text = `${stdout || ''}\n${stderr || ''}`;
+  return RUNEXEC_FALLBACK_PATTERNS.some(pattern => text.includes(pattern));
 }
 
 function memMbToArg(memoryMB) {
@@ -83,12 +95,39 @@ async function runWithRunexec({
     maxBuffer: 20 * 1024 * 1024
   };
 
-  const { stdout, stderr } = await execFile(pythonBin, [runexecPath, ...ra], execOptions);
+  let stdout = '';
+  let stderr = '';
+  try {
+    const result = await execFile(pythonBin, [runexecPath, ...ra], execOptions);
+    stdout = result.stdout || '';
+    stderr = result.stderr || '';
+  } catch (error) {
+    stdout = error.stdout || '';
+    stderr = error.stderr || '';
+    if (isRunexecUnavailableOutput(stdout, stderr)) {
+      const fallbackError = new Error('runexec is unavailable in the current container environment');
+      fallbackError.code = 'RUNEXEC_UNAVAILABLE';
+      fallbackError.stdout = stdout;
+      fallbackError.stderr = stderr;
+      throw fallbackError;
+    }
+    throw error;
+  }
+
   const parsed = parseRunexecResult(stdout);
+  if ((parsed.terminationreason === 'failed' || parsed.terminationreason === 'killed')
+      && isRunexecUnavailableOutput(stdout, stderr)) {
+    const fallbackError = new Error('runexec is unavailable in the current container environment');
+    fallbackError.code = 'RUNEXEC_UNAVAILABLE';
+    fallbackError.stdout = stdout;
+    fallbackError.stderr = stderr;
+    fallbackError.parsed = parsed;
+    throw fallbackError;
+  }
+
   return { stdout, stderr, parsed };
 }
 
 module.exports = {
   runWithRunexec
 };
-
