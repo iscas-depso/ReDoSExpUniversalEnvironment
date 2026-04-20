@@ -984,7 +984,7 @@ jobs:
 - 复制 `benchexec/` 至 `/app/benchexec`（供 `bin/runexec` 使用）。
 - 复制 `init.sh` 到容器根目录并设为 `ENTRYPOINT`：
   - `init.sh` 会创建 `/sys/fs/cgroup/init` 与 `/sys/fs/cgroup/benchexec`，并把所有 `cgroup.controllers` 中的控制器写入它们对应的 `cgroup.subtree_control`，使子树可用。
-- 服务器端默认走 runexec 的容器模式（可通过 `RUNEXEC_NO_CONTAINER=1` 切回非容器模式，仅用于应急）。
+- 服务器端强制走 runexec 的容器模式；如果 cgroups v2 未正确启用，服务会在启动时直接报错退出，不再自动回退。
 
 2) 运行容器（Docker）
 
@@ -1016,9 +1016,15 @@ docker exec -it redos-web sh -lc 'cat /sys/fs/cgroup/cgroup.controllers; echo "-
 
 runexec 的目录参数不可对同一路径同时指定多种模式。项目内封装已避免 `/tmp` 被重复声明（保留 `--full-access-dir /tmp`）。若你在外部脚本中调用 runexec，请避免同时对 `/tmp` 使用 `--hidden-dir` 与 `--full-access-dir`。
 
-5) 非容器模式（不推荐）
+5) 失败策略
 
-设置 `RUNEXEC_NO_CONTAINER=1` 环境变量会启用 runexec 的非容器模式，仅用于 Docker Desktop/某些宿主上暂时绕过 cgroup 限制的场景。此模式下不保证时间/内存限制能可靠生效。
+当前版本不再提供 `RUNEXEC_NO_CONTAINER=1` 之类的非容器回退模式。若 cgroups v2 没有正确启用，服务会给出明确错误，例如：
+
+- `/sys/fs/cgroup is mounted read-only`
+- `Required controller 'memory' is missing`
+- `/sys/fs/cgroup/benchexec/cgroup.subtree_control is not writable`
+
+这种设计是为了保证资源限制一定由 BenchExec + cgroups 实施，而不是在限制失效时静默退回普通执行。
 
 ---
 

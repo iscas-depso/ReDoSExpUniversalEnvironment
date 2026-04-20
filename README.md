@@ -38,7 +38,7 @@ docker run --rm --privileged --cgroupns=host -p 8080:8080 -v /tmp:/tmp redos-tes
 
 在网页中可以勾选需要的工具和引擎，先运行“检测工具”阶段获取攻击字符串，再选择其中一个结果进入“引擎验证”阶段。
 如需快速自检，可运行 `npm run test:e2e`（基于 Playwright 的模拟端到端测试，默认使用 mock 运行器，不会真正触发真实工具或引擎）。
-如果你需要容器内真正启用 BenchExec `runexec` 的 cgroups/时间内存限制，请使用 `--privileged --cgroupns=host`。普通 `docker run` 在很多环境里会把 `/sys/fs/cgroup` 以只读方式挂进容器，导致限制无法可靠生效。
+如果你需要容器内真正启用 BenchExec `runexec` 的 cgroups/时间内存限制，请使用 `--privileged --cgroupns=host`。普通 `docker run` 在很多环境里会把 `/sys/fs/cgroup` 以只读方式挂进容器；当前版本不会再自动回退，而是直接以明确报错退出。
 
 ### 核心特性
 
@@ -109,7 +109,7 @@ docker run --rm --privileged --cgroupns=host -p 8080:8080 -v /tmp:/tmp redos-tes
 
 The dashboard lets you run detection tools in parallel, pick a generated payload, and then benchmark it against the selected engines with live progress updates.
 To sanity-check the UI workflow without hitting real binaries, run `npm run test:e2e`; this launches a Playwright test suite backed by mocked tool/engine runners.
-If you need BenchExec `runexec` with real cgroup-based resource limits inside Docker, start the container with `--privileged --cgroupns=host`. On many hosts, a plain `docker run` mounts `/sys/fs/cgroup` read-only and BenchExec cannot enforce limits reliably.
+If you need BenchExec `runexec` with real cgroup-based resource limits inside Docker, start the container with `--privileged --cgroupns=host`. On many hosts, a plain `docker run` mounts `/sys/fs/cgroup` read-only; this version no longer falls back automatically and will fail fast with an explicit error instead.
 
 ##### 资源限制与 API（Resource Limits & API）
 
@@ -349,7 +349,7 @@ Issues and pull requests are welcome for bug reports and improvements.
 This project is refactored from the original ReDoS testing environment and follows the original licenses of each tool and engine.
 ### Resource limits (BenchExec runexec)
 
-- 网页中“检测工具”和“引擎验证”已支持为每次运行设置资源限制：运行时间（秒）、核心数、内存（MB）。
-- 后端通过 BenchExec 的 unexec 对应参数（--timelimit/--walltimelimit、--cores、--memlimit）进行强制限制。
-- 本仓库默认在容器内路径 /app/benchexec 提供 unexec（由工作区 enchexec/ 目录拷入）。如需在 Docker 中启用 cgroups/绑核，请参考 enchexec/examples/runexec-in-docker-quickstart.md，建议在受控环境中使用 --privileged 或按 BenchExec 文档配置 Podman rootless。
-- 若 unexec 不可用，强制限制将无法生效并可能导致任务失败，请确保容器内 Python3 可用且存在 /app/benchexec/bin/runexec。
+- The web UI supports per-run limits for tool detection and engine verification: timeout in seconds, CPU cores, and memory in MB.
+- The backend enforces these limits with BenchExec `runexec` parameters such as `--timelimit`, `--walltimelimit`, `--cores`, and `--memlimit`.
+- This repository bundles BenchExec at `/app/benchexec`. To use it correctly in Docker, start the service with `--privileged --cgroupns=host`.
+- This version does not fall back to non-cgroup execution. If cgroups are not available, the service fails fast with an explicit error message.
