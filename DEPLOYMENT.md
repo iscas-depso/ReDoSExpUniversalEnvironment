@@ -474,7 +474,7 @@ timeout 10 docker run --rm -v /tmp:/tmp redos-test \
 
 ```bash
 # 启动容器并映射端口 8080
-docker run --rm -p 8080:8080 -v /tmp:/tmp redos-test
+docker run --rm --privileged --cgroupns=host -p 8080:8080 -v /tmp:/tmp redos-test
 ```
 
 然后打开浏览器访问 `http://localhost:8080`：
@@ -992,14 +992,14 @@ jobs:
 
 ```bash
 docker run -d --name redos-web \
-  --privileged --cap-drop=all \
+  --privileged --cgroupns=host \
   -p 8080:8080 \
   -v /tmp:/tmp \
   redos-test
 ```
 
 说明：
-- `--privileged --cap-drop=all` 是 BenchExec 文档推荐的简化方式（生产更推荐 Podman rootless）。
+- `--privileged --cgroupns=host` 可确保容器内能写入并委派 cgroups v2 子树，供 BenchExec `runexec` 施加时间/内存/核心限制。
 - 如果你要热替换前端静态资源，可额外挂载 `-v $(pwd)/public:/app/public`。
 
 3) 验证 cgroups 子树是否启用
