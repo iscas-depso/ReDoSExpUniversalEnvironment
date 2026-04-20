@@ -2,19 +2,15 @@
 # BASE IMAGE AND ENVIRONMENT CONFIGURATION
 # =============================================================================
 
-# Use Ubuntu 22.04 as base image
-FROM docker.m.daocloud.io/ubuntu:22.04
+# Use the official Ubuntu 22.04 base image, optionally via a mirror.
+ARG UBUNTU_IMAGE=ubuntu:22.04
+FROM ${UBUNTU_IMAGE}
 
 # Set environment variables to avoid interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
 
-#################### 代理设置 ####################
-# ① 如果你想在 docker build 时临时改地址，只需要
-#    docker build --build-arg PROXY=http://其他地址:端口 .
-ARG PROXY=http://192.168.1.34:7890
-
-# ② 一次性写全大小写两套环境变量，兼容所有程序
+ARG PROXY=
 ENV \
     http_proxy=${PROXY} \
     https_proxy=${PROXY} \
@@ -22,10 +18,8 @@ ENV \
     HTTP_PROXY=${PROXY} \
     HTTPS_PROXY=${PROXY} \
     FTP_PROXY=${PROXY} \
-    # 如果你的 7890 端口同时提供 SOCKS5，可以顺带写上：
-    all_proxy=socks5h://192.168.1.34:7890 \
-    ALL_PROXY=socks5h://192.168.1.34:7890 \
-    # 避免本机回环走代理
+    all_proxy=${PROXY} \
+    ALL_PROXY=${PROXY} \
     no_proxy=localhost,127.0.0.1,::1 \
     NO_PROXY=localhost,127.0.0.1,::1
 
@@ -82,6 +76,7 @@ RUN apt-get update && apt-get install -y \
 RUN python3 -m pip install --no-cache-dir \
     colored \
     numpy \
+    psutil \
     scipy \
     scikit-learn
 

@@ -27,6 +27,7 @@ clean:
 	rm -rf $(BIN_DIR)
 
 test: $(TARGET)
+	chmod +x $(TEST_DIR)/run_tests.sh 2>/dev/null || true
 	cd $(TEST_DIR) && ./run_tests.sh
 
 .PHONY: install-deps

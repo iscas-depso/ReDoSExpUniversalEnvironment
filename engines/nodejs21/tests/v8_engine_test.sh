@@ -11,6 +11,10 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ENGINE_DIR="$(dirname "$SCRIPT_DIR")"
+TEST_FILE="$ENGINE_DIR/test-linear.js"
+
 # Function to run V8 engine tests
 run_v8_test() {
     local test_name="$1"
@@ -23,15 +27,15 @@ run_v8_test() {
     result=""
     exit_code=1
     
-    if [ -f "test-linear.js" ]; then
+    if [ -f "$TEST_FILE" ]; then
         if [ -n "$node_flags" ]; then
-            result=$(node $node_flags test-linear.js 2>&1)
+            result=$(node $node_flags "$TEST_FILE" 2>&1)
         else
-            result=$(node test-linear.js 2>&1)
+            result=$(node "$TEST_FILE" 2>&1)
         fi
         exit_code=$?
     else
-        result="test-linear.js not found"
+        result="test-linear.js not found at $TEST_FILE"
         exit_code=1
     fi
     

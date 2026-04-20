@@ -23,6 +23,7 @@ clean:
 	rm -rf $(BINDIR)
 
 test: $(TARGET)
+	chmod +x $(TEST_DIR)/run_tests.sh 2>/dev/null || true
 	cd $(TEST_DIR) && ./run_tests.sh
 
 .DEFAULT_GOAL := all 
