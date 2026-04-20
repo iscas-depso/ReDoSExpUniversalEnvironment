@@ -49,6 +49,7 @@ async function executeTool(toolId, regexBase64, timeoutMs, { cpuAllocator, cpuCo
   let parsedOutput = null;
   let rawOutput = null;
   let allocated = null;
+  let runexecFallbackLogs = [];
 
   try {
     if (cpuAllocator && Number.isFinite(cpuCores) && cpuCores > 0) {
@@ -57,24 +58,44 @@ async function executeTool(toolId, regexBase64, timeoutMs, { cpuAllocator, cpuCo
 
     const useRunexec = process.env.DISABLE_RUNEXEC !== '1';
     if (useRunexec) {
-      const r = await runWithRunexec({
-        cmd: file,
-        args,
-        cwd: options.cwd,
-        env: options.env || {},
-        outputLogPath: programOutputPath,
-        timelimitSeconds: timeoutMs ? Math.floor(timeoutMs / 1000) : undefined,
-        walltimelimitSeconds: timeoutMs ? Math.floor(timeoutMs / 1000) : undefined,
-        memoryMB,
-        cores: allocated?.cores
-      });
-      // Program output is redirected to programOutputPath
       try {
-        stdout = await fs.readFile(programOutputPath, 'utf8');
-      } catch {
-        stdout = '';
+        await runWithRunexec({
+          cmd: file,
+          args,
+          cwd: options.cwd,
+          env: options.env || {},
+          outputLogPath: programOutputPath,
+          timelimitSeconds: timeoutMs ? Math.floor(timeoutMs / 1000) : undefined,
+          walltimelimitSeconds: timeoutMs ? Math.floor(timeoutMs / 1000) : undefined,
+          memoryMB,
+          cores: allocated?.cores
+        });
+        // Program output is redirected to programOutputPath
+        try {
+          stdout = await fs.readFile(programOutputPath, 'utf8');
+        } catch {
+          stdout = '';
+        }
+        stderr = '';
+      } catch (error) {
+        if (error.code !== 'RUNEXEC_UNAVAILABLE') {
+          throw error;
+        }
+        runexecFallbackLogs = [
+          ...error.stdout ? [{ stream: 'stderr', content: clampLog(error.stdout) }] : [],
+          ...error.stderr ? [{ stream: 'stderr', content: clampLog(error.stderr) }] : []
+        ];
+
+        const execOptions = {
+          cwd: options.cwd,
+          env: { ...process.env, ...(options.env || {}) },
+          timeout: timeoutMs,
+          maxBuffer: 20 * 1024 * 1024
+        };
+        const result = await execFile(file, args, execOptions);
+        stdout = result.stdout || '';
+        stderr = result.stderr || '';
       }
-      stderr = '';
     } else {
       const execOptions = {
         cwd: options.cwd,
@@ -120,7 +141,8 @@ async function executeTool(toolId, regexBase64, timeoutMs, { cpuAllocator, cpuCo
     stderr,
     parsedOutput,
     rawOutput,
-    durationMs: Date.now() - start
+    durationMs: Date.now() - start,
+    runexecFallbackLogs
   };
 }
 
@@ -159,6 +181,7 @@ async function runToolsJob(jobManager, job, { regex, toolIds, timeoutMs, cpuAllo
         output: result.parsedOutput,
         rawOutput: result.rawOutput,
         logs: [
+          ...result.runexecFallbackLogs,
           ...result.stdout ? [{ stream: 'stdout', content: clampLog(result.stdout) }] : [],
           ...result.stderr ? [{ stream: 'stderr', content: clampLog(result.stderr) }] : []
         ]
