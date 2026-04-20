@@ -1,34 +1,69 @@
 #!/bin/sh
 set -eu
 
-# Prepare cgroups v2 subtree for BenchExec inside this container.
-# This follows benchexec/doc/benchexec-in-container.md (non-systemd, cgroups v2).
+fail_cgroup() {
+  echo "FATAL: BenchExec requires writable cgroups v2 inside the container." >&2
+  echo "FATAL: $1" >&2
+  echo "FATAL: Start the service with: docker run --rm --privileged --cgroupns=host -p 8080:8080 -v /tmp:/tmp redos-test" >&2
+  exit 1
+}
 
-# Some distros mount cgroup2 read-only by default; require --privileged for this to work.
+needs_benchexec_cgroups() {
+  if [ "${1:-}" = "npm" ] && [ "${2:-}" = "start" ]; then
+    return 0
+  fi
+  if [ "${1:-}" = "node" ] && [ "${2:-}" = "server/index.js" ]; then
+    return 0
+  fi
+  return 1
+}
 
-# init：用于把当前 PID（容器内的 PID 1）迁移进去，从而“释放”根 cgroup 以便做委派（delegation）
-# benchexec：作为 runexec 的工作子树，使用--no-container模式，后续 runexec 会严格在此之下创建自己的 cgroup
-mkdir -p /sys/fs/cgroup/init /sys/fs/cgroup/benchexec || true
+if needs_benchexec_cgroups "$@"; then
+  cgroup_mount="$(awk '$2=="/sys/fs/cgroup"{print $3" "$4; exit}' /proc/mounts)"
+  [ -n "$cgroup_mount" ] || fail_cgroup "/sys/fs/cgroup is not mounted in the container."
 
+  cgroup_fs="$(printf '%s' "$cgroup_mount" | cut -d' ' -f1)"
+  cgroup_opts="$(printf '%s' "$cgroup_mount" | cut -d' ' -f2-)"
+  [ "$cgroup_fs" = "cgroup2" ] || fail_cgroup "/sys/fs/cgroup is mounted as '$cgroup_fs', expected cgroup2."
 
-# Move this init process into its own cgroup to free up the root for delegation
-if [ -w /sys/fs/cgroup/init/cgroup.procs ]; then
-  echo $$ > /sys/fs/cgroup/init/cgroup.procs || true # $$ 是当前 shell 的 PID（在容器中通常是 PID 1），把当前进程移出根 cgroup，释放根 cgroup 用于“只承载子 cgroup（而非进程）”的委派模式
-fi
+  case ",$cgroup_opts," in
+    *,rw,*) ;;
+    *) fail_cgroup "/sys/fs/cgroup is mounted read-only with options '$cgroup_opts'." ;;
+  esac
 
+  controllers="$(cat /sys/fs/cgroup/cgroup.controllers 2>/dev/null || true)"
+  [ -n "$controllers" ] || fail_cgroup "Cannot read /sys/fs/cgroup/cgroup.controllers."
 
-# Enable all controllers on the root and on the benchexec subtree
-if [ -r /sys/fs/cgroup/cgroup.controllers ]; then
-  for controller in $(cat /sys/fs/cgroup/cgroup.controllers); do #cgroups v2 根目录下的 cgroup.controllers 列出当前内核可用的控制器（例如 cpu memory cpuset pids io ...）。只有在父节点的 cgroup.subtree_control 里显式 + 开启，子 cgroup 才能使用对应控制器。
-    # 开启根 cgroup 和 benchexec 子树的所有控制器
-    if [ -w /sys/fs/cgroup/cgroup.subtree_control ]; then
-      echo +$controller > /sys/fs/cgroup/cgroup.subtree_control || true
-    fi
-    if [ -w /sys/fs/cgroup/benchexec/cgroup.subtree_control ]; then
-      echo +$controller > /sys/fs/cgroup/benchexec/cgroup.subtree_control || true
-    fi
+  for required in cpu memory pids; do
+    printf '%s\n' "$controllers" | grep -qw "$required" || \
+      fail_cgroup "Required controller '$required' is missing. Available controllers: $controllers"
+  done
+
+  mkdir -p /sys/fs/cgroup/init /sys/fs/cgroup/benchexec || \
+    fail_cgroup "Failed to create /sys/fs/cgroup/init or /sys/fs/cgroup/benchexec."
+
+  [ -w /sys/fs/cgroup/init/cgroup.procs ] || \
+    fail_cgroup "/sys/fs/cgroup/init/cgroup.procs is not writable."
+  echo $$ > /sys/fs/cgroup/init/cgroup.procs || \
+    fail_cgroup "Failed to move PID 1 into /sys/fs/cgroup/init/cgroup.procs."
+
+  [ -w /sys/fs/cgroup/cgroup.subtree_control ] || \
+    fail_cgroup "/sys/fs/cgroup/cgroup.subtree_control is not writable."
+  [ -w /sys/fs/cgroup/benchexec/cgroup.subtree_control ] || \
+    fail_cgroup "/sys/fs/cgroup/benchexec/cgroup.subtree_control is not writable."
+
+  for controller in $controllers; do
+    echo "+$controller" > /sys/fs/cgroup/cgroup.subtree_control || \
+      fail_cgroup "Failed to enable controller '$controller' in /sys/fs/cgroup/cgroup.subtree_control."
+    echo "+$controller" > /sys/fs/cgroup/benchexec/cgroup.subtree_control || \
+      fail_cgroup "Failed to enable controller '$controller' in /sys/fs/cgroup/benchexec/cgroup.subtree_control."
+  done
+
+  enabled="$(cat /sys/fs/cgroup/benchexec/cgroup.subtree_control 2>/dev/null || true)"
+  for required in cpu memory pids; do
+    printf '%s\n' "$enabled" | grep -qw "$required" || \
+      fail_cgroup "Controller '$required' was not enabled under /sys/fs/cgroup/benchexec/cgroup.subtree_control."
   done
 fi
 
 exec "$@"
-
