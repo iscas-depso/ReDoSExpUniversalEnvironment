@@ -119,6 +119,7 @@ class JobManager {
         res.flush();
       }
     }, 15000);
+    heartbeat.unref?.();
 
     res.on('close', () => {
       clearInterval(heartbeat);
