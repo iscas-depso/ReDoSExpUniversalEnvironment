@@ -12,7 +12,8 @@ const {
   ENGINE_DEFINITIONS,
   ENGINE_METADATA,
   MATCH_MODES,
-  DEFAULT_OPTIONS
+  DEFAULT_OPTIONS,
+  normalizeToolOptions
 } = require('./definitions');
 const { runToolsJob } = require('./tool-runner');
 const { runEnginesJob } = require('./engine-runner');
@@ -102,6 +103,7 @@ function createApp(options = {}) {
   app.post('/api/jobs/tools', (req, res) => {
     const regex = sanitizeRegexInput(req.body?.regex);
     const toolIds = normalizeIdList(req.body?.tools);
+    const rawToolOptions = req.body?.toolOptions;
 
     if (!regex) {
       res.status(400).json({ error: 'Regex input is required.' });
@@ -116,6 +118,21 @@ function createApp(options = {}) {
     const invalidTools = toolIds.filter(id => !TOOL_DEFINITIONS[id]);
     if (invalidTools.length) {
       res.status(400).json({ error: `Unsupported tools requested: ${invalidTools.join(', ')}` });
+      return;
+    }
+
+    if (rawToolOptions !== undefined && (typeof rawToolOptions !== 'object' || Array.isArray(rawToolOptions) || rawToolOptions === null)) {
+      res.status(400).json({ error: 'toolOptions must be an object keyed by tool id.' });
+      return;
+    }
+
+    const toolOptions = {};
+    try {
+      for (const toolId of toolIds) {
+        toolOptions[toolId] = normalizeToolOptions(toolId, rawToolOptions?.[toolId]);
+      }
+    } catch (error) {
+      res.status(400).json({ error: error.message || 'Invalid toolOptions provided.' });
       return;
     }
 
@@ -138,6 +155,7 @@ function createApp(options = {}) {
       request: {
         regexLength: regex.length,
         toolIds,
+        toolOptions,
         timeoutMs: timeoutMs || DEFAULT_OPTIONS.toolTimeoutMs,
         cpuCores: Number.isFinite(cpuCores) && cpuCores > 0 ? cpuCores : (DEFAULT_OPTIONS.defaultCores || null),
         memoryMB: Number.isFinite(memoryMB) && memoryMB > 0 ? memoryMB : (DEFAULT_OPTIONS.defaultMemoryMB || null)
@@ -154,6 +172,7 @@ function createApp(options = {}) {
         await runTools(jobManager, job, {
           regex,
           toolIds,
+          toolOptions,
           timeoutMs,
           cpuAllocator,
           cpuCores: Number.isFinite(cpuCores) && cpuCores > 0 ? cpuCores : undefined,
@@ -238,6 +257,7 @@ function createApp(options = {}) {
           regex,
           engines,
           attack,
+          attackSource,
           matchMode,
           timeoutMs,
           cpuAllocator,

@@ -36,7 +36,7 @@ ENV \
 # Install all system packages in single layer
 RUN apt-get update && apt-get install -y \
     # Core development tools
-    build-essential make git \
+    build-essential make git cmake \
     # Network and download tools
     curl wget \
     # Text editors and system utilities
@@ -46,7 +46,7 @@ RUN apt-get update && apt-get install -y \
     # Python 3 and pip
     python3 python3-pip \
     # C engine runtime dependencies
-    libpcre2-8-0 libssl3 \
+    libpcre2-8-0 libssl3 libssl-dev \
     # C++ engine runtime dependencies (boost regex and ICU)
     libboost-regex1.74.0 libicu70 \
     # re2 and hyperscan engines
@@ -57,6 +57,8 @@ RUN apt-get update && apt-get install -y \
     gawk grep \
     # Java runtime (OpenJDK 8, 11, and 17 for rengar)
     openjdk-8-jre openjdk-11-jre openjdk-17-jre \
+    # GREWIA build dependency
+    nlohmann-json3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install .NET 7.0 runtime for C# engines
@@ -112,6 +114,11 @@ COPY tools/redoshunter/ /app/tools/redoshunter/
 
 # Copy regulator tool (pre-built V8-based fuzzer)
 COPY tools/regulator/ /app/tools/regulator/
+
+# Copy and build GREWIA tool
+COPY tools/grewia/ /app/tools/grewia/
+RUN cmake -S /app/tools/grewia -B /app/tools/grewia/build \
+ && cmake --build /app/tools/grewia/build -j"$(nproc)"
 
 # Copy Python engine (pre-built)
 COPY engines/python/ /app/engines/python/

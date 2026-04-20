@@ -7,14 +7,38 @@ describe('API Integration', () => {
   let app;
   let server;
   let baseUrl;
+  let lastToolRunOpts = null;
+  let lastEngineRunOpts = null;
 
   before(async () => {
     const mockRunTools = async (jm, job, opts) => {
+      lastToolRunOpts = opts;
       jm.updateJob(job, { status: 'running' });
       for (const toolId of opts.toolIds) {
         jm.updateResult(job, toolId, r => {
           r.status = 'completed';
-          r.output = { is_redos: true, elapsed_ms: 10 };
+          r.output = toolId === 'grewia'
+            ? {
+                is_redos: true,
+                elapsed_ms: 10,
+                prefix: '',
+                infix: '',
+                suffix: '',
+                repeat_times: -1,
+                recommendedCandidateId: 'candidate-1',
+                candidates: [
+                  {
+                    id: 'candidate-1',
+                    label: 'Candidate 1',
+                    attack: {
+                      fullText: Buffer.from('aaaaab', 'utf8').toString('base64')
+                    },
+                    preview: 'aaaaab',
+                    payloadLength: 6
+                  }
+                ]
+              }
+            : { is_redos: true, elapsed_ms: 10, prefix: '', infix: 'YQ==', suffix: '', repeat_times: 4 };
         });
         jm.incrementProgress(job);
       }
@@ -22,6 +46,7 @@ describe('API Integration', () => {
     };
 
     const mockRunEngines = async (jm, job, opts) => {
+      lastEngineRunOpts = opts;
       jm.updateJob(job, { status: 'running' });
       for (const engineId of opts.engines) {
         jm.updateResult(job, engineId, r => {
@@ -103,7 +128,7 @@ describe('API Integration', () => {
       assert.ok(res.body.defaults);
     });
 
-    it('includes all 6 tools', async () => {
+    it('includes all 7 tools', async () => {
       const res = await request('GET', '/api/meta');
       
       const toolIds = res.body.tools.map(t => t.id);
@@ -113,6 +138,17 @@ describe('API Integration', () => {
       assert.ok(toolIds.includes('rengar'));
       assert.ok(toolIds.includes('redoshunter'));
       assert.ok(toolIds.includes('regulator'));
+      assert.ok(toolIds.includes('grewia'));
+    });
+
+    it('includes GREWIA option schema', async () => {
+      const res = await request('GET', '/api/meta');
+
+      const grewia = res.body.tools.find(tool => tool.id === 'grewia');
+      assert.ok(grewia);
+      assert.ok(Array.isArray(grewia.optionsSchema));
+      assert.ok(grewia.optionsSchema.some(option => option.key === 'regexEngine'));
+      assert.strictEqual(grewia.defaultOptions.candidateMode, 'single');
     });
 
     it('includes all 19 engines', async () => {
@@ -162,6 +198,47 @@ describe('API Integration', () => {
       assert.ok(res.body.jobId);
       assert.strictEqual(res.body.status, 'queued');
     });
+
+    it('accepts normalized GREWIA tool options', async () => {
+      const res = await request('POST', '/api/jobs/tools', {
+        regex: '(a+)+',
+        tools: ['grewia'],
+        toolOptions: {
+          grewia: {
+            regexEngine: 'Python',
+            matchMode: 1,
+            attackStringLength: 4096,
+            candidateMode: 'multiple',
+            decremental: true
+          }
+        }
+      });
+
+      assert.strictEqual(res.status, 202);
+      await new Promise(r => setTimeout(r, 50));
+      assert.deepStrictEqual(lastToolRunOpts.toolOptions.grewia, {
+        regexEngine: 'Python',
+        matchMode: 1,
+        attackStringLength: 4096,
+        candidateMode: 'multiple',
+        decremental: true
+      });
+    });
+
+    it('rejects invalid GREWIA tool options', async () => {
+      const res = await request('POST', '/api/jobs/tools', {
+        regex: '(a+)+',
+        tools: ['grewia'],
+        toolOptions: {
+          grewia: {
+            regexEngine: 'PCRE2'
+          }
+        }
+      });
+
+      assert.strictEqual(res.status, 400);
+      assert.ok(res.body.error.includes('regexEngine'));
+    });
   });
 
   describe('POST /api/jobs/engines', () => {
@@ -203,6 +280,31 @@ describe('API Integration', () => {
       
       assert.strictEqual(res.status, 202);
       assert.ok(res.body.jobId);
+    });
+
+    it('accepts fullText attack payloads for GREWIA candidates', async () => {
+      const fullText = Buffer.from('aaaaab', 'utf8').toString('base64');
+      const res = await request('POST', '/api/jobs/engines', {
+        regex: '(a+)+',
+        engines: ['python'],
+        attack: { fullText },
+        attackSource: {
+          toolId: 'grewia',
+          candidateId: 'candidate-1',
+          candidateLabel: 'Candidate 1'
+        },
+        repeatOverride: 123
+      });
+
+      assert.strictEqual(res.status, 202);
+      await new Promise(r => setTimeout(r, 50));
+      assert.deepStrictEqual(lastEngineRunOpts.attack, { fullText });
+      assert.deepStrictEqual(lastEngineRunOpts.attackSource, {
+        toolId: 'grewia',
+        candidateId: 'candidate-1',
+        candidateLabel: 'Candidate 1'
+      });
+      assert.strictEqual(lastEngineRunOpts.repeatOverride, 123);
     });
   });
 

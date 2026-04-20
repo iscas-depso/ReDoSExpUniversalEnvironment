@@ -118,5 +118,17 @@ describe('engine-runner', () => {
       assert.strictEqual(r2.payloadInfo.appliedRepeat, 5);
       assert.strictEqual(r3.payloadInfo.appliedRepeat, 5);
     });
+
+    it('passes through fullText payloads without pattern expansion', () => {
+      const attack = {
+        fullText: Buffer.from('aaaaab', 'utf8').toString('base64')
+      };
+
+      const { attackText, payloadInfo } = buildAttackPayload(attack, { repeatOverride: 99 });
+
+      assert.strictEqual(attackText, 'aaaaab');
+      assert.strictEqual(payloadInfo.mode, 'fullText');
+      assert.strictEqual(payloadInfo.payloadLength, 6);
+    });
   });
 });

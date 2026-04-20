@@ -5,16 +5,20 @@
     meta: null,
     selectedTools: new Set(),
     selectedEngines: new Set(),
+    toolOptions: {},
     currentToolJob: null,
     currentEngineJob: null,
     events: { tools: null, engines: null },
-    attackInputMode: 'tool'
+    attackInputMode: 'tool',
+    attackSelection: null
   };
 
   const el = id => document.getElementById(id);
   const E = {
     regex: el('regex-input'),
     toolsList: el('tools-list'),
+    toolOptionsPanel: el('tool-options-panel'),
+    toolOptionsContainer: el('tool-options-container'),
     enginesList: el('engines-list'),
     runTools: el('run-tools'),
     runEngines: el('run-engines'),
@@ -65,6 +69,7 @@
     if (!res.ok) throw new Error('meta HTTP ' + res.status);
     const data = await res.json();
     state.meta = data;
+    initializeToolOptions(data.tools || []);
     populateTools(data.tools || []);
     populateEngines(data.engines || []);
     populateMatchModes(data.matchModes || []);
@@ -79,6 +84,7 @@
       const tile = tileCheckbox(t.id, t.label, t.description, true, 'tools');
       E.toolsList.appendChild(tile);
     });
+    renderToolOptions();
   }
 
   function populateEngines(engines) {
@@ -117,6 +123,9 @@
       const set = (type === 'tools') ? state.selectedTools : state.selectedEngines;
       if (cb.checked) set.add(id); else set.delete(id);
       labelEl.classList.toggle('selected', cb.checked);
+      if (type === 'tools') {
+        renderToolOptions();
+      }
       updateButtons();
     });
     const name = document.createElement('span');
@@ -148,6 +157,111 @@
     if (E.attackSuffix) E.attackSuffix.addEventListener('input', updateButtons);
   }
 
+  function getToolMeta(toolId) {
+    return state.meta?.tools?.find(tool => tool.id === toolId) || null;
+  }
+
+  function initializeToolOptions(tools) {
+    tools.forEach(tool => {
+      state.toolOptions[tool.id] = { ...(tool.defaultOptions || {}) };
+    });
+  }
+
+  function renderToolOptions() {
+    if (!E.toolOptionsPanel || !E.toolOptionsContainer) return;
+    E.toolOptionsContainer.innerHTML = '';
+
+    const selectedTools = Array.from(state.selectedTools)
+      .map(getToolMeta)
+      .filter(tool => tool && Array.isArray(tool.optionsSchema) && tool.optionsSchema.length > 0);
+
+    if (selectedTools.length === 0) {
+      E.toolOptionsPanel.style.display = 'none';
+      return;
+    }
+
+    E.toolOptionsPanel.style.display = 'block';
+
+    selectedTools.forEach(tool => {
+      const group = document.createElement('div');
+      group.className = 'form-group';
+
+      const title = document.createElement('h4');
+      title.textContent = tool.label;
+      group.appendChild(title);
+
+      const localGrid = document.createElement('div');
+      localGrid.className = 'form-grid';
+
+      (tool.optionsSchema || []).forEach(option => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'form-group';
+
+        const label = document.createElement('label');
+        label.htmlFor = `tool-option-${tool.id}-${option.key}`;
+        label.textContent = option.label;
+        wrapper.appendChild(label);
+
+        const value = state.toolOptions[tool.id]?.[option.key] ?? tool.defaultOptions?.[option.key];
+        let input;
+
+        if (option.type === 'select') {
+          input = document.createElement('select');
+          (option.options || []).forEach(item => {
+            const opt = document.createElement('option');
+            opt.value = String(item.value);
+            opt.textContent = item.label;
+            if (String(value) === String(item.value)) {
+              opt.selected = true;
+            }
+            input.appendChild(opt);
+          });
+        } else if (option.type === 'boolean') {
+          input = document.createElement('input');
+          input.type = 'checkbox';
+          input.checked = Boolean(value);
+        } else {
+          input = document.createElement('input');
+          input.type = 'number';
+          if (option.min !== undefined) input.min = String(option.min);
+          if (option.max !== undefined) input.max = String(option.max);
+          if (option.step !== undefined) input.step = String(option.step);
+          input.value = value ?? '';
+        }
+
+        input.id = `tool-option-${tool.id}-${option.key}`;
+        input.addEventListener('change', () => {
+          const defaultValue = tool.defaultOptions?.[option.key];
+          const nextValue = option.type === 'boolean'
+            ? input.checked
+            : option.type === 'number'
+              ? Number(input.value)
+              : typeof defaultValue === 'number'
+                ? Number(input.value)
+                : input.value;
+          state.toolOptions[tool.id] = {
+            ...(state.toolOptions[tool.id] || {}),
+            [option.key]: nextValue
+          };
+        });
+
+        wrapper.appendChild(input);
+
+        if (option.description) {
+          const help = document.createElement('p');
+          help.className = 'help-text';
+          help.textContent = option.description;
+          wrapper.appendChild(help);
+        }
+
+        localGrid.appendChild(wrapper);
+      });
+
+      group.appendChild(localGrid);
+      E.toolOptionsContainer.appendChild(group);
+    });
+  }
+
   function switchInputMode(mode) {
     state.attackInputMode = mode;
     [E.modeTool, E.modeFull, E.modePattern].forEach(btn => btn?.classList.remove('active'));
@@ -170,6 +284,9 @@
       if (checked) set.add(id);
       cb.closest('label')?.classList.toggle('selected', checked);
     });
+    if (type === 'tools') {
+      renderToolOptions();
+    }
     updateButtons();
   }
 
@@ -185,6 +302,12 @@
       attackReady = !!(E.attackInfix && E.attackInfix.value.trim());
     }
     if (E.runEngines) E.runEngines.disabled = !(attackReady && state.selectedEngines.size > 0);
+    if (E.repeatOverride) {
+      const selectedAttack = state.attackSelection?.attack;
+      const fullTextMode = state.attackInputMode === 'full'
+        || (state.attackInputMode === 'tool' && !!selectedAttack?.fullText);
+      E.repeatOverride.disabled = fullTextMode;
+    }
   }
 
   function num(v) { const n = Number(v); return Number.isFinite(n) && n > 0 ? n : undefined; }
@@ -205,6 +328,87 @@
     }
   }
 
+  function truncateText(text, limit = 160) {
+    const value = String(text || '');
+    if (value.length <= limit) return value;
+    return `${value.slice(0, limit)}...`;
+  }
+
+  function summarizeToolOutput(output) {
+    if (!output || typeof output !== 'object') return output;
+    if (!Array.isArray(output.candidates)) return output;
+    return {
+      ...output,
+      candidates: output.candidates.map(candidate => ({
+        id: candidate.id,
+        label: candidate.label,
+        preview: candidate.preview,
+        payloadLength: candidate.payloadLength,
+        metadata: candidate.metadata
+      }))
+    };
+  }
+
+  function selectToolAttack(selection) {
+    state.attackSelection = selection;
+    switchInputMode('tool');
+    renderAttackSummary();
+    updateButtons();
+  }
+
+  function renderCandidateList(body, result, job) {
+    const candidates = Array.isArray(result.output?.candidates) ? result.output.candidates : [];
+    if (candidates.length === 0) return;
+    const recommendedCandidateId = result.output?.recommendedCandidateId;
+
+    const container = document.createElement('div');
+    container.className = 'decoded-box';
+
+    candidates.forEach(candidate => {
+      const item = document.createElement('div');
+      item.className = 'decoded-item';
+
+      const title = document.createElement('strong');
+      title.textContent = candidate.id === recommendedCandidateId
+        ? `${candidate.label || candidate.id} (推荐)`
+        : (candidate.label || candidate.id);
+      item.appendChild(title);
+
+      const preview = document.createElement('code');
+      preview.textContent = truncateText(candidate.preview || fromBase64(candidate.attack?.fullText || ''));
+      item.appendChild(preview);
+
+      if (typeof candidate.payloadLength === 'number') {
+        const length = document.createElement('span');
+        length.textContent = `长度: ${candidate.payloadLength}`;
+        item.appendChild(length);
+      }
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'small';
+      button.textContent = '用于验证';
+      button.addEventListener('click', () => {
+        selectToolAttack({
+          attack: candidate.attack,
+          toolId: result.id,
+          toolLabel: result.label || result.id,
+          jobId: job.id,
+          candidateId: candidate.id,
+          candidateLabel: candidate.label || candidate.id,
+          preview: candidate.preview,
+          payloadLength: candidate.payloadLength,
+          metadata: candidate.metadata || {}
+        });
+      });
+      item.appendChild(button);
+
+      container.appendChild(item);
+    });
+
+    body.appendChild(container);
+  }
+
   function buildAttackPayload() {
     if (state.attackInputMode === 'tool' && state.attackSelection) {
       return {
@@ -212,7 +416,9 @@
         attackSource: {
           toolId: state.attackSelection.toolId,
           toolLabel: state.attackSelection.toolLabel,
-          toolJobId: state.attackSelection.jobId
+          toolJobId: state.attackSelection.jobId,
+          candidateId: state.attackSelection.candidateId || null,
+          candidateLabel: state.attackSelection.candidateLabel || null
         }
       };
     } else if (state.attackInputMode === 'full') {
@@ -252,6 +458,11 @@
       const body = {
         regex,
         tools,
+        toolOptions: Object.fromEntries(
+          tools
+            .map(toolId => [toolId, state.toolOptions[toolId]])
+            .filter(([toolId]) => (getToolMeta(toolId)?.optionsSchema || []).length > 0)
+        ),
         timeoutSeconds: num(E.toolsTimeout?.value),
         cpuCores: num(E.toolsCores?.value),
         memoryMB: num(E.toolsMemory?.value)
@@ -273,11 +484,12 @@
     setStatus('engines', '提交中...');
     try {
       const payload = buildAttackPayload();
+      const attackIsFullText = !!payload.attack?.fullText;
       const body = {
         regex,
         engines,
         matchMode: Number(E.matchMode?.value || 0),
-        repeatOverride: num(E.repeatOverride?.value),
+        repeatOverride: attackIsFullText ? undefined : num(E.repeatOverride?.value),
         maxAttackLength: num(E.maxAttackLength?.value),
         timeoutSeconds: num(E.enginesTimeout?.value),
         cpuCores: num(E.enginesCores?.value),
@@ -358,8 +570,10 @@
       if (r.error && r.error.message) {
         const pre = document.createElement('pre'); pre.textContent = r.error.message; body.appendChild(pre);
       } else if (r.output) {
-        const pre = document.createElement('pre'); pre.textContent = JSON.stringify(r.output, null, 2); body.appendChild(pre);
-        if (typeof r.output === 'object' && ('prefix' in r.output || 'infix' in r.output || 'suffix' in r.output)) {
+        const pre = document.createElement('pre'); pre.textContent = JSON.stringify(summarizeToolOutput(r.output), null, 2); body.appendChild(pre);
+        const hasPatternFields = typeof r.output === 'object' && ('prefix' in r.output || 'infix' in r.output || 'suffix' in r.output);
+        const hasPatternPayload = Boolean(r.output.prefix || r.output.infix || r.output.suffix);
+        if (hasPatternFields && (hasPatternPayload || !Array.isArray(r.output.candidates) || r.output.candidates.length === 0)) {
           const decodedBox = document.createElement('div'); decodedBox.className = 'decoded-box';
           const items = [
             { label: 'Prefix', value: r.output.prefix },
@@ -382,14 +596,15 @@
             decodedBox.appendChild(div);
           }
           body.appendChild(decodedBox);
-          const btn = document.createElement('button'); btn.textContent = '用于验证'; btn.className = 'small';
-          btn.addEventListener('click', () => {
-            state.attackSelection = { attack: r.output, toolId: r.id, toolLabel: r.label || r.id, jobId: job.id };
-            switchInputMode('tool');
-            renderAttackSummary(); updateButtons();
-          });
-          body.appendChild(btn);
+          if (!Array.isArray(r.output.candidates) || r.output.candidates.length === 0) {
+            const btn = document.createElement('button'); btn.textContent = '用于验证'; btn.className = 'small';
+            btn.addEventListener('click', () => {
+              selectToolAttack({ attack: r.output, toolId: r.id, toolLabel: r.label || r.id, jobId: job.id });
+            });
+            body.appendChild(btn);
+          }
         }
+        renderCandidateList(body, r, job);
       } else {
         const em = document.createElement('em'); em.textContent = '无输出'; body.appendChild(em);
       }
@@ -469,7 +684,53 @@
     const box = E.attackSummary; if (!box) return; box.innerHTML = '';
     if (!state.attackSelection) { box.textContent = '未选择工具结果'; return; }
     const t = state.attackSelection;
-    const p = document.createElement('p'); p.textContent = `来源工具: ${t.toolLabel}`; box.appendChild(p);
+    const p = document.createElement('p');
+    p.textContent = `来源工具: ${t.toolLabel}`;
+    box.appendChild(p);
+
+    if (t.candidateLabel) {
+      const candidate = document.createElement('p');
+      candidate.textContent = `候选: ${t.candidateLabel}`;
+      box.appendChild(candidate);
+    }
+
+    if (typeof t.payloadLength === 'number') {
+      const length = document.createElement('p');
+      length.textContent = `长度: ${t.payloadLength}`;
+      box.appendChild(length);
+    }
+
+    if (t.attack?.fullText) {
+      const mode = document.createElement('p');
+      mode.textContent = '模式: 完整攻击串';
+      box.appendChild(mode);
+
+      const pre = document.createElement('pre');
+      pre.textContent = truncateText(t.preview || fromBase64(t.attack.fullText), 300);
+      box.appendChild(pre);
+      return;
+    }
+
+    const mode = document.createElement('p');
+    mode.textContent = '模式: Prefix + Infix * N + Suffix';
+    box.appendChild(mode);
+
+    const parts = [
+      { label: 'Prefix', value: t.attack?.prefix },
+      { label: 'Infix', value: t.attack?.infix },
+      { label: 'Suffix', value: t.attack?.suffix }
+    ];
+    parts.forEach(part => {
+      const line = document.createElement('p');
+      line.textContent = `${part.label}: ${part.value ? fromBase64(part.value) : '(空)'}`;
+      box.appendChild(line);
+    });
+
+    if (typeof t.attack?.repeat_times === 'number') {
+      const repeat = document.createElement('p');
+      repeat.textContent = `Repeat: ${t.attack.repeat_times}`;
+      box.appendChild(repeat);
+    }
   }
 
   if (typeof window !== 'undefined') {

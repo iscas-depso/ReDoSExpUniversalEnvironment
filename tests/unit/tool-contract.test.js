@@ -8,7 +8,7 @@ const { TOOL_DEFINITIONS } = require('../../server/definitions');
 
 describe('Tool Contract Compliance', () => {
   describe('Tool definitions', () => {
-    const expectedTools = ['regexploit', 'regexstatic', 'rescue', 'rengar', 'redoshunter', 'regulator'];
+    const expectedTools = ['regexploit', 'regexstatic', 'rescue', 'rengar', 'redoshunter', 'regulator', 'grewia'];
 
     expectedTools.forEach(toolId => {
       it(`${toolId} is defined`, () => {
@@ -82,6 +82,35 @@ describe('Tool Contract Compliance', () => {
       assert.strictEqual(typeof validOutput.prefix, 'string');
       assert.strictEqual(typeof validOutput.infix, 'string');
       assert.strictEqual(typeof validOutput.suffix, 'string');
+    });
+
+    it('contract allows optional candidate payloads', () => {
+      const validOutput = {
+        elapsed_ms: 12,
+        is_redos: true,
+        prefix: '',
+        infix: '',
+        suffix: '',
+        repeat_times: -1,
+        recommendedCandidateId: 'candidate-1',
+        candidates: [
+          {
+            id: 'candidate-1',
+            label: 'Candidate 1',
+            attack: {
+              fullText: Buffer.from('aaaaab', 'utf8').toString('base64')
+            },
+            preview: 'aaaaab',
+            payloadLength: 6
+          }
+        ]
+      };
+
+      requiredFields.forEach(field => {
+        assert.ok(field in validOutput, `${field} should remain present`);
+      });
+      assert.ok(Array.isArray(validOutput.candidates));
+      assert.strictEqual(typeof validOutput.candidates[0].attack.fullText, 'string');
     });
   });
 

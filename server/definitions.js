@@ -26,6 +26,154 @@ const MATCH_MODES = [
   { id: 1, label: 'Full match (entire input)' }
 ];
 
+const GREWIA_REGEX_ENGINES = [
+  'Java',
+  'JavaScript',
+  'Perl',
+  'PHP',
+  'Python',
+  'Boost',
+  'C#',
+  'Go',
+  'Rust',
+  'Ruby',
+  'RE2'
+];
+
+const GREWIA_DEFAULT_OPTIONS = {
+  regexEngine: 'Java',
+  matchMode: 0,
+  attackStringLength: 100000,
+  candidateMode: 'single',
+  decremental: false
+};
+
+const GREWIA_OPTION_SCHEMA = [
+  {
+    key: 'regexEngine',
+    label: 'GREWIA Regex Engine',
+    type: 'select',
+    description: 'Engine used by GREWIA to verify generated attack strings.',
+    options: GREWIA_REGEX_ENGINES.map(value => ({ value, label: value }))
+  },
+  {
+    key: 'matchMode',
+    label: 'GREWIA Match Mode',
+    type: 'select',
+    description: 'Matching mode used during GREWIA candidate generation.',
+    options: MATCH_MODES.map(mode => ({ value: mode.id, label: mode.label }))
+  },
+  {
+    key: 'attackStringLength',
+    label: 'GREWIA Attack Length',
+    type: 'number',
+    description: 'Target maximum attack string length for generated candidates.',
+    min: 64,
+    max: 1000000,
+    step: 1
+  },
+  {
+    key: 'candidateMode',
+    label: 'GREWIA Candidate Mode',
+    type: 'select',
+    description: 'Generate one candidate or keep a full candidate set.',
+    options: [
+      { value: 'single', label: 'Single candidate' },
+      { value: 'multiple', label: 'Multiple candidates' }
+    ]
+  },
+  {
+    key: 'decremental',
+    label: 'GREWIA Decremental Search',
+    type: 'boolean',
+    description: 'Enable GREWIA decremental mode.'
+  }
+];
+
+function parsePositiveInt(value, fieldName, { min = 1, max = Number.MAX_SAFE_INTEGER } = {}) {
+  const num = Number(value);
+  if (!Number.isInteger(num) || num < min || num > max) {
+    throw new Error(`${fieldName} must be an integer between ${min} and ${max}.`);
+  }
+  return num;
+}
+
+function normalizeBoolean(value) {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+  if (typeof value === 'number') {
+    if (value === 1) return true;
+    if (value === 0) return false;
+  }
+  if (typeof value === 'string') {
+    const lowered = value.trim().toLowerCase();
+    if (['true', '1', 'yes', 'on'].includes(lowered)) return true;
+    if (['false', '0', 'no', 'off', ''].includes(lowered)) return false;
+  }
+  throw new Error('decremental must be a boolean.');
+}
+
+function normalizeGrewiaOptions(rawOptions = {}) {
+  if (rawOptions == null) {
+    return { ...GREWIA_DEFAULT_OPTIONS };
+  }
+  if (typeof rawOptions !== 'object' || Array.isArray(rawOptions)) {
+    throw new Error('GREWIA options must be an object.');
+  }
+
+  const normalized = { ...GREWIA_DEFAULT_OPTIONS };
+
+  if (rawOptions.regexEngine !== undefined) {
+    const regexEngine = String(rawOptions.regexEngine).trim();
+    if (!GREWIA_REGEX_ENGINES.includes(regexEngine)) {
+      throw new Error(`regexEngine must be one of: ${GREWIA_REGEX_ENGINES.join(', ')}.`);
+    }
+    normalized.regexEngine = regexEngine;
+  }
+
+  if (rawOptions.matchMode !== undefined) {
+    const matchMode = Number(rawOptions.matchMode);
+    if (matchMode !== 0 && matchMode !== 1) {
+      throw new Error('matchMode must be 0 (partial) or 1 (full).');
+    }
+    normalized.matchMode = matchMode;
+  }
+
+  if (rawOptions.attackStringLength !== undefined) {
+    normalized.attackStringLength = parsePositiveInt(
+      rawOptions.attackStringLength,
+      'attackStringLength',
+      { min: 64, max: 1000000 }
+    );
+  }
+
+  if (rawOptions.candidateMode !== undefined) {
+    const candidateMode = String(rawOptions.candidateMode).trim();
+    if (!['single', 'multiple'].includes(candidateMode)) {
+      throw new Error('candidateMode must be either "single" or "multiple".');
+    }
+    normalized.candidateMode = candidateMode;
+  }
+
+  if (rawOptions.decremental !== undefined) {
+    normalized.decremental = normalizeBoolean(rawOptions.decremental);
+  }
+
+  return normalized;
+}
+
+function normalizeToolOptions(toolId, rawOptions) {
+  const definition = TOOL_DEFINITIONS[toolId];
+  if (!definition) {
+    throw new Error(`Unknown tool: ${toolId}`);
+  }
+  if (typeof definition.normalizeOptions === 'function') {
+    return definition.normalizeOptions(rawOptions);
+  }
+  return {};
+}
+
 const TOOL_DEFINITIONS = {
   regexploit: {
     id: 'regexploit',
@@ -96,6 +244,31 @@ const TOOL_DEFINITIONS = {
         file: PYTHON_BIN,
         args: [path.join(TOOLS_ROOT, 'rengar', 'run.py'), regexBase64, outputPath],
         options: { cwd: path.join(TOOLS_ROOT, 'rengar') }
+      };
+    }
+  },
+  grewia: {
+    id: 'grewia',
+    label: 'GREWIA',
+    description: 'Attack-string generator with candidate payload output (C++/Python wrapper)',
+    optionsSchema: GREWIA_OPTION_SCHEMA,
+    defaultOptions: GREWIA_DEFAULT_OPTIONS,
+    normalizeOptions: normalizeGrewiaOptions,
+    buildCommand(regexBase64, outputPath, toolOptions = {}) {
+      const normalized = normalizeGrewiaOptions(toolOptions);
+      return {
+        file: PYTHON_BIN,
+        args: [path.join(TOOLS_ROOT, 'grewia', 'run.py'), regexBase64, outputPath],
+        options: {
+          cwd: path.join(TOOLS_ROOT, 'grewia'),
+          env: {
+            GREWIA_REGEX_ENGINE: normalized.regexEngine,
+            GREWIA_MATCH_MODE: String(normalized.matchMode),
+            GREWIA_ATTACK_STRING_LENGTH: String(normalized.attackStringLength),
+            GREWIA_CANDIDATE_MODE: normalized.candidateMode,
+            GREWIA_DECREMENTAL: normalized.decremental ? '1' : '0'
+          }
+        }
       };
     }
   }
@@ -230,7 +403,9 @@ function toMetadata(definition) {
 const TOOL_METADATA = Object.values(TOOL_DEFINITIONS).map(definition => ({
   id: definition.id,
   label: definition.label,
-  description: definition.description
+  description: definition.description,
+  optionsSchema: definition.optionsSchema || [],
+  defaultOptions: definition.defaultOptions || {}
 }));
 
 const ENGINE_METADATA = Object.values(ENGINE_DEFINITIONS).map(definition => toMetadata(definition));
@@ -244,5 +419,8 @@ module.exports = {
   TOOL_METADATA,
   ENGINE_METADATA,
   DEFAULT_OPTIONS,
-  MATCH_MODES
+  MATCH_MODES,
+  GREWIA_DEFAULT_OPTIONS,
+  GREWIA_OPTION_SCHEMA,
+  normalizeToolOptions
 };

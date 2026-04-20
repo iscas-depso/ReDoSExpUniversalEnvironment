@@ -37,15 +37,66 @@ docker run --rm --privileged --cgroupns=host -p 8080:8080 -v /tmp:/tmp redos-tes
 ```
 
 在网页中可以勾选需要的工具和引擎，先运行“检测工具”阶段获取攻击字符串，再选择其中一个结果进入“引擎验证”阶段。
-如需快速自检，可运行 `npm run test:e2e`（基于 Playwright 的模拟端到端测试，默认使用 mock 运行器，不会真正触发真实工具或引擎）。
+默认完整测试入口是 `npm test`。它现在会依次运行 `test:unit`、`test:integration`、`test:grewia:real` 和 `test:e2e:docker`，其中后两步都依赖 Docker。
+如只想做宿主上的 mock UI 快速自检，可运行 `npm run test:e2e`（基于 Playwright 的模拟端到端测试，默认使用 mock 运行器，不会真正触发真实工具或引擎）。
+如果宿主机缺少 Playwright 浏览器运行库，或你希望和同类受限主机保持一致，直接改用 `npm run test:e2e:docker`；它会使用官方 Playwright 容器运行浏览器测试，不依赖宿主额外安装系统包。
 如果你需要容器内真正启用 BenchExec `runexec` 的 cgroups/时间内存限制，请使用 `--privileged --cgroupns=host`。普通 `docker run` 在很多环境里会把 `/sys/fs/cgroup` 以只读方式挂进容器；当前版本不会再自动回退，而是直接以明确报错退出。
+
+#### 默认测试链路
+
+```bash
+npm test
+```
+
+该命令会执行：
+- `npm run test:unit`
+- `npm run test:integration`
+- `npm run test:grewia:real`
+- `npm run test:e2e:docker`
+
+说明：
+- `test:grewia:real` 会在 Docker 镜像内真实执行 `/app/tools/grewia/run.py`，验证 wrapper、编译后的 GREWIA 二进制以及 `toolMeta.normalizedOptions`。
+- 默认先尝试官方 `ubuntu:22.04`，若拉取超时，会顺序重试若干镜像站（如 `docker.1ms.run`、`docker.m.daocloud.io` 等）。
+- `test:e2e:docker` 会在官方 Playwright 容器里运行前端端到端测试。
+- 如果本机没有可用的 Docker daemon，`npm test` 会直接失败；这是有意为之，因为默认链路要求真实 GREWIA 和容器化浏览器覆盖。
+- 如果只想跳过 Docker 相关测试，可使用 `npm run test:quick`。
+
+#### Playwright 浏览器测试（适合同类受限主机）
+
+如果宿主机满足以下任一条件，推荐直接使用容器化 Playwright 测试：
+- 当前账号没有 `sudo`，无法安装浏览器依赖
+- 宿主机缺少 Playwright 所需系统库，原生 `npm run test:e2e` 报 `Host system is missing dependencies to run browsers`
+- 仓库工作区里曾被 root 账号运行过 Playwright，导致 `test-results/` 出现权限问题
+
+直接执行：
+
+```bash
+npm run test:e2e:docker
+```
+
+这个命令会：
+- 使用官方 Playwright 镜像运行测试
+- 将浏览器测试输出写到宿主 `/tmp/redos-playwright-results`
+- 使用当前用户 UID/GID 运行容器，避免再次把仓库目录写成 root
+
+可选环境变量：
+
+```bash
+PLAYWRIGHT_DOCKER_IMAGE=mcr.microsoft.com/playwright:v1.56.0-jammy \
+PLAYWRIGHT_OUTPUT_DIR=/tmp/redos-playwright-results \
+PLAYWRIGHT_PORT=3100 \
+npm run test:e2e:docker
+```
+
+如果网络受限导致官方镜像拉取慢，可以先手工拉取镜像，或为 `PLAYWRIGHT_DOCKER_IMAGE` 指定你所在环境可访问的等价镜像地址。
 
 ### 核心特性
 
-- **6个ReDoS检测工具**：rescue, regexstatic, regexploit, rengar, redoshunter, regulator
+- **7个ReDoS检测工具**：rescue, regexstatic, regexploit, rengar, redoshunter, regulator, GREWIA
 - **19个正则引擎**：Python, C (PCRE2), C++, Java 8/11, Node.js 14/21, C#, Perl, PHP, Ruby, Rust, Go, RE2, Hyperscan等
 - **容器化部署**：所有组件预编译，快速部署
 - **资源优化**：构建时间缩短90%，内存需求降低95%
+- **候选攻击串工作流**：工具结果既兼容 `prefix/infix/suffix/repeat_times`，也支持 `fullText` 候选列表
 
 ### 文档
 
@@ -108,17 +159,66 @@ docker run --rm --privileged --cgroupns=host -p 8080:8080 -v /tmp:/tmp redos-tes
 ```
 
 The dashboard lets you run detection tools in parallel, pick a generated payload, and then benchmark it against the selected engines with live progress updates.
+The default full test entry point is `npm test`. It now runs `test:unit`, `test:integration`, `test:grewia:real`, and `test:e2e:docker`, so Docker is a hard requirement for the full suite.
 To sanity-check the UI workflow without hitting real binaries, run `npm run test:e2e`; this launches a Playwright test suite backed by mocked tool/engine runners.
+If the host is missing Playwright browser libraries or has permission issues under `test-results/`, use `npm run test:e2e:docker` to run the same suite inside the official Playwright container.
 If you need BenchExec `runexec` with real cgroup-based resource limits inside Docker, start the container with `--privileged --cgroupns=host`. On many hosts, a plain `docker run` mounts `/sys/fs/cgroup` read-only; this version no longer falls back automatically and will fail fast with an explicit error instead.
+
+#### Default Test Pipeline
+
+```bash
+npm test
+```
+
+This command runs:
+- `npm run test:unit`
+- `npm run test:integration`
+- `npm run test:grewia:real`
+- `npm run test:e2e:docker`
+
+Notes:
+- `test:grewia:real` runs the real `/app/tools/grewia/run.py` inside the project Docker image and validates the normalized GREWIA result shape.
+- It tries the official `ubuntu:22.04` base image first, then retries several mirror registries automatically if the official source times out.
+- `test:e2e:docker` runs Playwright inside the official browser container, so the host does not need native browser libraries.
+- If Docker is unavailable, `npm test` fails fast by design.
+- Use `npm run test:quick` when you only want the non-Docker unit/integration suite.
+
+#### Playwright Browser Tests On Restricted Hosts
+
+Use the Dockerized Playwright runner when the host cannot run browsers natively, for example:
+- no `sudo` access to install browser dependencies
+- native `npm run test:e2e` fails with missing Playwright system libraries
+- the repo contains root-owned files under `test-results/`
+
+Run:
+
+```bash
+npm run test:e2e:docker
+```
+
+This wrapper:
+- uses the official Playwright container image
+- writes artifacts to `/tmp/redos-playwright-results` on the host
+- runs as the current UID/GID so it does not reintroduce root-owned files into the workspace
+
+Optional overrides:
+
+```bash
+PLAYWRIGHT_DOCKER_IMAGE=mcr.microsoft.com/playwright:v1.56.0-jammy \
+PLAYWRIGHT_OUTPUT_DIR=/tmp/redos-playwright-results \
+PLAYWRIGHT_PORT=3100 \
+npm run test:e2e:docker
+```
 
 ##### 资源限制与 API（Resource Limits & API）
 
 - 界面可为“检测工具/引擎验证”分别设定：运行时间（秒）、核心数、内存（MB）。
 - API：
-  - `POST /api/jobs/tools`：接受 `regex`, `tools[]`，可选 `timeoutSeconds`, `cpuCores`, `memoryMB`
-  - `POST /api/jobs/engines`：接受 `regex`, `engines[]`, `attack{prefix,infix,suffix,repeat_times}`, 可选 `matchMode`, `repeatOverride`, `maxAttackLength`, 以及 `timeoutSeconds`, `cpuCores`, `memoryMB`
+  - `POST /api/jobs/tools`：接受 `regex`, `tools[]`，可选 `toolOptions`, `timeoutSeconds`, `cpuCores`, `memoryMB`
+  - `POST /api/jobs/engines`：接受 `regex`, `engines[]`, `attack{prefix,infix,suffix,repeat_times}` 或 `attack{fullText}`，可选 `matchMode`, `repeatOverride`, `maxAttackLength`, 以及 `timeoutSeconds`, `cpuCores`, `memoryMB`
 - 容器内通过 BenchExec `runexec` 施加限制。请确保 cgroups v2 子树 controller 已在容器中启用（详见 DEPLOYMENT.md 的“Runexec & cgroups v2（容器模式）”）。
 - 若要让这些限制在 Docker 中可靠生效，建议使用 `docker run --privileged --cgroupns=host ...` 启动 Web 服务。
+- `toolOptions` 目前主要用于 GREWIA，可配置 `regexEngine`, `matchMode`, `attackStringLength`, `candidateMode`, `decremental`。
 
 ### 项目结构
 
@@ -129,13 +229,14 @@ ReDoSExpUniversalEnvironment/
 ├── README.md               # 本文件
 ├── quick_verify.sh         # 快速验证脚本
 │
-├── tools/                  # ReDoS检测工具（6个）
+├── tools/                  # ReDoS检测工具（7个）
 │   ├── regexploit/        # Python库，静态分析
 │   ├── regexstatic/       # Java工具，静态分析
 │   ├── rescue/            # Rust工具，混合分析
 │   ├── rengar/            # Java工具，符号执行
 │   ├── redoshunter/       # GraalVM native image
-│   └── regulator/         # V8模糊测试
+│   ├── regulator/         # V8模糊测试
+│   └── grewia/            # 多候选攻击串生成器（C++/Python wrapper）
 │
 └── engines/                # 正则引擎（19个）
     ├── python/            # Python re模块
@@ -220,10 +321,11 @@ cat /tmp/test.json
 
 ### Key Features
 
-- **6 ReDoS Detection Tools**: rescue, regexstatic, regexploit, rengar, redoshunter, regulator
+- **7 ReDoS Detection Tools**: rescue, regexstatic, regexploit, rengar, redoshunter, regulator, GREWIA
 - **19 Regex Engines**: Python, C (PCRE2), C++, Java 8/11, Node.js 14/21, C#, Perl, PHP, Ruby, Rust, Go, RE2, Hyperscan, etc.
 - **Containerized Deployment**: All components pre-compiled for fast deployment
 - **Resource Optimized**: 90% faster build time, 95% less memory required
+- **Candidate-Payload Workflow**: tool outputs can use either the legacy `prefix/infix/suffix/repeat_times` contract or `fullText` candidate payloads
 
 ### Documentation
 
@@ -276,6 +378,12 @@ docker run --rm -v /tmp:/tmp redos-test \
   /app/engines/python/bin/benchmark $REGEX_B64 /tmp/input.txt 0
 ```
 
+### API Notes
+
+- `POST /api/jobs/tools` accepts `regex`, `tools[]`, and optional `toolOptions`, `timeoutSeconds`, `cpuCores`, `memoryMB`.
+- `POST /api/jobs/engines` accepts `regex`, `engines[]`, and either `attack{prefix,infix,suffix,repeat_times}` or `attack{fullText}`.
+- GREWIA-specific `toolOptions` currently include `regexEngine`, `matchMode`, `attackStringLength`, `candidateMode`, and `decremental`.
+
 ### Project Structure
 
 ```
@@ -285,13 +393,14 @@ ReDoSExpUniversalEnvironment/
 ├── README.md               # This file
 ├── quick_verify.sh         # Quick verification script
 │
-├── tools/                  # ReDoS detection tools (6 tools)
+├── tools/                  # ReDoS detection tools (7 tools)
 │   ├── regexploit/        # Python library, static analysis
 │   ├── regexstatic/       # Java tool, static analysis
 │   ├── rescue/            # Rust tool, hybrid analysis
 │   ├── rengar/            # Java tool, symbolic execution
 │   ├── redoshunter/       # GraalVM native image
-│   └── regulator/         # V8 fuzzing
+│   ├── regulator/         # V8 fuzzing
+│   └── grewia/            # Multi-candidate attack generator (C++/Python wrapper)
 │
 └── engines/                # Regex engines (19 engines)
     ├── python/            # Python re module

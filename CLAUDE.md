@@ -15,7 +15,7 @@ The **ReDoS Experiment Universal Environment** now centers on delivering a brows
 
 ```
 ReDoSExpUniversalEnvironment/
-├── tools/              # ReDoS detection tools (6 tools, see below)
+├── tools/              # ReDoS detection tools (7 tools, see below)
 ├── engines/            # Regex verification engines (19 engines, see below)
 ├── server/             # Node.js/Express orchestration service (REST + SSE)
 ├── public/             # Single-page dashboard (HTML/CSS/JS)
@@ -28,13 +28,13 @@ ReDoSExpUniversalEnvironment/
 ## Core Workflow (Web-Oriented)
 
 ### 1. Detection Stage (`POST /api/jobs/tools`)
-- **Input**: Regex string and a list of tool IDs.
+- **Input**: Regex string, a list of tool IDs, and optional per-tool `toolOptions`.
 - **Behaviour**: Launches each selected tool concurrently; every tool must adhere to the Tool Contract (JSON output written to disk).
 - **Output**: A job entry tracked by the server, with progress streamed over Server-Sent Events (SSE) and final JSON payloads returned to the UI.
 
 ### 2. Verification Stage (`POST /api/jobs/engines`)
-- **Input**: Regex string, encoded attack components from a tool result (prefix, infix, suffix, repeat), a list of engine IDs, and optional overrides (match mode, repeat count, max payload length).
-- **Behaviour**: Builds a bounded attack string, executes each engine’s benchmark binary in parallel, and captures stdout/stderr.
+- **Input**: Regex string, either encoded attack components from a tool result (`prefix`, `infix`, `suffix`, `repeat_times`) or a `fullText` payload, a list of engine IDs, and optional overrides (match mode, repeat count, max payload length).
+- **Behaviour**: Builds a bounded attack string when using pattern components, or forwards the selected `fullText` payload directly, then executes each engine’s benchmark binary in parallel and captures stdout/stderr.
 - **Output**: Streaming SSE updates per engine containing elapsed time, match counts, and any emitted logs.
 
 ### 3. Dashboard (`/public`)
@@ -44,9 +44,9 @@ ReDoSExpUniversalEnvironment/
 
 ## Tool Contract
 
-Every tool provides a `run.py` with the following contract (retain this unchanged):
+Every tool provides a `run.py` with the following contract:
 - **Args**: `<base64_regex> <output_json_path>`
-- **Output**: JSON with fields
+- **Output**: JSON with mandatory compatibility fields
   ```json
   {
     "elapsed_ms": <number>,
@@ -57,7 +57,19 @@ Every tool provides a `run.py` with the following contract (retain this unchange
     "repeat_times": <number or -1>
   }
   ```
-- Tools may add extra keys (e.g., diagnostics), but the fields above are mandatory.
+- Tools may add extra keys (e.g., diagnostics, `recommendedCandidateId`, `toolMeta`, or `candidates[]`), but the fields above remain mandatory.
+- `candidates[]` is the preferred extension point for generators such as GREWIA. Each candidate should be directly consumable by `/api/jobs/engines`, for example:
+  ```json
+  {
+    "id": "candidate-1",
+    "label": "Candidate 1",
+    "attack": {
+      "fullText": "<base64_string>"
+    },
+    "preview": "aaaaab",
+    "payloadLength": 6
+  }
+  ```
 - stdout/stderr should remain informative; the web backend truncates long logs but exposes them to users.
 
 ## Engine Contract
@@ -75,8 +87,8 @@ Every engine exposes a benchmark executable at `bin/benchmark`:
 # Build image (must be rerun after Dockerfile changes)
 docker build --rm -t redos-test .
 
-# Run container with dashboard
-docker run --rm -p 8080:8080 -v /tmp:/tmp redos-test
+# Run container with dashboard and working BenchExec cgroup isolation
+docker run --rm --privileged --cgroupns=host -p 8080:8080 -v /tmp:/tmp redos-test
 ```
 
 ### Web Service

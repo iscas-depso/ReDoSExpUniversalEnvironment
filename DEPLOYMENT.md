@@ -7,6 +7,7 @@
 - [详细部署步骤](#详细部署步骤)
 - [验证安装](#验证安装)
 - [使用指南](#使用指南)
+- [Playwright 浏览器测试（受限主机）](#playwright-浏览器测试受限主机)
 - [故障排除](#故障排除)
 - [高级配置](#高级配置)
 - [附录](#附录)
@@ -19,10 +20,11 @@
 
 ### 核心特性
 
-- **6个ReDoS检测工具**：rescue, regexstatic, regexploit, rengar, redoshunter, regulator
+- **7个ReDoS检测工具**：rescue, regexstatic, regexploit, rengar, redoshunter, regulator, GREWIA
 - **19个正则引擎**：支持Python、C、C++、Java、JavaScript、C#、Perl、PHP、Ruby、Rust、Go等多种语言
 - **容器化部署**：所有工具和引擎都预编译打包在Docker镜像中
 - **资源优化**：相比原版项目，构建时间缩短90%，内存需求降低95%
+- **候选攻击串工作流**：既支持传统 `prefix/infix/suffix/repeat_times`，也支持 `fullText` 型多候选攻击串
 
 ### 架构优势
 
@@ -237,6 +239,118 @@ cd ReDoSExpUniversalEnvironment
 
 # 构建镜像（预计5-10分钟）
 docker build --rm -t redos-test .
+```
+
+说明：
+- Docker 构建现在会额外编译 `tools/grewia/` 下的 GREWIA 二进制，因此宿主无需提前提供它的可执行文件。
+- Web 控制台若要让 BenchExec 的 cgroup 限制真正生效，请使用 `docker run --privileged --cgroupns=host ...` 启动。
+
+---
+
+## Playwright 浏览器测试（受限主机）
+
+这部分适用于和当前主机类似的环境：
+- 没有 `sudo` 权限
+- 原生 `npm run test:e2e` 提示缺少 Playwright 浏览器依赖
+- 仓库目录可能被 root 跑过测试，留下 `test-results/` 权限问题
+
+### 推荐做法
+
+不要在宿主机安装浏览器依赖，直接使用仓库内提供的容器化命令：
+
+```bash
+cd ReDoSExpUniversalEnvironment
+npm run test:e2e:docker
+```
+
+该命令内部会调用：
+- [scripts/run-playwright-docker.sh](scripts/run-playwright-docker.sh)
+
+它的设计目标是：
+- 使用官方 Playwright 容器提供完整浏览器运行环境
+- 用当前用户 UID/GID 运行，避免把工作区文件写成 root
+- 将测试产物写到宿主 `/tmp/redos-playwright-results`
+- 不依赖宿主机额外安装 Playwright 浏览器库
+
+### 可选参数
+
+```bash
+PLAYWRIGHT_DOCKER_IMAGE=mcr.microsoft.com/playwright:v1.56.0-jammy \
+PLAYWRIGHT_OUTPUT_DIR=/tmp/redos-playwright-results \
+PLAYWRIGHT_PORT=3100 \
+npm run test:e2e:docker
+```
+
+参数说明：
+- `PLAYWRIGHT_DOCKER_IMAGE`：Playwright 容器镜像地址
+- `PLAYWRIGHT_OUTPUT_DIR`：宿主机保存测试产物的目录
+- `PLAYWRIGHT_PORT`：mock Web 服务端口，默认 `3100`
+
+### 常见问题
+
+1. 原生 `npm run test:e2e` 报缺少浏览器依赖
+
+这是宿主缺少系统库，不是仓库代码问题。对这类主机，直接改用：
+
+```bash
+npm run test:e2e:docker
+```
+
+2. `test-results/` 目录有 root 文件，原生命令报权限错误
+
+优先改用容器化命令。它不会再把仓库目录写成 root。
+
+3. 拉取 Playwright 镜像超时
+
+可以先手工拉镜像，或者给 `PLAYWRIGHT_DOCKER_IMAGE` 指定所在环境能访问的镜像地址。
+
+---
+
+## 默认测试链路（含真实 GREWIA）
+
+如果你希望在和当前主机相同的受限环境里直接跑完整测试，使用：
+
+```bash
+cd ReDoSExpUniversalEnvironment
+npm test
+```
+
+当前默认链路固定执行：
+- `npm run test:unit`
+- `npm run test:integration`
+- `npm run test:grewia:real`
+- `npm run test:e2e:docker`
+
+其中：
+- `test:grewia:real` 会调用 [scripts/test-grewia-real.sh](scripts/test-grewia-real.sh)
+- 该脚本会在缺少镜像时自动 `docker build`，然后在容器内真实执行 `/app/tools/grewia/run.py`
+- 默认会先尝试官方 `ubuntu:22.04`，若拉取失败或超时，再顺序尝试若干镜像站中的 `library/ubuntu:22.04`
+- 它会验证默认参数和非默认参数两种场景下的规范化输出结构
+- `test:e2e:docker` 会使用官方 Playwright 容器运行前端端到端测试
+
+### 前提条件
+
+- 必须安装并可正常使用 Docker
+- 当前用户必须能访问 Docker daemon
+- 若官方 Ubuntu 基础镜像拉取较慢，可在执行前指定：
+
+```bash
+BASE_IMAGE=docker.1ms.run/library/ubuntu:22.04 npm run test:grewia:real
+```
+
+如果默认 `npm test` 不适合当前环境，也可以拆开执行：
+
+```bash
+npm run test:unit
+npm run test:integration
+npm run test:grewia:real
+npm run test:e2e:docker
+```
+
+如果只想运行不依赖 Docker 的测试，使用：
+
+```bash
+npm run test:quick
 ```
 
 **构建过程说明：**
@@ -1032,8 +1146,8 @@ runexec 的目录参数不可对同一路径同时指定多种模式。项目内
 
 - 工具与引擎面板都提供运行时间（秒）、核心数、内存（MB）三个输入；留空则用默认值或不限制。
 - API：
-  - `POST /api/jobs/tools`：`{ regex, tools[], timeoutSeconds?, cpuCores?, memoryMB? }`
-  - `POST /api/jobs/engines`：`{ regex, engines[], attack{prefix,infix,suffix,repeat_times}, matchMode?, repeatOverride?, maxAttackLength?, timeoutSeconds?, cpuCores?, memoryMB? }`
+  - `POST /api/jobs/tools`：`{ regex, tools[], toolOptions?, timeoutSeconds?, cpuCores?, memoryMB? }`
+  - `POST /api/jobs/engines`：`{ regex, engines[], attack{prefix,infix,suffix,repeat_times}|attack{fullText}, matchMode?, repeatOverride?, maxAttackLength?, timeoutSeconds?, cpuCores?, memoryMB? }`
 - 任务状态与结果通过 SSE：`GET /api/jobs/:id/stream` 持续推送给前端。
 
 ---

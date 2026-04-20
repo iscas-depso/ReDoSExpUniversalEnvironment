@@ -5,6 +5,7 @@ const PORT = Number(process.env.PLAYWRIGHT_PORT) || 3100;
 
 module.exports = defineConfig({
   testDir: './tests',
+  testMatch: '**/*.spec.js',
   timeout: 60_000,
   expect: {
     timeout: 5_000

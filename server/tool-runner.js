@@ -28,7 +28,7 @@ function prepResult(jobManager, job, toolId, statusUpdates = {}) {
   });
 }
 
-async function executeTool(toolId, regexBase64, timeoutMs, { cpuAllocator, cpuCores, memoryMB } = {}) {
+async function executeTool(toolId, regexBase64, timeoutMs, { cpuAllocator, cpuCores, memoryMB, toolOptions } = {}) {
   const definition = TOOL_DEFINITIONS[toolId];
   if (!definition) {
     throw new Error(`Unknown tool: ${toolId}`);
@@ -38,7 +38,7 @@ async function executeTool(toolId, regexBase64, timeoutMs, { cpuAllocator, cpuCo
   const outputPath = path.join(tempDir, 'output.json');
   const programOutputPath = path.join(tempDir, 'output.log');
 
-  const { file, args, options = {} } = definition.buildCommand(regexBase64, outputPath);
+  const { file, args, options = {} } = definition.buildCommand(regexBase64, outputPath, toolOptions);
   const start = Date.now();
   let stdout = '';
   let stderr = '';
@@ -107,7 +107,7 @@ async function executeTool(toolId, regexBase64, timeoutMs, { cpuAllocator, cpuCo
   };
 }
 
-async function runToolsJob(jobManager, job, { regex, toolIds, timeoutMs, cpuAllocator, cpuCores, memoryMB }) {
+async function runToolsJob(jobManager, job, { regex, toolIds, toolOptions = {}, timeoutMs, cpuAllocator, cpuCores, memoryMB }) {
   const effectiveTimeout = timeoutMs || undefined;
   const regexBase64 = encodeRegex(regex);
 
@@ -133,7 +133,12 @@ async function runToolsJob(jobManager, job, { regex, toolIds, timeoutMs, cpuAllo
     });
 
     try {
-      const result = await executeTool(toolId, regexBase64, effectiveTimeout, { cpuAllocator, cpuCores, memoryMB });
+      const result = await executeTool(toolId, regexBase64, effectiveTimeout, {
+        cpuAllocator,
+        cpuCores,
+        memoryMB,
+        toolOptions: toolOptions[toolId]
+      });
 
       prepResult(jobManager, job, toolId, {
         status: 'completed',

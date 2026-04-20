@@ -27,14 +27,52 @@ async function mockRunToolsJob(jobManager, job, { regex, toolIds }) {
       result.status = 'completed';
       result.finishedAt = new Date().toISOString();
       result.elapsedMs = result.elapsedMs ?? 12;
-      result.output = {
-        elapsed_ms: 12,
-        is_redos: true,
-        prefix: encode(''),
-        infix: encode('a'),
-        suffix: encode(''),
-        repeat_times: 4
-      };
+      result.output = toolId === 'grewia'
+        ? {
+            elapsed_ms: 12,
+            is_redos: true,
+            prefix: '',
+            infix: '',
+            suffix: '',
+            repeat_times: -1,
+            recommendedCandidateId: 'candidate-1',
+            candidates: [
+              {
+                id: 'candidate-1',
+                label: 'Candidate 1',
+                attack: { fullText: encode('aaaaab') },
+                preview: 'aaaaab',
+                payloadLength: 6,
+                metadata: { index: 1, mode: 'fullText' }
+              },
+              {
+                id: 'candidate-2',
+                label: 'Candidate 2',
+                attack: { fullText: encode('aaaaaab') },
+                preview: 'aaaaaab',
+                payloadLength: 7,
+                metadata: { index: 2, mode: 'fullText' }
+              }
+            ],
+            toolMeta: {
+              normalizedOptions: {
+                regexEngine: 'Java',
+                matchMode: 0,
+                attackStringLength: 100000,
+                candidateMode: 'multiple',
+                decremental: false
+              },
+              candidateCount: 2
+            }
+          }
+        : {
+            elapsed_ms: 12,
+            is_redos: true,
+            prefix: encode(''),
+            infix: encode('a'),
+            suffix: encode(''),
+            repeat_times: 4
+          };
       result.logs = [
         { stream: 'stdout', content: `mock tool ${toolId} processed regex of length ${regex.length}` }
       ];
