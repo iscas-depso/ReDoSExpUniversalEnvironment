@@ -1,9 +1,62 @@
 const { describe, it } = require('node:test');
 const assert = require('node:assert');
 
-const { buildAttackPayload } = require('../../server/engine-runner');
+const {
+  buildAttackPayload,
+  parseRunexecMetrics,
+  selectEffectiveTime,
+  buildEngineExecutionError
+} = require('../../server/engine-runner');
 
 describe('engine-runner', () => {
+  describe('runexec timing helpers', () => {
+    it('extracts runexec walltime, cputime, and memory metrics', () => {
+      const metrics = parseRunexecMetrics({
+        walltime: '10.238402326591313s',
+        cputime: '9.855355s',
+        memory: '6676480B'
+      });
+
+      assert.strictEqual(metrics.walltimeMs, 10238.402326591313);
+      assert.strictEqual(metrics.cputimeMs, 9855.355);
+      assert.strictEqual(metrics.memoryBytes, 6676480);
+    });
+
+    it('falls back to runexec walltime when engine output is missing', () => {
+      const timing = selectEffectiveTime(null, {
+        walltime: '10.238402326591313s',
+        cputime: '9.855355s',
+        memory: '6676480B'
+      });
+
+      assert.strictEqual(timing.time, 10238.402326591313);
+      assert.strictEqual(timing.timeSource, 'runexec_walltime');
+      assert.strictEqual(timing.cputimeMs, 9855.355);
+      assert.strictEqual(timing.memoryBytes, 6676480);
+    });
+
+    it('handles null runexec metadata without throwing', () => {
+      const timing = selectEffectiveTime({ elapsedMs: 12.5 }, null);
+
+      assert.strictEqual(timing.time, 12.5);
+      assert.strictEqual(timing.timeSource, 'engine');
+      assert.strictEqual(timing.walltimeMs, null);
+      assert.strictEqual(timing.cputimeMs, null);
+      assert.strictEqual(timing.memoryBytes, null);
+    });
+
+    it('marks fatal exception output as tool_exception', () => {
+      const error = buildEngineExecutionError('fatal', {
+        stdout: 'Exception in thread "main" java.lang.StackOverflowError',
+        stderr: '',
+        parsedOutput: null,
+        runexecParsed: { returnValue: 0, terminationReason: null }
+      });
+
+      assert.strictEqual(error.type, 'tool_exception');
+    });
+  });
+
   describe('buildAttackPayload', () => {
     it('builds payload from base64 encoded components', () => {
       const attack = {

@@ -27,6 +27,10 @@ Example:
 ./bin/benchmark Y2F0 tests/simple_test.txt 0
 ```
 
+Notes:
+- The wrapper now reads payload bytes directly from the input file instead of round-tripping through shell variables, so embedded `NUL` and control bytes are preserved in partial-match mode.
+- GNU `grep` full-match mode still cannot represent an entire payload as a single record when the payload itself contains `NUL` bytes. In that case the wrapper exits with a clear error instead of silently mutating the payload.
+
 ## Directory Structure
 ```
 grep/

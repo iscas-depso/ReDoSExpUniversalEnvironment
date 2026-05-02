@@ -17,6 +17,10 @@ make test        # Run all tests
 make simple-test # Run simple tests only
 ```
 
+Notes:
+- `bin/benchmark` now launches `gawk` with `LC_ALL=C` and reconstructs payloads by splitting on `NUL`, so embedded `NUL` and other control bytes survive the file-read step.
+- This only fixes the wrapper transport layer. `awk` regular-expression semantics still differ from PCRE-style engines for constructs such as `\d` and `\b`.
+
 ## Program Usage
 ```bash
 ./bin/benchmark <base64_regex> <filename> <match_mode>

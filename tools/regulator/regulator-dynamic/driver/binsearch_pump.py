@@ -70,6 +70,10 @@ class WallTimeSampler:
         self.pump_pos = pump_pos
         self.pump_len = pump_len
 
+    def _kill_sampler(self):
+        if self.sampler is not None:
+            self.sampler.kill()
+            self.sampler = None
 
     async def _open(self) -> None:
         """
@@ -78,8 +82,7 @@ class WallTimeSampler:
         l.debug('Opening sampler')
         if self.sampler is not None:
             l.debug('Closing existing sampler')
-            self.sampler.kill()
-            self.sampler = None
+            self._kill_sampler()
 
         p = await asyncio.subprocess.create_subprocess_exec(
             'node',
@@ -133,12 +136,10 @@ class WallTimeSampler:
                     return ret
         except asyncio.TimeoutError:
             l.debug('sampler timeout')
-            self.sampler.kill()
-            self.sampler = None
+            self._kill_sampler()
             return float('inf')
         except asyncio.IncompleteReadError as e:
-            self.sampler.kill()
-            self.sampler = None
+            self._kill_sampler()
             l.critical('Sampler died')
             raise e
 
@@ -148,8 +149,7 @@ class WallTimeSampler:
         return await self.time_pump_async(approx_pumps)
 
     def kill(self):
-        if self.sampler is not None:
-            self.sampler.kill()
+        self._kill_sampler()
 
 
 async def nodejs_version() -> str:

@@ -37,10 +37,20 @@ docker run --rm --privileged --cgroupns=host -p 8080:8080 -v /tmp:/tmp redos-tes
 ```
 
 在网页中可以勾选需要的工具和引擎，先运行“检测工具”阶段获取攻击字符串，再选择其中一个结果进入“引擎验证”阶段。
+如果你不需要 Web UI，而是要像旧版一样做批量处理，直接使用根目录下的 `Gen.py` 和 `Verify.py`。
 默认完整测试入口是 `npm test`。它现在会依次运行 `test:unit`、`test:integration`、`test:grewia:real` 和 `test:e2e:docker`，其中后两步都依赖 Docker。
 如只想做宿主上的 mock UI 快速自检，可运行 `npm run test:e2e`（基于 Playwright 的模拟端到端测试，默认使用 mock 运行器，不会真正触发真实工具或引擎）。
 如果宿主机缺少 Playwright 浏览器运行库，或你希望和同类受限主机保持一致，直接改用 `npm run test:e2e:docker`；它会使用官方 Playwright 容器运行浏览器测试，不依赖宿主额外安装系统包。
 如果你需要容器内真正启用 BenchExec `runexec` 的 cgroups/时间内存限制，请使用 `--privileged --cgroupns=host`。普通 `docker run` 在很多环境里会把 `/sys/fs/cgroup` 以只读方式挂进容器；当前版本不会再自动回退，而是直接以明确报错退出。
+如果你还希望避免与其他容器争抢 CPU，建议同时给容器设置固定 `cpuset`。当前版本的核心分配器只会在容器“可见”的 CPU 集合里分配任务，不会越界使用其他核心。
+
+```bash
+docker run --rm --privileged --cgroupns=host \
+  --cpuset-cpus=0-15 \
+  -p 8080:8080 \
+  -v /tmp:/tmp \
+  redos-test
+```
 
 #### 默认测试链路
 
@@ -183,6 +193,48 @@ Notes:
 - If Docker is unavailable, `npm test` fails fast by design.
 - Use `npm run test:quick` when you only want the non-Docker unit/integration suite.
 
+#### Batch CLI
+
+`dev` 分支现在提供与旧版使用习惯一致的批处理入口：
+
+```bash
+# 第一阶段：批量生成攻击结果和候选
+python3 Gen.py regexes.txt results.db
+
+# 第二阶段：批量验证生成结果
+python3 Verify.py results.db 64 0
+```
+
+说明：
+- `Gen.py <input_file> <output_db>`：读取 txt 文件，每行一个 regex，输出 SQLite 数据库。
+- `Verify.py <db_file> <max_size_kb> <match_mode>`：`match_mode` 中 `0=partial`，`1=full`。
+- `Gen.py` 默认运行当前全部 tools；`Verify.py` 默认运行当前全部 `available=true` 的 engines。
+- `Verify.py` 默认只验证 GREWIA 的推荐候选；如需展开全部候选，使用 `--candidate-policy all`。
+- 结果库包含 `regexes`、`attack_result`、`attack_candidate`、`verify_result`、`batch_meta` 五张表。
+
+常用参数：
+
+```bash
+# 只跑指定工具，并给 GREWIA 传专用参数
+python3 Gen.py regexes.txt results.db \
+  --tools regexploit,grewia \
+  --tool-option grewia.regexEngine=Python \
+  --tool-option grewia.candidateMode=multiple \
+  --workers 8 \
+  --timeout-seconds 300
+
+# 只跑部分引擎，并验证全部 GREWIA 候选
+python3 Verify.py results.db 128 1 \
+  --engines python,nodejs21,re2 \
+  --candidate-policy all \
+  --workers 8 \
+  --timeout-seconds 120
+```
+
+批处理脚本不要求先启动 Web 服务；它们会直接复用当前 `dev` 分支后端的 tool/engine 执行逻辑、GREWIA 候选模型和 `runexec` 资源限制。
+如果传入 `--cpu-cores N`，`Gen.py` / `Verify.py` 会在同一个批处理进程内维护一套共享核心池，不同工具/引擎任务会共同从当前容器可见 CPU 集合里申请和释放核心，而不是各自独立记账。
+要彻底避免和其他容器撞核，仍然应该在 `docker run` 时配合 `--cpuset-cpus=...` 做硬隔离。
+
 #### Playwright Browser Tests On Restricted Hosts
 
 Use the Dockerized Playwright runner when the host cannot run browsers natively, for example:
@@ -218,7 +270,8 @@ npm run test:e2e:docker
   - `POST /api/jobs/engines`：接受 `regex`, `engines[]`, `attack{prefix,infix,suffix,repeat_times}` 或 `attack{fullText}`，可选 `matchMode`, `repeatOverride`, `maxAttackLength`, 以及 `timeoutSeconds`, `cpuCores`, `memoryMB`
 - 容器内通过 BenchExec `runexec` 施加限制。请确保 cgroups v2 子树 controller 已在容器中启用（详见 DEPLOYMENT.md 的“Runexec & cgroups v2（容器模式）”）。
 - 若要让这些限制在 Docker 中可靠生效，建议使用 `docker run --privileged --cgroupns=host ...` 启动 Web 服务。
-- `toolOptions` 目前主要用于 GREWIA，可配置 `regexEngine`, `matchMode`, `attackStringLength`, `candidateMode`, `decremental`。
+- 若要避免与其他容器共享同一批核心，建议额外加上 `--cpuset-cpus=...`。服务内部的 CPU 分配器只会在容器可见核心里分配，不会跨出这个范围。
+- `toolOptions` 目前主要用于 GREWIA，可配置 `matchMode`, `attackStringLength`, `candidateMode`, `decremental`。`regexEngine` 仅为兼容旧参数保留，GREWIA 已不再做内部引擎验证。
 
 ### 项目结构
 
@@ -382,7 +435,7 @@ docker run --rm -v /tmp:/tmp redos-test \
 
 - `POST /api/jobs/tools` accepts `regex`, `tools[]`, and optional `toolOptions`, `timeoutSeconds`, `cpuCores`, `memoryMB`.
 - `POST /api/jobs/engines` accepts `regex`, `engines[]`, and either `attack{prefix,infix,suffix,repeat_times}` or `attack{fullText}`.
-- GREWIA-specific `toolOptions` currently include `regexEngine`, `matchMode`, `attackStringLength`, `candidateMode`, and `decremental`.
+- GREWIA-specific `toolOptions` currently include `matchMode`, `attackStringLength`, `candidateMode`, and `decremental`. `regexEngine` is retained only for backward compatibility because internal validation is disabled.
 
 ### Project Structure
 

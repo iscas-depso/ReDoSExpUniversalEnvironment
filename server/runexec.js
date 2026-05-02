@@ -13,14 +13,27 @@ const RUNEXEC_ENV_PATTERNS = [
   'Creating namespace for container mode failed',
   'Operation not permitted',
   'cgroupfs is mounted read-only',
-  'Cannot reliably kill sub-processes without freezer cgroup or container mode'
+  'Cannot reliably kill sub-processes without freezer cgroup or container mode',
+  'No space left on device'
 ];
 const REQUIRED_CONTROLLERS = ['cpu', 'memory', 'pids'];
 const RUNEXEC_HINT = 'Start the container with: docker run --rm --privileged --cgroupns=host -p 8080:8080 -v /tmp:/tmp redos-test';
+const BENCH_EXEC_CGROUP_ROOT = '/sys/fs/cgroup/benchexec';
+const BENCH_EXEC_CGROUP_PREFIX = 'benchexec_';
+const BENCH_EXEC_CGROUP_CLEANUP_THRESHOLD = 64;
+const BENCH_EXEC_CGROUP_MIN_AGE_MS = 30_000;
+const BENCH_EXEC_CGROUP_FORCE_MIN_AGE_MS = 5_000;
+const RUNEXEC_EXEC_TIMEOUT_GRACE_MS = 10 * 60 * 1000;
 
-function parseRunexecResult(stdout) {
+let cleanupQueue = Promise.resolve();
+
+function isIgnorableCgroupFsError(error) {
+  return ['ENOENT', 'ENODEV', 'ESTALE', 'ENXIO'].includes(error?.code);
+}
+
+function parseRunexecResult(text) {
   const result = {};
-  const lines = String(stdout || '').split(/\r?\n/);
+  const lines = String(text || '').split(/\r?\n/);
   for (const line of lines) {
     const m = line.match(/^(\w+)=([^\n]*)$/);
     if (m) {
@@ -30,16 +43,42 @@ function parseRunexecResult(stdout) {
   return result;
 }
 
+function parseRunexecStreams(stdout, stderr) {
+  return normalizeRunexecParsed(parseRunexecResult(`${stdout || ''}\n${stderr || ''}`));
+}
+
+async function parseRunexecStreamsWithOutputLog(stdout, stderr, outputLogPath) {
+  const outputLog = outputLogPath ? (await readOptionalFile(outputLogPath)) : '';
+  return {
+    parsed: normalizeRunexecParsed(parseRunexecResult(`${stdout || ''}\n${stderr || ''}\n${outputLog || ''}`)),
+    outputLog: outputLog || ''
+  };
+}
+
+function normalizeRunexecParsed(parsed) {
+  const returnValue = Number(parsed?.returnvalue);
+  return {
+    ...parsed,
+    returnValue: Number.isFinite(returnValue) ? returnValue : null,
+    terminationReason: parsed?.terminationreason || null
+  };
+}
+
 function hasRunexecEnvironmentFailure(stdout, stderr) {
   const text = `${stdout || ''}\n${stderr || ''}`;
   return RUNEXEC_ENV_PATTERNS.some(pattern => text.includes(pattern));
+}
+
+function hasNoSpaceLeftOnDevice(stdout, stderr, message = '') {
+  const text = `${stdout || ''}\n${stderr || ''}\n${message || ''}`;
+  return text.includes('No space left on device');
 }
 
 async function readOptionalFile(filePath) {
   try {
     return await fs.readFile(filePath, 'utf8');
   } catch (error) {
-    if (error.code === 'ENOENT') {
+    if (isIgnorableCgroupFsError(error)) {
       return null;
     }
     throw error;
@@ -130,6 +169,162 @@ function buildRunexecEnvironmentError(diag, extraIssues = [], stdout = '', stder
   return error;
 }
 
+async function readCgroupEvents(dirPath) {
+  const eventsPath = path.join(dirPath, 'cgroup.events');
+  const raw = await readOptionalFile(eventsPath);
+  if (!raw) {
+    return {};
+  }
+  const events = {};
+  for (const line of raw.split(/\r?\n/)) {
+    const [key, value] = line.trim().split(/\s+/, 2);
+    if (key && value) {
+      events[key] = value;
+    }
+  }
+  return events;
+}
+
+async function readCgroupProcCount(dirPath) {
+  let count = 0;
+  for (const fileName of ['cgroup.procs', 'cgroup.threads']) {
+    const raw = await readOptionalFile(path.join(dirPath, fileName));
+    if (!raw) {
+      continue;
+    }
+    count += raw.split(/\r?\n/).filter(Boolean).length;
+  }
+  return count;
+}
+
+async function collectChildCgroupDirs(dirPath) {
+  try {
+    const entries = await fs.readdir(dirPath, { withFileTypes: true });
+    return entries
+      .filter(entry => entry.isDirectory())
+      .map(entry => path.join(dirPath, entry.name));
+  } catch (error) {
+    if (isIgnorableCgroupFsError(error) || error.code === 'EACCES' || error.code === 'EPERM') {
+      return [];
+    }
+    throw error;
+  }
+}
+
+async function subtreeHasActiveProcesses(dirPath) {
+  const procCount = await readCgroupProcCount(dirPath);
+  if (procCount > 0) {
+    return true;
+  }
+
+  const events = await readCgroupEvents(dirPath);
+  if (events.populated && events.populated !== '0') {
+    return true;
+  }
+
+  const children = await collectChildCgroupDirs(dirPath);
+  for (const childPath of children) {
+    if (await subtreeHasActiveProcesses(childPath)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+async function removeInactiveBenchExecTree(dirPath, { allowFileCleanup = false } = {}) {
+  const children = await collectChildCgroupDirs(dirPath);
+  let removed = 0;
+  for (const childPath of children) {
+    removed += await removeInactiveBenchExecTree(childPath, { allowFileCleanup });
+  }
+
+  try {
+    await fs.rmdir(dirPath);
+    return removed + 1;
+  } catch (error) {
+    if (error.code === 'ENOTEMPTY' && allowFileCleanup) {
+      await fs.rm(dirPath, { recursive: true, force: true });
+      return removed + 1;
+    }
+    if (isIgnorableCgroupFsError(error) || ['ENOTEMPTY', 'EBUSY', 'EACCES', 'EPERM'].includes(error.code)) {
+      return removed;
+    }
+    throw error;
+  }
+}
+
+async function isBenchExecDirOldEnough(dirPath, minAgeMs) {
+  if (!Number.isFinite(minAgeMs) || minAgeMs <= 0) {
+    return true;
+  }
+  try {
+    const stat = await fs.stat(dirPath);
+    return (Date.now() - stat.mtimeMs) >= minAgeMs;
+  } catch (error) {
+    if (isIgnorableCgroupFsError(error) || error.code === 'EACCES' || error.code === 'EPERM') {
+      return false;
+    }
+    throw error;
+  }
+}
+
+async function removeStaleBenchExecTree(dirPath, { allowFileCleanup = false } = {}) {
+  if (await subtreeHasActiveProcesses(dirPath)) {
+    return 0;
+  }
+  return removeInactiveBenchExecTree(dirPath, { allowFileCleanup });
+}
+
+async function countBenchExecRoots(rootPath = BENCH_EXEC_CGROUP_ROOT) {
+  try {
+    const entries = await fs.readdir(rootPath, { withFileTypes: true });
+    return entries.filter(entry => entry.isDirectory() && entry.name.startsWith(BENCH_EXEC_CGROUP_PREFIX)).length;
+  } catch (error) {
+    if (isIgnorableCgroupFsError(error) || error.code === 'EACCES' || error.code === 'EPERM') {
+      return 0;
+    }
+    throw error;
+  }
+}
+
+async function cleanupStaleBenchExecCgroups({
+  force = false,
+  rootPath = BENCH_EXEC_CGROUP_ROOT,
+  allowFileCleanup = false,
+  minAgeMs = force ? BENCH_EXEC_CGROUP_FORCE_MIN_AGE_MS : BENCH_EXEC_CGROUP_MIN_AGE_MS
+} = {}) {
+  cleanupQueue = cleanupQueue.catch(() => {}).then(async () => {
+    let topLevelDirs;
+    try {
+      const entries = await fs.readdir(rootPath, { withFileTypes: true });
+      topLevelDirs = entries
+        .filter(entry => entry.isDirectory() && entry.name.startsWith(BENCH_EXEC_CGROUP_PREFIX))
+        .map(entry => path.join(rootPath, entry.name));
+    } catch (error) {
+      if (isIgnorableCgroupFsError(error) || error.code === 'EACCES' || error.code === 'EPERM') {
+        return { removed: 0, remaining: 0 };
+      }
+      throw error;
+    }
+
+    if (!force && topLevelDirs.length < BENCH_EXEC_CGROUP_CLEANUP_THRESHOLD) {
+      return { removed: 0, remaining: topLevelDirs.length };
+    }
+
+    let removed = 0;
+    for (const dirPath of topLevelDirs) {
+      if (!(await isBenchExecDirOldEnough(dirPath, minAgeMs))) {
+        continue;
+      }
+      removed += await removeStaleBenchExecTree(dirPath, { allowFileCleanup });
+    }
+    const remaining = await countBenchExecRoots(rootPath);
+    return { removed, remaining };
+  });
+
+  return cleanupQueue;
+}
+
 async function assertRunexecEnvironment() {
   const diag = await inspectRunexecEnvironment();
   if (diag.issues.length > 0) {
@@ -148,6 +343,13 @@ function secondsToArg(seconds) {
   return `${Math.floor(seconds)}s`;
 }
 
+function computeExecTimeoutMs(walltimelimitSeconds) {
+  if (!Number.isFinite(walltimelimitSeconds) || walltimelimitSeconds <= 0) {
+    return undefined;
+  }
+  return Math.ceil(walltimelimitSeconds * 1000 + RUNEXEC_EXEC_TIMEOUT_GRACE_MS);
+}
+
 async function runWithRunexec({
   cmd,
   args = [],
@@ -161,6 +363,7 @@ async function runWithRunexec({
 }) {
   const runexecPath = path.join(PROJECT_ROOT, 'benchexec', 'bin', 'runexec');
   const pythonBin = process.env.PYTHON_BIN || 'python3';
+  await cleanupStaleBenchExecCgroups();
   const diag = await assertRunexecEnvironment();
 
   const ra = [];
@@ -192,39 +395,95 @@ async function runWithRunexec({
   const execOptions = {
     cwd,
     env: { ...process.env, ...(env || {}) },
-    timeout: (walltimelimitSeconds ? (walltimelimitSeconds * 1000 + 5000) : undefined),
+    // BenchExec may need substantial extra time after the wrapped tool exits in
+    // order to tear down container/cgroup state and emit the final summary.
+    timeout: computeExecTimeoutMs(walltimelimitSeconds),
     maxBuffer: 20 * 1024 * 1024
   };
 
   let stdout = '';
   let stderr = '';
-  try {
+  let parsed = normalizeRunexecParsed({});
+  let runexecOutputLog = '';
+  const invokeRunexec = async () => {
     const result = await execFile(pythonBin, [runexecPath, ...ra], execOptions);
     stdout = result.stdout || '';
     stderr = result.stderr || '';
+    const parsedStreams = await parseRunexecStreamsWithOutputLog(stdout, stderr, outputLogPath);
+    parsed = parsedStreams.parsed;
+    runexecOutputLog = parsedStreams.outputLog;
+  };
+
+  try {
+    await invokeRunexec();
   } catch (error) {
     stdout = error.stdout || '';
     stderr = error.stderr || '';
-    if (hasRunexecEnvironmentFailure(stdout, stderr)) {
+    const parsedStreams = await parseRunexecStreamsWithOutputLog(stdout, stderr, outputLogPath);
+    parsed = parsedStreams.parsed;
+    runexecOutputLog = parsedStreams.outputLog;
+
+    if (hasNoSpaceLeftOnDevice(stdout, stderr, error.message)) {
+      await cleanupStaleBenchExecCgroups({ force: true });
+      try {
+        await invokeRunexec();
+      } catch (retryError) {
+        stdout = retryError.stdout || '';
+        stderr = retryError.stderr || '';
+        const retryParsedStreams = await parseRunexecStreamsWithOutputLog(stdout, stderr, outputLogPath);
+        parsed = retryParsedStreams.parsed;
+        runexecOutputLog = retryParsedStreams.outputLog;
+        if (hasRunexecEnvironmentFailure(stdout, stderr)) {
+          const extraIssues = [];
+          if (`${stdout}\n${stderr}`.includes('Operation not permitted')) {
+            extraIssues.push('Kernel namespace creation was denied by the current container privileges.');
+          }
+          if (hasNoSpaceLeftOnDevice(stdout, stderr, retryError.message)) {
+            extraIssues.push('BenchExec cgroup creation failed because stale cgroup directories exhausted the cgroup filesystem.');
+          }
+          throw buildRunexecEnvironmentError(diag, extraIssues, stdout, stderr);
+        }
+        throw Object.assign(new Error(retryError.message || 'runexec failed'), {
+          code: retryError.code,
+          stdout,
+          stderr,
+          outputLog: runexecOutputLog,
+          parsed
+        });
+      }
+    } else if (hasRunexecEnvironmentFailure(stdout, stderr)) {
       const extraIssues = [];
       if (`${stdout}\n${stderr}`.includes('Operation not permitted')) {
         extraIssues.push('Kernel namespace creation was denied by the current container privileges.');
       }
       throw buildRunexecEnvironmentError(diag, extraIssues, stdout, stderr);
+    } else {
+      throw Object.assign(new Error(error.message || 'runexec failed'), {
+        code: error.code,
+        stdout,
+        stderr,
+        outputLog: runexecOutputLog,
+        parsed
+      });
     }
-    throw error;
+  } finally {
+    await cleanupStaleBenchExecCgroups();
   }
 
-  const parsed = parseRunexecResult(stdout);
-  if ((parsed.terminationreason === 'failed' || parsed.terminationreason === 'killed')
+  if ((parsed.terminationReason === 'failed' || parsed.terminationReason === 'killed')
       && hasRunexecEnvironmentFailure(stdout, stderr)) {
     throw buildRunexecEnvironmentError(diag, [], stdout, stderr);
   }
 
-  return { stdout, stderr, parsed };
+  return { stdout, stderr, outputLog: runexecOutputLog, parsed };
 }
 
 module.exports = {
-  runWithRunexec
+  runWithRunexec,
+  cleanupStaleBenchExecCgroups,
+  computeExecTimeoutMs,
+  parseRunexecResult,
+  parseRunexecStreams,
+  parseRunexecStreamsWithOutputLog
 };
 

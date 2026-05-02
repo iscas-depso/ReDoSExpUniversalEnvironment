@@ -186,18 +186,12 @@ namespace solverbin{
       attack_string.append(LastWord); 
     Outfile << attack_string;
     std::cout << "file is closed" << std::endl;
-    if (Verify(attack_string_file)){
-      Suffix.append("\n");
-      Outfile.close();
-      return true;
-    }else{
-      std::string cmd = "rm -rf " + attack_string_file;
-      system(cmd.c_str());
-      Suffix.clear();
-      Outfile.close();
-      NumberOfCandidates--;
-      return false;
-    }
+    // Internal engine validation is disabled.
+    // GREWIA now acts as a pure candidate generator and leaves final
+    // vulnerability confirmation to the second-stage engine verification.
+    Suffix.append("\n");
+    Outfile.close();
+    return true;
   }
 
   bool DetectABTNFA_Lookaround::WriteInBase64() {

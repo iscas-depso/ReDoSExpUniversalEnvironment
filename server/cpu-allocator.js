@@ -1,9 +1,89 @@
+const fs = require('fs');
 const os = require('os');
 
+function parseCpuSetSpec(value) {
+  if (!value) {
+    return [];
+  }
+
+  const cpuIds = new Set();
+  for (const rawPart of String(value).trim().split(',')) {
+    const part = rawPart.trim();
+    if (!part) {
+      continue;
+    }
+    const rangeMatch = part.match(/^(\d+)-(\d+)$/);
+    if (rangeMatch) {
+      const start = Number(rangeMatch[1]);
+      const end = Number(rangeMatch[2]);
+      if (Number.isInteger(start) && Number.isInteger(end) && start <= end) {
+        for (let current = start; current <= end; current += 1) {
+          cpuIds.add(current);
+        }
+      }
+      continue;
+    }
+
+    const cpuId = Number(part);
+    if (Number.isInteger(cpuId) && cpuId >= 0) {
+      cpuIds.add(cpuId);
+    }
+  }
+
+  return Array.from(cpuIds).sort((a, b) => a - b);
+}
+
+function readVisibleCpuSpecFromProcStatus() {
+  try {
+    const status = fs.readFileSync('/proc/self/status', 'utf8');
+    const line = status.split(/\r?\n/).find(entry => entry.startsWith('Cpus_allowed_list:'));
+    if (!line) {
+      return '';
+    }
+    return line.split(':')[1]?.trim() || '';
+  } catch {
+    return '';
+  }
+}
+
+function detectVisibleCpuIds() {
+  const override = process.env.CPU_ALLOCATOR_VISIBLE_CORES || process.env.BATCH_VISIBLE_CPU_IDS;
+  const overrideIds = parseCpuSetSpec(override);
+  if (overrideIds.length > 0) {
+    return overrideIds;
+  }
+
+  const procStatusIds = parseCpuSetSpec(readVisibleCpuSpecFromProcStatus());
+  if (procStatusIds.length > 0) {
+    return procStatusIds;
+  }
+
+  try {
+    const cpusetIds = parseCpuSetSpec(fs.readFileSync('/sys/fs/cgroup/cpuset.cpus.effective', 'utf8'));
+    if (cpusetIds.length > 0) {
+      return cpusetIds;
+    }
+  } catch {
+    // ignore and fall back
+  }
+
+  return Array.from({ length: os.cpus().length }, (_, i) => i);
+}
+
 class CpuAllocator {
-  constructor(totalCores) {
-    this.totalCores = Number.isFinite(totalCores) && totalCores > 0 ? totalCores : os.cpus().length;
-    this.free = new Set(Array.from({ length: this.totalCores }, (_, i) => i));
+  constructor(totalCoresOrVisibleCpuIds) {
+    if (Array.isArray(totalCoresOrVisibleCpuIds) && totalCoresOrVisibleCpuIds.length > 0) {
+      this.visibleCpuIds = [...new Set(totalCoresOrVisibleCpuIds)]
+        .filter(value => Number.isInteger(value) && value >= 0)
+        .sort((a, b) => a - b);
+    } else if (Number.isFinite(totalCoresOrVisibleCpuIds) && totalCoresOrVisibleCpuIds > 0) {
+      this.visibleCpuIds = Array.from({ length: totalCoresOrVisibleCpuIds }, (_, i) => i);
+    } else {
+      this.visibleCpuIds = detectVisibleCpuIds();
+    }
+
+    this.totalCores = this.visibleCpuIds.length;
+    this.free = new Set(this.visibleCpuIds);
     this.queue = [];
   }
 
@@ -49,6 +129,15 @@ class CpuAllocator {
   }
 
   acquire(count) {
+    if (!Number.isFinite(count) || count <= 0) {
+      return Promise.resolve({
+        cores: [],
+        release: () => {}
+      });
+    }
+    if (count > this.totalCores) {
+      return Promise.reject(new Error(`Requested ${count} CPU cores, but only ${this.totalCores} are visible in this container.`));
+    }
     return new Promise(resolve => {
       const tryNow = () => {
         const cores = this._tryAllocate(count);
@@ -121,6 +210,7 @@ function coresToSpec(cores) {
 
 module.exports = {
   CpuAllocator,
-  coresToSpec
+  coresToSpec,
+  parseCpuSetSpec,
+  detectVisibleCpuIds
 };
-

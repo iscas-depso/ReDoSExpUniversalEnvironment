@@ -13,7 +13,56 @@ import os
 import re
 from pathlib import Path
 
+DEFAULT_TIMEOUT_SECONDS = 60
+TIMEOUT_EXIT_CODE = 124
+
+
+def load_timeout_seconds():
+    candidates = [
+        os.environ.get("REGEXSTATIC_TIMEOUT_SECONDS"),
+        os.environ.get("TOOL_TIMEOUT_SECONDS"),
+    ]
+    for raw_value in candidates:
+        if raw_value is None:
+            continue
+        try:
+            timeout_seconds = int(raw_value)
+        except ValueError:
+            continue
+        if timeout_seconds > 0:
+            return timeout_seconds
+    return DEFAULT_TIMEOUT_SECONDS
+
+
+def build_failure(elapsed_ms, error_type, message, **extra):
+    error = {
+        "type": error_type,
+        "message": message,
+    }
+    for key, value in extra.items():
+        if value is not None:
+            error[key] = value
+    return {
+        "elapsed_ms": elapsed_ms,
+        "is_redos": False,
+        "prefix": "",
+        "infix": "",
+        "suffix": "",
+        "repeat_times": -1,
+        "error": error,
+    }
+
+
+def classify_return_code(return_code):
+    if return_code is None or return_code == 0:
+        return ("tool_exception", None)
+    if return_code < 0:
+        return ("tool_exception", f"RegexStatic analysis terminated by signal {-return_code}.")
+    return ("child_exit_nonzero", "RegexStatic analysis exited with a non-zero status.")
+
+
 def main():
+    start_time = time.time()
     if len(sys.argv) != 3:
         print("Usage: python run.py <base64_regex> <output_file_path>", file=sys.stderr)
         sys.exit(1)
@@ -21,38 +70,30 @@ def main():
     base64_regex = sys.argv[1]
     output_file_path = sys.argv[2]
     
+    exit_code = 0
+    output_json = None
     try:
         # Decode the base64 regex
         regex_bytes = base64.b64decode(base64_regex)
         regex_pattern = regex_bytes.decode('utf-8')
-        
-        # Record start time
-        start_time = time.time()
-        
-        # Analyze the regex using RegexStatic
-        output_json = analyze_regex(regex_pattern)
-        
-        # Record end time
-        end_time = time.time()
-        elapsed_ms = int((end_time - start_time) * 1000)
-        output_json["elapsed_ms"] = elapsed_ms
-        
-        # Write output to file
-        with open(output_file_path, 'w') as f:
-            json.dump(output_json, f, indent=2)
-            
+
+        output_json, exit_code = analyze_regex(regex_pattern)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
-        # Record end time even in case of error
-        end_time = time.time()
-        elapsed_ms = int((end_time - start_time) * 1000)
-        # In case of error, return a safe default but preserve elapsed_ms
-        output_json = {
-            "elapsed_ms": elapsed_ms,
-            "is_redos": False
-        }
-        with open(output_file_path, 'w') as f:
-            json.dump(output_json, f, indent=2)
+        elapsed_ms = int((time.time() - start_time) * 1000)
+        output_json = build_failure(elapsed_ms, "tool_exception", str(e))
+        exit_code = 1
+
+    elapsed_ms = int((time.time() - start_time) * 1000)
+    if not isinstance(output_json, dict):
+        output_json = build_failure(elapsed_ms, "tool_exception", "RegexStatic returned no result.")
+        exit_code = exit_code or 1
+    output_json["elapsed_ms"] = elapsed_ms
+
+    with open(output_file_path, 'w') as f:
+        json.dump(output_json, f, indent=2)
+
+    sys.exit(exit_code)
 
 def analyze_regex(pattern):
     """Analyze a regex pattern for ReDoS vulnerabilities using RegexStatic"""
@@ -73,11 +114,11 @@ def analyze_regex(pattern):
         
         if not jar_pattern.exists():
             print(f"Error: JAR file not found at {jar_pattern}", file=sys.stderr)
-            return output
+            return (build_failure(0, "tool_exception", f"JAR file not found at {jar_pattern}"), 1)
         
         if not deps_dir.exists():
             print(f"Error: Dependencies directory not found at {deps_dir}", file=sys.stderr)
-            return output
+            return (build_failure(0, "tool_exception", f"Dependencies directory not found at {deps_dir}"), 1)
         
         # Run RegexStatic analysis
         # Use verbose mode to get exploit string details
@@ -92,11 +133,22 @@ def analyze_regex(pattern):
             "--timeout=1200000"  # 20 minutes timeout
         ]
         
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+        timeout_seconds = load_timeout_seconds()
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout_seconds)
         
         if result.returncode != 0:
+            error_type, default_message = classify_return_code(result.returncode)
             print(f"RegexStatic analysis failed: {result.stderr}", file=sys.stderr)
-            return output
+            return (
+                build_failure(
+                    0,
+                    error_type,
+                    default_message,
+                    returnValue=result.returncode,
+                    stderr=result.stderr,
+                ),
+                result.returncode or 1,
+            )
         
         # Parse the output
         stdout_lines = result.stdout.strip().split('\n')
@@ -171,15 +223,21 @@ def analyze_regex(pattern):
                 "repeat_times": 1000
             })
     
+        return output, 0
     except subprocess.TimeoutExpired:
         print("RegexStatic analysis timed out", file=sys.stderr)
-        output["is_redos"] = False
-        output["error"] = "Timeout"
+        return (
+            build_failure(
+                0,
+                "timeout",
+                f"RegexStatic analysis timed out after {load_timeout_seconds()} seconds.",
+                returnValue=TIMEOUT_EXIT_CODE,
+            ),
+            TIMEOUT_EXIT_CODE,
+        )
     except Exception as e:
         print(f"Analysis error: {e}", file=sys.stderr)
-        output["is_redos"] = False
-        output["error"] = str(e)
-    return output
+        return (build_failure(0, "tool_exception", str(e)), 1)
 
 def parse_attack_string(attack_string):
     """Parse the attack string from RegexStatic output to extract components"""

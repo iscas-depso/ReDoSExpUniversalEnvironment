@@ -53,7 +53,7 @@ const GREWIA_OPTION_SCHEMA = [
     key: 'regexEngine',
     label: 'GREWIA Regex Engine',
     type: 'select',
-    description: 'Engine used by GREWIA to verify generated attack strings.',
+    description: 'Deprecated compatibility option. GREWIA internal engine validation is disabled, so this value is ignored.',
     options: GREWIA_REGEX_ENGINES.map(value => ({ value, label: value }))
   },
   {

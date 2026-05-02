@@ -4,144 +4,166 @@ ReDoS regex attack string generate tool - ReScue
 Entry point script that follows the project contract.
 """
 
-import sys
-import subprocess
-import json
-import time
 import base64
+import json
 import os
-import re
+import subprocess
+import sys
+import time
 from pathlib import Path
 
-def main():
-    if len(sys.argv) != 3:
-        print("Usage: python run.py <base64_regex> <output_file_path>", file=sys.stderr)
-        sys.exit(1)
-    
-    base64_regex = sys.argv[1]
-    output_file_path = sys.argv[2]
-    
+DEFAULT_TIMEOUT_SECONDS = 600
+TIMEOUT_EXIT_CODE = 124
+
+
+def load_timeout_seconds():
+    raw_value = os.environ.get("TOOL_TIMEOUT_SECONDS", str(DEFAULT_TIMEOUT_SECONDS))
     try:
-        # Decode the base64 regex
-        regex_bytes = base64.b64decode(base64_regex)
-        regex_pattern = regex_bytes.decode('utf-8')
-        
-        # Record start time
-        start_time = time.time()
-        
-        # Analyze the regex using ReScue
-        output_json = analyze_regex(regex_pattern)
-        
-        # Record end time
-        end_time = time.time()
-        elapsed_ms = int((end_time - start_time) * 1000)
-        output_json["elapsed_ms"] = elapsed_ms
-        
-        # Write output to file
-        with open(output_file_path, 'w') as f:
-            json.dump(output_json, f, indent=2)
-            
-    except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
-        # Record end time even in case of error
-        end_time = time.time()
-        elapsed_ms = int((end_time - start_time) * 1000)
-        # In case of error, return a safe default but preserve elapsed_ms
-        output_json = {
-            "elapsed_ms": elapsed_ms,
-            "is_redos": False
-        }
-        with open(output_file_path, 'w') as f:
-            json.dump(output_json, f, indent=2)
+        timeout_seconds = int(raw_value)
+    except (TypeError, ValueError):
+        return DEFAULT_TIMEOUT_SECONDS
+    return timeout_seconds if timeout_seconds > 0 else DEFAULT_TIMEOUT_SECONDS
+
+
+def build_failure(elapsed_ms, error_type, message, **extra):
+    error = {
+        "type": error_type,
+        "message": message,
+    }
+    for key, value in extra.items():
+        if value is not None:
+            error[key] = value
+    return {
+        "elapsed_ms": elapsed_ms,
+        "is_redos": False,
+        "prefix": "",
+        "infix": "",
+        "suffix": "",
+        "repeat_times": -1,
+        "error": error,
+    }
+
+
+def classify_return_code(return_code):
+    if return_code is None or return_code == 0:
+        return ("tool_exception", None)
+    if return_code < 0:
+        return ("tool_exception", f"ReScue analysis terminated by signal {-return_code}.")
+    return ("child_exit_nonzero", "ReScue analysis exited with a non-zero status.")
+
 
 def analyze_regex(pattern):
-    """Analyze a regex pattern for ReDoS vulnerabilities using ReScue"""
-    
-    # Default output
-    output = {
-        "elapsed_ms": 0,  # Will be set by main()
-        "is_redos": False
-    }
-    
+    script_dir = Path(__file__).parent
+    jar_pattern = script_dir / "target" / "ReScue-0.0.1-SNAPSHOT.jar"
+    if not jar_pattern.exists():
+        return (
+            build_failure(0, "tool_exception", f"JAR file not found at {jar_pattern}"),
+            1,
+        )
+
+    cmd = [
+        "java", "-jar", str(jar_pattern),
+        "--quiet",
+        "--maxLength", "64",
+        "--generation", "50",
+        "--popSize", "50",
+        "--crossPossibility", "10",
+        "--mutatePossibility", "10"
+    ]
+
+    timeout_seconds = load_timeout_seconds()
+    start_time = time.time()
     try:
-        # Get the directory where this script is located
-        script_dir = Path(__file__).parent
-        
-        # Check if the JAR file exists
-        jar_pattern = script_dir / "target" / "ReScue-0.0.1-SNAPSHOT.jar"
-        
-        if not jar_pattern.exists():
-            print(f"Error: JAR file not found at {jar_pattern}", file=sys.stderr)
-            return output
-        
-        # Run ReScue analysis
-        # Use quiet mode to avoid interactive prompts
-        cmd = [
-            "java", "-jar", str(jar_pattern),
-            "--quiet",
-            "--maxLength", "64",
-            "--generation", "50",  # Reduced for faster execution
-            "--popSize", "50",     # Reduced for faster execution
-            "--crossPossibility", "10",
-            "--mutatePossibility", "10"
-        ]
-        
-        # Provide the regex as input through stdin
-        result = subprocess.run(cmd, 
-                              input=pattern, 
-                              text=True,
-                              capture_output=True, 
-                              timeout=1200)  # 20 minute timeout
-        
+        result = subprocess.run(
+            cmd,
+            input=pattern,
+            text=True,
+            capture_output=True,
+            timeout=timeout_seconds
+        )
+        elapsed_ms = int((time.time() - start_time) * 1000)
+
         if result.returncode != 0:
-            print(f"ReScue analysis failed: {result.stderr}", file=sys.stderr)
-            return output
-        
-        # Parse the output
-        stdout_lines = result.stdout.strip().split('\n')
-        if not stdout_lines:
-            return output
-        
-        # Look for attack success indicators in the output
+            error_type, default_message = classify_return_code(result.returncode)
+            return (
+                build_failure(
+                    elapsed_ms,
+                    error_type,
+                    default_message,
+                    returnValue=result.returncode,
+                    stdout=result.stdout[-4000:] if result.stdout else "",
+                    stderr=result.stderr[-4000:] if result.stderr else "",
+                ),
+                result.returncode or 1,
+            )
+
+        stdout_lines = result.stdout.strip().splitlines()
         attack_success = False
         attack_string = None
-        
         for line in stdout_lines:
             line = line.strip()
             if "Attack success, attack string is:" in line:
                 attack_success = True
             elif attack_success and line and not line.startswith("TIME:"):
-                # The attack string is usually on the next line after "Attack success"
                 attack_string = line
                 break
-        
-        # Check if attack was successful
+
         if attack_success and attack_string:
-            output["is_redos"] = True
-            # For rescue, the attack string is not divided into prefix/infix/suffix
-            # As per user's instruction: prefix and suffix empty, infix is the attack string, repeat_times = 1
-            output.update({
-                "prefix": base64.b64encode("".encode('utf-8')).decode('utf-8'),  # Empty prefix
-                "infix": base64.b64encode(attack_string.encode('utf-8')).decode('utf-8'),  # Attack string as infix
-                "suffix": base64.b64encode("".encode('utf-8')).decode('utf-8'),  # Empty suffix
-                "repeat_times": 1  # Attack string used as-is, no repetition
-            })
-        else:
-            # Check if it failed due to timeout or other reasons
-            output["is_redos"] = False
-            output["error"] = result.stderr
-            output["stdout"] = result.stdout
-    
+            return ({
+                "elapsed_ms": elapsed_ms,
+                "is_redos": True,
+                "prefix": base64.b64encode(b"").decode("utf-8"),
+                "infix": base64.b64encode(attack_string.encode("utf-8")).decode("utf-8"),
+                "suffix": base64.b64encode(b"").decode("utf-8"),
+                "repeat_times": 1,
+            }, 0)
+
+        return ({
+            "elapsed_ms": elapsed_ms,
+            "is_redos": False,
+            "prefix": "",
+            "infix": "",
+            "suffix": "",
+            "repeat_times": -1,
+        }, 0)
     except subprocess.TimeoutExpired:
-        print("ReScue analysis timed out", file=sys.stderr)
-        output["is_redos"] = False
-        output["error"] = "Timeout"
-    except Exception as e:
-        print(f"Analysis error: {e}", file=sys.stderr)
-        output["is_redos"] = False
-        output["error"] = str(e)
-        output["stdout"] = result.stdout
-    return output
+        elapsed_ms = int((time.time() - start_time) * 1000)
+        return (
+            build_failure(
+                elapsed_ms,
+                "timeout",
+                f"ReScue analysis timed out after {timeout_seconds} seconds.",
+                returnValue=TIMEOUT_EXIT_CODE,
+            ),
+            TIMEOUT_EXIT_CODE,
+        )
+    except Exception as error:
+        elapsed_ms = int((time.time() - start_time) * 1000)
+        return (build_failure(elapsed_ms, "tool_exception", str(error)), 1)
+
+
+def main():
+    start_time = time.time()
+    if len(sys.argv) != 3:
+        print("Usage: python run.py <base64_regex> <output_file_path>", file=sys.stderr)
+        sys.exit(1)
+
+    base64_regex = sys.argv[1]
+    output_file_path = sys.argv[2]
+
+    try:
+        regex_pattern = base64.b64decode(base64_regex).decode("utf-8")
+        output_json, exit_code = analyze_regex(regex_pattern)
+    except Exception as error:
+        elapsed_ms = int((time.time() - start_time) * 1000)
+        output_json = build_failure(elapsed_ms, "tool_exception", str(error))
+        exit_code = 1
+
+    output_json["elapsed_ms"] = int((time.time() - start_time) * 1000)
+    with open(output_file_path, "w", encoding="utf-8") as handle:
+        json.dump(output_json, handle, indent=2)
+    sys.exit(exit_code)
+
 
 if __name__ == "__main__":
-    main() 
+    main()

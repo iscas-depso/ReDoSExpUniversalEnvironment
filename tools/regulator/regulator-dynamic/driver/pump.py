@@ -50,14 +50,19 @@ class PathLengthSampler:
         self.width = width
         self.sampler = None
 
+    def _kill_sampler(self):
+        if self.sampler is not None:
+            self.sampler.kill()
+            self.sampler = None
+
     async def _open(self):
         """
         (internal) open the path-length counter binary with stdin & stdout connected
         to pipes so we can send sample lines to count path-length
         """
         l.debug('Opening sampler')
-        if self.sampler is not None and self.sampler.poll() is not None:
-            self.sampler.kill()
+        if self.sampler is not None and self.sampler.returncode is not None:
+            self._kill_sampler()
         b64regexp = base64.b64encode(self.bregexp).decode('ascii')
         flags = self.bflags.decode('ascii')
         pargs = [
@@ -91,8 +96,7 @@ class PathLengthSampler:
         try:
             line = await asyncio.wait_for(self.sampler.stdout.readline(), SINGLE_SAMPLE_LIMIT)
         except asyncio.TimeoutError:
-            self.sampler.kill()
-            self.sampler = None
+            self._kill_sampler()
             l.debug('sampler timeout')
             return -1
         line: str = line.decode('ascii')
@@ -108,7 +112,7 @@ class PathLengthSampler:
         return loop.run_until_complete(future)
     
     def kill(self):
-        self.sampler.kill()
+        self._kill_sampler()
 
 def pump_witness(witness, pump_pos, pump_len, width, times) -> bytes:
     assert pump_len <= len(witness) // width
@@ -413,4 +417,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

@@ -64,7 +64,7 @@ int main(int argc, char* argv[]){
     std::cout << "[SimplifiedModeOn]: Set to 1 indicate letting GREWIA generate a attack strings; Set to 0 indicate letting GREWIA generate a series of attack strings.\n" << std::endl;
     std::cout << "[DecrementalOn]: Set to 1 indicate Decremental method is on and vice verse.\n" << std::endl;
     std::cout << "[MatchingFunction]: Set to 1 indicate targeting to partialmatch; Set to 0 indicate targeting to fullmatch.\n" << std::endl;
-    std::cout << "[Regex Engine]: Set to a specific regex engine which are Java, JavaScript, Perl, PHP, Python, Boost, C#. And the candidate attack string will be verified in those engines. \n" << std::endl;
+    std::cout << "[Regex Engine]: Compatibility argument retained for older wrappers. Internal engine verification is disabled and this value is ignored.\n" << std::endl;
     return 0;
   }
 

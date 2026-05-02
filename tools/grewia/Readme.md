@@ -57,9 +57,13 @@ python3 run.py KGErKSs= output.json
 # 5. Simplified mode (1=single attack string, 0=series)
 # 6. Decremental method (1=on, 0=off)
 # 7. Matching function (1=partial match, 0=full match)
-# 8. Regex engine (Java, JavaScript, Perl, PHP, Python, Boost, C#)
+# 8. Compatibility regex-engine argument (currently ignored because internal validation is disabled)
 
 ./build/GREWIA KGErKSs= output.json /tmp/grewia_output 100000 1 0 1 Java
+
+GREWIA now only generates attack candidates. It no longer performs internal
+engine-specific validation before keeping a candidate. Final verification should
+be done by the project engine runners / `Verify.py`.
 ```
 
 ### Output Format

@@ -44,6 +44,7 @@ function runWrapper(fixtureDir, {
       encoding: 'utf8',
       env: {
         ...process.env,
+        GREWIA_EXECUTABLE: path.join(fixtureDir, 'build', 'GREWIA'),
         ...env
       },
       timeout: 10_000
@@ -222,8 +223,8 @@ pathlib.Path(sys.argv[2]).write_text(json.dumps({
     const result = runWrapper(fixtureDir);
 
     assert.notStrictEqual(result.status, 0);
-    assert.match(result.stderr, /GREWIA executable not found/);
-    assert.strictEqual(result.outputJson, null);
+    assert.match(result.stderr, /GREWIA executable not found at/);
+    assert.strictEqual(result.outputJson.error.type, 'tool_exception');
   });
 
   it('returns the underlying exit code when GREWIA fails without usable outputs', () => {
@@ -232,10 +233,11 @@ pathlib.Path(sys.argv[2]).write_text(json.dumps({
 
     assert.strictEqual(result.status, 7);
     assert.match(result.stderr, /GREWIA failed with exit code 7/);
-    assert.strictEqual(result.outputJson, null);
+    assert.strictEqual(result.outputJson.error.type, 'child_exit_nonzero');
+    assert.strictEqual(result.outputJson.error.returnValue, 7);
   });
 
-  it('still normalizes output when GREWIA exits nonzero but leaves usable files behind', () => {
+  it('treats fatal exceptions as tool failures even when partial outputs exist', () => {
     const fixtureDir = makeFixture(`
 import json
 import pathlib
@@ -248,29 +250,77 @@ pathlib.Path(sys.argv[2]).write_text(json.dumps({
 output_dir = pathlib.Path(sys.argv[3])
 output_dir.mkdir(parents=True, exist_ok=True)
 (output_dir / "1.txt").write_text("aaaaab", encoding="utf-8")
+sys.stderr.write("Exception in thread \\"main\\" java.lang.StackOverflowError\\n")
 sys.exit(9)
 `);
     const result = runWrapper(fixtureDir);
 
+    assert.strictEqual(result.status, 9, result.stderr);
+    assert.strictEqual(result.outputJson.is_redos, false);
+    assert.strictEqual(result.outputJson.candidates.length, 0);
+    assert.strictEqual(result.outputJson.error.type, 'tool_exception');
+    assert.strictEqual(result.outputJson.error.returnValue, 9);
+  });
+
+  it('uses a single configured GREWIA executable path', () => {
+    const fixtureDir = makeFixture(`
+import json
+import pathlib
+import sys
+
+pathlib.Path(sys.argv[2]).write_text(json.dumps({"elapsed_ms": 5, "is_redos": False}), encoding="utf-8")
+`);
+
+    const result = runWrapper(fixtureDir);
     assert.strictEqual(result.status, 0, result.stderr);
-    assert.strictEqual(result.outputJson.is_redos, true);
-    assert.strictEqual(result.outputJson.candidates.length, 1);
-    assert.strictEqual(result.outputJson.toolMeta.candidateCount, 1);
+    assert.strictEqual(result.outputJson.toolMeta.normalizedOptions.regexEngine, 'Java');
   });
 
   it('reports a timeout instead of hanging indefinitely', () => {
-    const fixtureDir = makeFixture(
-      'import time\ntime.sleep(0.3)\n',
-      {
-        mutateRunPy(contents) {
-          return contents.replace('timeout=300,', 'timeout=0.1,');
-        }
+    const fixtureDir = makeFixture('import time\ntime.sleep(1.3)\n');
+    const result = runWrapper(fixtureDir, {
+      env: {
+        GREWIA_TIMEOUT_SECONDS: '1'
       }
-    );
-    const result = runWrapper(fixtureDir);
+    });
 
     assert.notStrictEqual(result.status, 0);
     assert.match(result.stderr, /GREWIA execution timed out/);
-    assert.strictEqual(result.outputJson, null);
+    assert.strictEqual(result.outputJson.error.type, 'timeout');
+  });
+
+  it('rejects unsupported Unicode property escapes before launching GREWIA', () => {
+    const fixtureDir = makeFixture(`
+import pathlib
+pathlib.Path('/tmp/grewia-should-not-run').write_text('ran', encoding='utf-8')
+`);
+    const markerPath = '/tmp/grewia-should-not-run';
+    fs.rmSync(markerPath, { force: true });
+
+    const result = runWrapper(fixtureDir, {
+      regex: Buffer.from('\\p{IsBasicLatin}', 'utf8').toString('base64')
+    });
+
+    assert.notStrictEqual(result.status, 0);
+    assert.match(result.stderr, /does not currently support Unicode property escapes/);
+    assert.strictEqual(result.outputJson.error.type, 'tool_exception');
+    assert.strictEqual(result.outputJson.error.unsupportedFeature, 'unicode_property_escape');
+    assert.strictEqual(fs.existsSync(markerPath), false);
+  });
+
+  it('decodes non-UTF-8 child output without crashing the wrapper', () => {
+    const fixtureDir = makeFixture(`
+import os
+import sys
+
+os.write(1, b'\\x80\\xff\\n')
+sys.exit(7)
+`);
+    const result = runWrapper(fixtureDir);
+
+    assert.strictEqual(result.status, 7);
+    assert.match(result.stderr, /GREWIA failed with exit code 7/);
+    assert.strictEqual(result.outputJson.error.type, 'child_exit_nonzero');
+    assert.strictEqual(result.outputJson.error.returnValue, 7);
   });
 });

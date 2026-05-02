@@ -68,6 +68,10 @@ function createApp(options = {}) {
         maxAttackLength: DEFAULT_OPTIONS.maxAttackLength,
         defaultCores: DEFAULT_OPTIONS.defaultCores || null,
         defaultMemoryMB: DEFAULT_OPTIONS.defaultMemoryMB || null
+      },
+      runtime: {
+        visibleCpuIds: cpuAllocator.visibleCpuIds,
+        visibleCpuCount: cpuAllocator.totalCores
       }
     });
   });
@@ -139,6 +143,12 @@ function createApp(options = {}) {
     const timeoutSeconds = Number(req.body?.timeoutSeconds);
     const cpuCores = Number(req.body?.cpuCores);
     const memoryMB = Number(req.body?.memoryMB);
+    if (Number.isFinite(cpuCores) && cpuCores > cpuAllocator.totalCores) {
+      res.status(400).json({
+        error: `Requested ${cpuCores} CPU cores, but only ${cpuAllocator.totalCores} are visible inside this container.`
+      });
+      return;
+    }
     const timeoutMs = Number.isFinite(timeoutSeconds) && timeoutSeconds > 0
       ? Math.min(timeoutSeconds, 3600) * 1000
       : undefined;
@@ -197,6 +207,12 @@ function createApp(options = {}) {
     const cpuCores = Number(req.body?.cpuCores);
     const memoryMB = Number(req.body?.memoryMB);
     const attackSource = req.body?.attackSource || {};
+    if (Number.isFinite(cpuCores) && cpuCores > cpuAllocator.totalCores) {
+      res.status(400).json({
+        error: `Requested ${cpuCores} CPU cores, but only ${cpuAllocator.totalCores} are visible inside this container.`
+      });
+      return;
+    }
 
     if (!regex) {
       res.status(400).json({ error: 'Regex input is required.' });

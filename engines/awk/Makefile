@@ -1,13 +1,14 @@
 AWK=gawk
 TARGET=bin/benchmark
 SOURCE=benchmark.awk
+WRAPPER=benchmark.sh
 
 .PHONY: all test clean
 
 all: $(TARGET)
 
-$(TARGET): $(SOURCE) | bin
-	cp $(SOURCE) $(TARGET)
+$(TARGET): $(SOURCE) $(WRAPPER) | bin
+	cp $(WRAPPER) $(TARGET)
 	chmod +x $(TARGET)
 
 bin:

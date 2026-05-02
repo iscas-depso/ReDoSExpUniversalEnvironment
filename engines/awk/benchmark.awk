@@ -8,17 +8,21 @@ function base64_decode(input) {
     return result
 }
 
-# Read entire file into a string
-function read_file(filename,    content, line) {
+# Read an entire file without losing embedded NUL bytes.
+function read_file(filename,    content, record, status, old_rs, first_chunk) {
     content = ""
-    while ((getline line < filename) > 0) {
-        if (content == "") {
-            content = line
-        } else {
-            content = content "\n" line
+    old_rs = RS
+    RS = sprintf("%c", 0)
+    first_chunk = 1
+    while ((status = (getline record < filename)) > 0) {
+        if (!first_chunk) {
+            content = content sprintf("%c", 0)
         }
+        content = content record
+        first_chunk = 0
     }
     close(filename)
+    RS = old_rs
     return content
 }
 

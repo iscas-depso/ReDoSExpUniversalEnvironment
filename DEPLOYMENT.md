@@ -527,27 +527,30 @@ cat /tmp/result.json | python3 -m json.tool
 运行批量检测：
 
 ```bash
-# 创建检测脚本
-cat > batch_test.sh << 'EOF'
-#!/bin/bash
-while IFS= read -r regex; do
-    [ -z "$regex" ] && continue
-    regex_b64=$(echo -n "$regex" | base64)
-    output_file="/tmp/result_$(echo -n "$regex" | md5sum | cut -d' ' -f1).json"
+# 推荐：直接使用项目自带批处理入口
+python3 Gen.py regexes.txt results.db
 
-    echo "Testing: $regex"
-    docker run --rm -v /tmp:/tmp redos-test \
-        python3 /app/tools/regexploit/run.py "$regex_b64" "$output_file"
-
-    is_redos=$(cat "$output_file" | grep -o '"is_redos": *[^,}]*' | awk '{print $2}')
-    echo "Result: is_redos=$is_redos"
-    echo "---"
-done < regexes.txt
-EOF
-
-chmod +x batch_test.sh
-./batch_test.sh
+# 仅选择部分工具，并为 GREWIA 传参数
+python3 Gen.py regexes.txt results.db \
+  --tools regexploit,grewia \
+  --tool-option grewia.regexEngine=Python \
+  --tool-option grewia.candidateMode=multiple \
+  --workers 8 \
+  --timeout-seconds 300
 ```
+
+`Gen.py` 会创建 SQLite 结果库，包含：
+- `regexes`
+- `attack_result`
+- `attack_candidate`
+- `verify_result`
+- `batch_meta`
+
+其中：
+- `attack_result` 保存每个 `(tool, regex)` 的顶层输出和状态。
+- `attack_candidate` 保存 GREWIA 等工具产生的候选攻击串，既支持 `fullText`，也支持 `prefix/infix/suffix/repeat_times`。GREWIA 现在不会在生成阶段做内部引擎验证，最终确认应交给第二阶段验证。
+- 重复运行 `Gen.py` 会默认覆盖并重建目标数据库。
+- 如果传入 `--cpu-cores N`，同一个 `Gen.py` 进程内的不同工具任务会共享一套核心池；这些任务会从当前容器可见 CPU 集合中申请/释放核心，而不是各自独立绑核。
 
 #### 3. 验证攻击字符串
 
@@ -582,6 +585,27 @@ timeout 10 docker run --rm -v /tmp:/tmp redos-test \
   /app/engines/python/bin/benchmark KGErKSti /tmp/attack.txt 0 || echo "Timeout - ReDoS confirmed!"
 ```
 
+批量验证推荐直接使用：
+
+```bash
+# 验证数据库中的 ReDoS 结果，最大 payload 64KB，partial match
+python3 Verify.py results.db 64 0
+
+# 仅验证部分引擎，展开 GREWIA 的全部候选
+python3 Verify.py results.db 128 1 \
+  --engines python,nodejs21,re2 \
+  --candidate-policy all \
+  --workers 8 \
+  --timeout-seconds 120
+```
+
+默认行为：
+- `Verify.py` 默认选择当前全部 `available=true` 的引擎。
+- `Verify.py` 默认只验证 GREWIA 的推荐候选；传 `--candidate-policy all` 才会展开全部候选。
+- 如果某个工具没有候选表记录，则自动回退到 `attack_result` 顶层的 legacy `prefix/infix/suffix/repeat_times` 结构。
+- 重复运行 `Verify.py` 会重建 `verify_result` 表，避免不同参数的结果混在一起。
+- 如果传入 `--cpu-cores N`，不同验证任务会共享同一套容器内核心池；要避免和其他容器撞核，请在 `docker run` 时配合 `--cpuset-cpus=...`。
+
 #### 4. Web 控制台（可选）
 
 如果希望通过图形界面完成同样的流程：
@@ -590,6 +614,18 @@ timeout 10 docker run --rm -v /tmp:/tmp redos-test \
 # 启动容器并映射端口 8080
 docker run --rm --privileged --cgroupns=host -p 8080:8080 -v /tmp:/tmp redos-test
 ```
+
+如果同一台主机上还有其他高负载容器，建议直接给本容器固定 `cpuset`：
+
+```bash
+docker run --rm --privileged --cgroupns=host \
+  --cpuset-cpus=0-15 \
+  -p 8080:8080 \
+  -v /tmp:/tmp \
+  redos-test
+```
+
+这样当前服务内部的核心分配器只会在 `0-15` 这组可见核心里分配，不会和别的容器争用其他 CPU。
 
 然后打开浏览器访问 `http://localhost:8080`：
 
@@ -1206,8 +1242,8 @@ ReDoSExpUniversalEnvironment/
 │   │   └── bin/benchmark
 │   └── ...                      # 其他13个引擎
 │
-├── Gen.py                        # 攻击生成主程序（待实现）
-├── Verify.py                     # 攻击验证主程序（待实现）
+├── Gen.py                        # 攻击生成主程序（批处理入口）
+├── Verify.py                     # 攻击验证主程序（批处理入口）
 └── README.md                     # 项目说明
 ```
 
@@ -1374,6 +1410,17 @@ chmod +x test_all_tools.sh
 ./test_all_tools.sh "KGErKSti" /tmp
 ```
 
+#### 内置批处理脚本
+
+项目已经内置：
+
+```bash
+python3 Gen.py regexes.txt results.db
+python3 Verify.py results.db 64 0
+```
+
+这两个入口直接复用 `dev` 分支当前后端逻辑，不需要先启动 Web 服务，也不需要自行拼接 HTTP 请求。
+
 #### 性能对比脚本
 
 保存为 `benchmark_tools.sh`：
@@ -1414,7 +1461,7 @@ cat results.md
 **下一步：**
 1. ✅ 完成环境部署
 2. ✅ 验证所有工具正常工作
-3. 📝 开始使用Gen.py进行批量测试（待实现）
-4. 📝 使用Verify.py验证攻击字符串（待实现）
+3. ✅ 使用 `python3 Gen.py regexes.txt results.db` 进行批量测试
+4. ✅ 使用 `python3 Verify.py results.db 64 0` 验证攻击字符串
 
 祝使用愉快！

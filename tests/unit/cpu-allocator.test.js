@@ -1,18 +1,25 @@
 const { describe, it, beforeEach } = require('node:test');
 const assert = require('node:assert');
-const { CpuAllocator, coresToSpec } = require('../../server/cpu-allocator');
+const { CpuAllocator, coresToSpec, parseCpuSetSpec } = require('../../server/cpu-allocator');
 
 describe('CpuAllocator', () => {
   describe('constructor', () => {
     it('defaults to system CPU count', () => {
-      const os = require('os');
       const allocator = new CpuAllocator();
-      assert.strictEqual(allocator.totalCores, os.cpus().length);
+      assert.ok(allocator.totalCores > 0);
+      assert.strictEqual(allocator.visibleCpuIds.length, allocator.totalCores);
     });
 
     it('accepts custom core count', () => {
       const allocator = new CpuAllocator(4);
       assert.strictEqual(allocator.totalCores, 4);
+      assert.deepStrictEqual(allocator.visibleCpuIds, [0, 1, 2, 3]);
+    });
+
+    it('accepts explicit visible cpu ids', () => {
+      const allocator = new CpuAllocator([2, 4, 6, 8]);
+      assert.strictEqual(allocator.totalCores, 4);
+      assert.deepStrictEqual(allocator.visibleCpuIds, [2, 4, 6, 8]);
     });
 
     it('initializes all cores as free', () => {
@@ -94,6 +101,21 @@ describe('CpuAllocator', () => {
       
       assert.strictEqual(allocator.getFreeCount(), 4);
     });
+  });
+});
+
+describe('parseCpuSetSpec', () => {
+  it('parses single ids and ranges', () => {
+    assert.deepStrictEqual(parseCpuSetSpec('0-2,4,6-7'), [0, 1, 2, 4, 6, 7]);
+  });
+
+  it('ignores invalid segments', () => {
+    assert.deepStrictEqual(parseCpuSetSpec('1-3,abc,5-,9'), [1, 2, 3, 9]);
+  });
+
+  it('returns empty list for empty input', () => {
+    assert.deepStrictEqual(parseCpuSetSpec(''), []);
+    assert.deepStrictEqual(parseCpuSetSpec(null), []);
   });
 });
 
