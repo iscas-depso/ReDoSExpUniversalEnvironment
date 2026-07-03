@@ -139,6 +139,27 @@ async function inspectRunexecEnvironment() {
     }
   }
 
+  if (mountType === 'cgroup2' && controllers.includes('memory') && enabledControllers.includes('memory')) {
+    const probeDir = path.join(BENCH_EXEC_CGROUP_ROOT, `codex_probe_${process.pid}_${Date.now()}`);
+    try {
+      await fs.mkdir(probeDir);
+      const probeEntries = await fs.readdir(probeDir);
+      if (!probeEntries.includes('memory.peak')) {
+        issues.push(
+          "Delegated BenchExec child cgroup does not expose memory.peak. " +
+          "This host cannot report peak memory usage under cgroup v2 with the current kernel. " +
+          "Upgrade the host kernel to Linux 5.19+ (recommended) or switch the host to a cgroup v1 setup that exposes max memory usage."
+        );
+      }
+    } catch (error) {
+      issues.push(`Cannot create or inspect a delegated BenchExec child cgroup for memory probing: ${error.message}`);
+    } finally {
+      try {
+        await fs.rmdir(probeDir);
+      } catch {}
+    }
+  }
+
   return {
     issues,
     mountType,
@@ -370,6 +391,9 @@ async function runWithRunexec({
   // Always use BenchExec container mode. The service should fail fast if cgroups are unavailable.
   ra.push('--read-only-dir', '/');
   ra.push('--hidden-dir', '/run');
+  // Some hosts reject creating /home/benchexec inside the nested BenchExec container.
+  // Hiding /home avoids that warning and preserves metric emission on those hosts.
+  ra.push('--hidden-dir', '/home');
   
   ra.push('--full-access-dir', '/tmp');
   ra.push('--full-access-dir', '/app');

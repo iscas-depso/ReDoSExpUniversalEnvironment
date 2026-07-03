@@ -16,17 +16,27 @@ from batch_common import CpuAllocator, default_workers, detect_visible_cpu_ids, 
 SCHEMA_VERSION = 3
 DB_LOCK = Lock()
 MAX_INFRA_RETRIES = 3
+JS_TRIM_CODEPOINTS = {
+    0x0009, 0x000A, 0x000B, 0x000C, 0x000D, 0x0020, 0x00A0, 0x1680,
+    0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007,
+    0x2008, 0x2009, 0x200A, 0x2028, 0x2029, 0x202F, 0x205F, 0x3000, 0xFEFF
+}
 
 
 def build_arg_parser():
     parser = argparse.ArgumentParser(description="Batch ReDoS attack generation")
-    parser.add_argument("input_file", help="Input txt file with one regex per line")
+    parser.add_argument(
+        "input_file",
+        help="Input dataset. Plain text uses one regex per line; .json/.jsonl/.ndjson use NDJSON records with a pattern field"
+    )
     parser.add_argument("output_db", help="Output sqlite database path")
     parser.add_argument("--tools", help="Comma-separated tool ids; default: all available tools")
     parser.add_argument("--workers", type=int, default=default_workers(), help="Concurrent workers")
     parser.add_argument("--timeout-seconds", type=int, help="Per-tool timeout in seconds")
     parser.add_argument("--cpu-cores", type=int, help="CPU cores passed to runexec")
     parser.add_argument("--memory-mb", type=int, help="Memory limit in MB passed to runexec")
+    parser.add_argument("--resume", action="store_true", help="Resume into an existing SQLite database instead of resetting it")
+    parser.add_argument("--import-db", help="Import trustworthy Gen results from an earlier SQLite database before scheduling missing work")
     parser.add_argument(
         "--tool-option",
         action="append",
@@ -44,7 +54,13 @@ def ensure_positive(value, field_name):
     return value
 
 
-def load_regexes(input_path):
+def js_trim_effectively_empty(value):
+    if not value:
+        return True
+    return all(ord(ch) in JS_TRIM_CODEPOINTS for ch in value)
+
+
+def load_text_regexes(input_path):
     regexes = []
     with open(input_path, "r", encoding="utf-8") as handle:
         for line_no, raw_line in enumerate(handle, 1):
@@ -60,22 +76,86 @@ def load_regexes(input_path):
     return regexes
 
 
-def setup_database(db_path):
-    if os.path.exists(db_path):
+def load_ndjson_regexes(input_path):
+    regexes = []
+    skipped_non_string = 0
+    skipped_empty = 0
+    skipped_whitespace = 0
+    skipped_js_trim_empty = 0
+    skipped_surrogate = 0
+    with open(input_path, "r", encoding="utf-8") as handle:
+        for line_no, raw_line in enumerate(handle, 1):
+            if not raw_line.strip():
+                continue
+            record = json.loads(raw_line)
+            regex = record.get("pattern")
+            if not isinstance(regex, str):
+                skipped_non_string += 1
+                continue
+            if regex == "":
+                skipped_empty += 1
+                continue
+            if regex.strip() == "":
+                skipped_whitespace += 1
+                continue
+            if js_trim_effectively_empty(regex):
+                skipped_js_trim_empty += 1
+                continue
+            if any(0xD800 <= ord(ch) <= 0xDFFF for ch in regex):
+                skipped_surrogate += 1
+                continue
+            regexes.append({
+                "id": line_no,
+                "source_line": line_no,
+                "regex": regex,
+                "base64regex": base64.b64encode(regex.encode("utf-8")).decode("utf-8")
+            })
+    if skipped_non_string:
+        print_status(
+            f"[Gen] skipped {skipped_non_string} NDJSON records whose pattern field was not a string"
+        )
+    if skipped_empty:
+        print_status(
+            f"[Gen] skipped {skipped_empty} NDJSON records whose pattern field was an empty string"
+        )
+    if skipped_whitespace:
+        print_status(
+            f"[Gen] skipped {skipped_whitespace} NDJSON records whose pattern field contained only whitespace"
+        )
+    if skipped_js_trim_empty:
+        print_status(
+            f"[Gen] skipped {skipped_js_trim_empty} NDJSON records whose pattern field would become empty after JavaScript trim()"
+        )
+    if skipped_surrogate:
+        print_status(
+            f"[Gen] skipped {skipped_surrogate} NDJSON records whose pattern field contained UTF-16 surrogate code points"
+        )
+    return regexes
+
+
+def load_regexes(input_path):
+    suffixes = Path(input_path).suffixes
+    if suffixes and suffixes[-1].lower() in {".json", ".jsonl", ".ndjson"}:
+        return load_ndjson_regexes(input_path)
+    return load_text_regexes(input_path)
+
+
+def setup_database(db_path, reset=True):
+    if reset and os.path.exists(db_path):
         os.remove(db_path)
 
     conn = sqlite3.connect(db_path)
     try:
         conn.executescript(
             """
-            CREATE TABLE regexes (
+            CREATE TABLE IF NOT EXISTS regexes (
                 id INTEGER PRIMARY KEY,
                 regex TEXT NOT NULL,
                 base64regex TEXT NOT NULL,
                 source_line INTEGER NOT NULL
             );
 
-            CREATE TABLE attack_result (
+            CREATE TABLE IF NOT EXISTS attack_result (
                 tool TEXT NOT NULL,
                 id INTEGER NOT NULL,
                 status TEXT NOT NULL,
@@ -101,7 +181,7 @@ def setup_database(db_path):
                 FOREIGN KEY (id) REFERENCES regexes(id)
             );
 
-            CREATE TABLE attack_candidate (
+            CREATE TABLE IF NOT EXISTS attack_candidate (
                 tool TEXT NOT NULL,
                 id INTEGER NOT NULL,
                 candidate_id TEXT NOT NULL,
@@ -120,7 +200,7 @@ def setup_database(db_path):
                 FOREIGN KEY (id) REFERENCES regexes(id)
             );
 
-            CREATE TABLE verify_result (
+            CREATE TABLE IF NOT EXISTS verify_result (
                 tool TEXT NOT NULL,
                 id INTEGER NOT NULL,
                 engine TEXT NOT NULL,
@@ -137,7 +217,7 @@ def setup_database(db_path):
                 FOREIGN KEY (id) REFERENCES regexes(id)
             );
 
-            CREATE TABLE batch_meta (
+            CREATE TABLE IF NOT EXISTS batch_meta (
                 key TEXT PRIMARY KEY,
                 value_json TEXT NOT NULL,
                 updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -164,10 +244,85 @@ def insert_regexes(db_path, regexes):
     conn = sqlite3.connect(db_path)
     try:
         conn.executemany(
-            "INSERT INTO regexes (id, regex, base64regex, source_line) VALUES (?, ?, ?, ?)",
+            "INSERT OR REPLACE INTO regexes (id, regex, base64regex, source_line) VALUES (?, ?, ?, ?)",
             [(item["id"], item["regex"], item["base64regex"], item["source_line"]) for item in regexes]
         )
         conn.commit()
+    finally:
+        conn.close()
+
+
+def trustworthy_result_where(prefix=""):
+    qualified = f"{prefix}." if prefix else ""
+    return (
+        f"(({qualified}status = 'completed' AND {qualified}time IS NOT NULL "
+        f"AND {qualified}walltime_ms IS NOT NULL AND {qualified}cputime_ms IS NOT NULL "
+        f"AND {qualified}memory_bytes IS NOT NULL) "
+        f"OR ({qualified}status = 'failed' AND COALESCE({qualified}error_type, '') != 'infra_error'))"
+    )
+
+
+def import_reusable_results(target_db, source_db):
+    if not source_db:
+        return {"attack_result": 0, "attack_candidate": 0}
+    if not os.path.exists(source_db):
+        raise FileNotFoundError(f"Import DB not found: {source_db}")
+
+    conn = sqlite3.connect(target_db)
+    try:
+        conn.execute("ATTACH DATABASE ? AS source_db", (source_db,))
+        conn.execute(
+            f"""
+            INSERT OR REPLACE INTO attack_result
+            (tool, id, status, is_redos, prefix, infix, suffix, repeat_times, elapsed_ms, time, time_source, walltime_ms, cputime_ms, memory_bytes, full_json, logs_json, error_json, error_type, termination_reason, return_value, raw_output)
+            SELECT
+                r.tool, r.id, r.status, r.is_redos, r.prefix, r.infix, r.suffix, r.repeat_times,
+                r.elapsed_ms, r.time, r.time_source, r.walltime_ms, r.cputime_ms, r.memory_bytes,
+                r.full_json, r.logs_json, r.error_json, r.error_type, r.termination_reason, r.return_value, r.raw_output
+            FROM source_db.attack_result AS r
+            INNER JOIN main.regexes AS mr ON mr.id = r.id
+            WHERE {trustworthy_result_where('r')}
+            """
+        )
+        attack_result_imported = conn.execute("SELECT changes()").fetchone()[0]
+        conn.execute(
+            f"""
+            INSERT OR REPLACE INTO attack_candidate
+            (tool, id, candidate_id, candidate_label, is_recommended, attack_type, full_text, prefix, infix, suffix, repeat_times, payload_length, preview, metadata_json)
+            SELECT
+                c.tool, c.id, c.candidate_id, c.candidate_label, c.is_recommended, c.attack_type,
+                c.full_text, c.prefix, c.infix, c.suffix, c.repeat_times, c.payload_length, c.preview, c.metadata_json
+            FROM source_db.attack_candidate AS c
+            INNER JOIN source_db.attack_result AS r ON r.tool = c.tool AND r.id = c.id
+            INNER JOIN main.regexes AS mr ON mr.id = c.id
+            WHERE {trustworthy_result_where('r')}
+            """
+        )
+        attack_candidate_imported = conn.execute("SELECT changes()").fetchone()[0]
+        conn.commit()
+        return {
+            "attack_result": attack_result_imported,
+            "attack_candidate": attack_candidate_imported
+        }
+    finally:
+        conn.close()
+
+
+def load_reusable_task_keys(db_path, selected_tools):
+    if not selected_tools:
+        return set()
+    placeholders = ",".join("?" for _ in selected_tools)
+    conn = sqlite3.connect(db_path)
+    try:
+        rows = conn.execute(
+            f"""
+            SELECT tool, id
+            FROM attack_result
+            WHERE tool IN ({placeholders}) AND {trustworthy_result_where()}
+            """,
+            selected_tools
+        ).fetchall()
+        return {(tool, regex_id) for tool, regex_id in rows}
     finally:
         conn.close()
 
@@ -426,12 +581,23 @@ def main():
 
     try:
         regexes = load_regexes(str(input_path))
-    except OSError as exc:
+    except (OSError, json.JSONDecodeError) as exc:
         print(f"Failed to read input file: {exc}", file=sys.stderr)
         return 1
 
-    setup_database(args.output_db)
+    if args.import_db and os.path.abspath(args.import_db) == os.path.abspath(args.output_db):
+        print("--import-db cannot be the same path as output_db.", file=sys.stderr)
+        return 1
+
+    setup_database(args.output_db, reset=not args.resume)
     insert_regexes(args.output_db, regexes)
+
+    imported_counts = {"attack_result": 0, "attack_candidate": 0}
+    try:
+        imported_counts = import_reusable_results(args.output_db, args.import_db)
+    except FileNotFoundError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
 
     conn = sqlite3.connect(args.output_db)
     try:
@@ -442,6 +608,12 @@ def main():
             "visibleCpuIds": visible_cpu_ids,
             "requestedCpuCores": args.cpu_cores
         })
+        if args.import_db:
+            upsert_meta(conn, "gen_import_db", {
+                "path": args.import_db,
+                "importedAttackResultRows": imported_counts["attack_result"],
+                "importedAttackCandidateRows": imported_counts["attack_candidate"]
+            })
         conn.commit()
     finally:
         conn.close()
@@ -452,18 +624,30 @@ def main():
         return 0
 
     cpu_allocator = CpuAllocator(visible_cpu_ids) if args.cpu_cores is not None else None
+    reusable_task_keys = load_reusable_task_keys(args.output_db, selected_tools)
+    pending_tasks = [
+        (regex_record, tool_id)
+        for regex_record in regexes
+        for tool_id in selected_tools
+        if (tool_id, regex_record["id"]) not in reusable_task_keys
+    ]
 
     print_status(
         f"[Gen] regexes={len(regexes)} tools={len(selected_tools)} workers={args.workers} "
         f"visible_cpus={len(visible_cpu_ids)} requested_cpu_cores={args.cpu_cores or 'none'}"
     )
+    if args.import_db or args.resume:
+        print_status(
+            f"[Gen] reusable_results={len(reusable_task_keys)} pending_tasks={len(pending_tasks)} "
+            f"imported_attack_results={imported_counts['attack_result']} "
+            f"imported_attack_candidates={imported_counts['attack_candidate']}"
+        )
 
     failures = 0
     with ThreadPoolExecutor(max_workers=args.workers) as executor:
         futures = [
             executor.submit(process_task, args.output_db, regex_record, tool_id, args, tool_options, cpu_allocator)
-            for regex_record in regexes
-            for tool_id in selected_tools
+            for regex_record, tool_id in pending_tasks
         ]
         for future in as_completed(futures):
             try:

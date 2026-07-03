@@ -58,21 +58,25 @@ describe('engine-runner', () => {
   });
 
   describe('buildAttackPayload', () => {
-    it('builds payload from base64 encoded components', () => {
+    it('expands pattern attacks toward maxAttackLength', () => {
       const attack = {
         prefix: Buffer.from('pre').toString('base64'),
         infix: Buffer.from('a').toString('base64'),
         suffix: Buffer.from('suf').toString('base64'),
         repeat_times: 3
       };
-      
-      const { attackText, payloadInfo } = buildAttackPayload(attack, {});
-      
-      assert.strictEqual(attackText, 'preaaasuf');
+
+      const { attackText, payloadInfo } = buildAttackPayload(attack, { maxAttackLength: 10 });
+
+      assert.strictEqual(attackText.length, 64);
+      assert.ok(attackText.startsWith('pre'));
+      assert.ok(attackText.endsWith('suf'));
       assert.strictEqual(payloadInfo.prefixLength, 3);
       assert.strictEqual(payloadInfo.infixLength, 1);
       assert.strictEqual(payloadInfo.suffixLength, 3);
-      assert.strictEqual(payloadInfo.appliedRepeat, 3);
+      assert.strictEqual(payloadInfo.recommendedRepeat, 3);
+      assert.strictEqual(payloadInfo.maxRepeatByLength, 58);
+      assert.strictEqual(payloadInfo.appliedRepeat, 58);
     });
 
     it('handles empty components', () => {
@@ -82,10 +86,10 @@ describe('engine-runner', () => {
         suffix: '',
         repeat_times: 5
       };
-      
-      const { attackText } = buildAttackPayload(attack, {});
-      
-      assert.strictEqual(attackText, 'xxxxx');
+
+      const { attackText } = buildAttackPayload(attack, { maxAttackLength: 5 });
+
+      assert.strictEqual(attackText, 'x'.repeat(64));
     });
 
     it('respects repeatOverride option', () => {
@@ -95,25 +99,30 @@ describe('engine-runner', () => {
         suffix: '',
         repeat_times: 100
       };
-      
-      const { attackText, payloadInfo } = buildAttackPayload(attack, { repeatOverride: 3 });
-      
+
+      const { attackText, payloadInfo } = buildAttackPayload(attack, {
+        repeatOverride: 3,
+        maxAttackLength: 100
+      });
+
       assert.strictEqual(attackText, 'aaa');
       assert.strictEqual(payloadInfo.appliedRepeat, 3);
     });
 
-    it('truncates payload exceeding maxAttackLength', () => {
+    it('caps repeat growth at maxAttackLength without truncating the suffix', () => {
       const attack = {
-        prefix: '',
+        prefix: Buffer.from('pre').toString('base64'),
         infix: Buffer.from('ab').toString('base64'),
-        suffix: '',
+        suffix: Buffer.from('suf').toString('base64'),
         repeat_times: 1000
       };
-      
+
       const { attackText, payloadInfo } = buildAttackPayload(attack, { maxAttackLength: 100 });
-      
-      assert.ok(attackText.length <= 100);
-      assert.strictEqual(payloadInfo.truncated, true);
+
+      assert.strictEqual(attackText.length, 100);
+      assert.ok(attackText.startsWith('pre'));
+      assert.ok(attackText.endsWith('suf'));
+      assert.strictEqual(payloadInfo.truncated, false);
     });
 
     it('respects maxRepeatTimes limit', () => {
@@ -123,10 +132,14 @@ describe('engine-runner', () => {
         suffix: '',
         repeat_times: 100000
       };
-      
-      const { payloadInfo } = buildAttackPayload(attack, { maxRepeatTimes: 100 });
-      
-      assert.ok(payloadInfo.appliedRepeat <= 100);
+
+      const { attackText, payloadInfo } = buildAttackPayload(attack, {
+        maxRepeatTimes: 100,
+        maxAttackLength: 1000
+      });
+
+      assert.strictEqual(payloadInfo.appliedRepeat, 100);
+      assert.strictEqual(attackText.length, 100);
     });
 
     it('handles missing attack components gracefully', () => {
@@ -166,10 +179,12 @@ describe('engine-runner', () => {
       const r1 = buildAttackPayload(attack1, {});
       const r2 = buildAttackPayload(attack2, {});
       const r3 = buildAttackPayload(attack3, {});
-      
-      assert.strictEqual(r1.payloadInfo.appliedRepeat, 5);
-      assert.strictEqual(r2.payloadInfo.appliedRepeat, 5);
-      assert.strictEqual(r3.payloadInfo.appliedRepeat, 5);
+
+      assert.strictEqual(r1.payloadInfo.recommendedRepeat, 5);
+      assert.strictEqual(r2.payloadInfo.recommendedRepeat, 5);
+      assert.strictEqual(r3.payloadInfo.recommendedRepeat, 5);
+      assert.strictEqual(r1.payloadInfo.appliedRepeat, r2.payloadInfo.appliedRepeat);
+      assert.strictEqual(r2.payloadInfo.appliedRepeat, r3.payloadInfo.appliedRepeat);
     });
 
     it('passes through fullText payloads without pattern expansion', () => {

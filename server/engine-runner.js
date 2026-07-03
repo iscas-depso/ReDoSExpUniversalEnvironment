@@ -77,12 +77,16 @@ function buildAttackPayload(attack, options) {
   );
 
   const override = parseRepeat(options.repeatOverride);
-  const desiredRepeat = override > 0 ? override : recommendedRepeat;
-
   const maxRepeatTimes = Math.max(1, options.maxRepeatTimes || DEFAULT_OPTIONS.maxRepeatTimes);
   const maxAttackLength = Math.max(64, options.maxAttackLength || DEFAULT_OPTIONS.maxAttackLength);
-
-  let appliedRepeat = Math.min(Math.max(desiredRepeat, infix ? 1 : 0), maxRepeatTimes);
+  const fixedLength = prefix.length + suffix.length;
+  const maxRepeatByLength = infix.length > 0
+    ? Math.max(0, Math.floor((maxAttackLength - fixedLength) / infix.length))
+    : 0;
+  const repeatBudget = Math.min(maxRepeatTimes, maxRepeatByLength);
+  let appliedRepeat = override > 0
+    ? Math.min(override, repeatBudget)
+    : repeatBudget;
 
   let attackText = prefix;
   let truncated = false;
@@ -122,7 +126,9 @@ function buildAttackPayload(attack, options) {
     prefixLength: prefix.length,
     infixLength: infix.length,
     suffixLength: suffix.length,
+    recommendedRepeat,
     appliedRepeat,
+    maxRepeatByLength,
     truncated,
     payloadLength: attackText.length
   };
